@@ -35,4 +35,17 @@ describe("company routes", () => {
     expect(applyCompanyPrefix("/search?q=hello%20world", "PAP")).toBe("/PAP/search?q=hello%20world");
     expect(toCompanyRelativePath("/PAP/search?q=foo")).toBe("/search?q=foo");
   });
+
+  // DEAL DESK: regression — /deal-desk/* must be classified as a board route,
+  // not a company-prefix slug. Sidebar links break otherwise (Company not
+  // found on "DEAL-DESK").
+  it("treats /deal-desk/* paths as board routes that need a company prefix", () => {
+    expect(extractCompanyPrefixFromPath("/deal-desk/targets")).toBeNull();
+    expect(extractCompanyPrefixFromPath("/deal-desk/hire")).toBeNull();
+    expect(applyCompanyPrefix("/deal-desk/targets", "ACME")).toBe("/ACME/deal-desk/targets");
+    expect(applyCompanyPrefix("/deal-desk/intermediaries", "ACME")).toBe("/ACME/deal-desk/intermediaries");
+    expect(applyCompanyPrefix("/deal-desk/memos", "ACME")).toBe("/ACME/deal-desk/memos");
+    expect(applyCompanyPrefix("/deal-desk/hire", "ACME")).toBe("/ACME/deal-desk/hire");
+    expect(toCompanyRelativePath("/ACME/deal-desk/targets")).toBe("/deal-desk/targets");
+  });
 });
