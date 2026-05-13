@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Target as TargetIcon, Plus, ExternalLink } from "lucide-react";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
+import { useToastActions } from "../../context/ToastContext";
 import { queryKeys } from "../../lib/queryKeys";
+import { useNavigate } from "@/lib/router";
 import {
   dealDeskApi,
   type DdTarget,
@@ -12,6 +14,9 @@ import {
   type DdSource,
   type Thesis,
 } from "../../api/dealDesk";
+// DEAL DESK: Phase 7 v0.2 — wire 'Source targets now' to issue creation
+import { agentsApi } from "../../api/agents";
+import { issuesApi } from "../../api/issues";
 import { EmptyState } from "../../components/EmptyState";
 import { PageSkeleton } from "../../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -64,6 +69,8 @@ export function Targets() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  const { pushToast } = useToastActions();
+  const navigate = useNavigate();
   const [selectedTarget, setSelectedTarget] = useState<DdTarget | null>(null);
 
   useEffect(() => {
@@ -90,6 +97,79 @@ export function Targets() {
     queryFn: () =>
       dealDeskApi.listThesisTargets(selectedCompanyId!, effectiveThesisId!),
     enabled: !!selectedCompanyId && !!effectiveThesisId,
+  });
+
+  const activeThesis = useMemo<Thesis | null>(() => {
+    if (!theses || !effectiveThesisId) return null;
+    return theses.find((t) => t.id === effectiveThesisId) ?? null;
+  }, [theses, effectiveThesisId]);
+
+  const agentsQuery = useQuery({
+    queryKey: ["companies", selectedCompanyId, "agents"],
+    queryFn: () => agentsApi.list(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId),
+  });
+
+  const sectorSourcerAgent = useMemo(() => {
+    return (
+      agentsQuery.data?.find(
+        (agent) =>
+          (agent.role as string) === "dd-sector-sourcer" &&
+          agent.status !== "terminated",
+      ) ?? null
+    );
+  }, [agentsQuery.data]);
+
+  const sourceTargetsMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedCompanyId) throw new Error("No company selected");
+      if (!sectorSourcerAgent) throw new Error("No Sector Sourcer hired");
+      if (!activeThesis) throw new Error("No active thesis selected");
+
+      const geos = Array.isArray(activeThesis.geos)
+        ? (activeThesis.geos as unknown[]).filter(
+            (g): g is string => typeof g === "string",
+          )
+        : [];
+
+      const bodyLines: (string | null)[] = [
+        `Sourcing pass for thesis: ${activeThesis.name}`,
+        ``,
+        `Sector: ${activeThesis.sector}`,
+        geos.length ? `Geographies: ${geos.join(", ")}` : null,
+        ``,
+        `Find 5 well-researched targets matching the criteria. Call`,
+        `listTargets first to avoid duplicates. Score honestly.`,
+      ];
+
+      return issuesApi.create(selectedCompanyId, {
+        title: `Source targets for ${activeThesis.name}`,
+        description: bodyLines.filter((l): l is string => l !== null).join("\n"),
+        assigneeAgentId: sectorSourcerAgent.id,
+        priority: "normal",
+      }) as Promise<{ id: string }>;
+    },
+    onSuccess: (issue) => {
+      pushToast({
+        title: "Sourcing ticket created",
+        body: sectorSourcerAgent
+          ? `Assigned to ${sectorSourcerAgent.name}`
+          : undefined,
+        tone: "success",
+      });
+      navigate(`/issues/${issue.id}`);
+    },
+    onError: (err: Error) => {
+      if (err.message === "No Sector Sourcer hired") {
+        pushToast({
+          title: "Hire a Sector Sourcer first",
+          tone: "warn",
+          action: { label: "Hire one", href: "/deal-desk/hire" },
+        });
+      } else {
+        pushToast({ title: "Could not create sourcing ticket", body: err.message, tone: "error" });
+      }
+    },
   });
 
   const updateStatus = useMutation({
@@ -143,20 +223,31 @@ export function Targets() {
             </SelectContent>
           </Select>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            // TODO(v0.2): create an issue assigned to the Sector Sourcer agent.
-            // Placeholder: would POST to /api/companies/:id/issues with role assignee.
-            window.alert(
-              "Sourcing trigger not wired yet — coming in v0.2.",
-            );
-          }}
-        >
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Source targets now
-        </Button>
+        <div className="flex flex-col items-end">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => sourceTargetsMutation.mutate()}
+            disabled={
+              sourceTargetsMutation.isPending ||
+              !activeThesis ||
+              !sectorSourcerAgent
+            }
+          >
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            {sourceTargetsMutation.isPending
+              ? "Creating ticket…"
+              : "Source targets now"}
+          </Button>
+          {!sectorSourcerAgent && !agentsQuery.isLoading && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Hire a Sector Sourcer to enable this action.{" "}
+              <a className="underline" href="/deal-desk/hire">
+                Hire one →
+              </a>
+            </p>
+          )}
+        </div>
       </div>
 
       {targetsLoading ? (

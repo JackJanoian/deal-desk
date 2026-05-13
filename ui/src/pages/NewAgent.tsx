@@ -5,6 +5,8 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { agentsApi } from "../api/agents";
 import { companySkillsApi } from "../api/companySkills";
+// DEAL DESK: Phase 8 v0.2 — prefill from role templates
+import { dealDeskApi } from "../api/dealDesk";
 import { queryKeys } from "../lib/queryKeys";
 import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,18 @@ export function NewAgent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const presetAdapterType = searchParams.get("adapterType");
+  // DEAL DESK: Phase 8 v0.2 — role template slug from /deal-desk/hire
+  const presetDealDeskRole = searchParams.get("dealDeskRole");
+
+  const dealDeskRoleTemplatesQuery = useQuery({
+    queryKey: queryKeys.dealDesk.roleTemplates(selectedCompanyId ?? ""),
+    queryFn: () => dealDeskApi.listRoleTemplates(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId) && Boolean(presetDealDeskRole),
+  });
+
+  const presetDealDeskTemplate = presetDealDeskRole
+    ? dealDeskRoleTemplatesQuery.data?.find((t) => t.slug === presetDealDeskRole) ?? null
+    : null;
 
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
@@ -119,6 +133,20 @@ export function NewAgent() {
       return createValuesForAdapterType(requested as CreateConfigValues["adapterType"]);
     });
   }, [presetAdapterType]);
+
+  // DEAL DESK: Phase 8 v0.2 — seed form fields once the role template arrives
+  useEffect(() => {
+    if (!presetDealDeskTemplate) return;
+    setName(presetDealDeskTemplate.name);
+    setTitle(presetDealDeskTemplate.name);
+    setRole(presetDealDeskTemplate.slug);
+    // CreateConfigValues has no `description` field; the system-prompt-style
+    // text on the adapter config lives in `promptTemplate`.
+    setConfigValues((prev) => ({
+      ...prev,
+      promptTemplate: presetDealDeskTemplate.systemPrompt,
+    }));
+  }, [presetDealDeskTemplate]);
 
   const createAgent = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
@@ -194,6 +222,15 @@ export function NewAgent() {
           Advanced agent configuration
         </p>
       </div>
+
+      {/* DEAL DESK: Phase 8 v0.2 — prefill source notice */}
+      {presetDealDeskTemplate && (
+        <div className="rounded-md border border-teal-500/30 bg-teal-500/5 p-3 text-sm">
+          Pre-filled from the Deal Desk role template{" "}
+          <span className="font-medium">{presetDealDeskTemplate.name}</span>. Adjust
+          anything before creating the agent.
+        </div>
+      )}
 
       <div className="border border-border">
         {/* Name */}

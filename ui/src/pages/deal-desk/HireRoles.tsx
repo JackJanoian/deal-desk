@@ -8,31 +8,19 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Clock, DollarSign, FileBadge } from "lucide-react";
+import { useNavigate } from "@/lib/router";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
 import { queryKeys } from "../../lib/queryKeys";
-import { dealDeskApi, type DdRoleTemplate } from "../../api/dealDesk";
+import { dealDeskApi } from "../../api/dealDesk";
 import { EmptyState } from "../../components/EmptyState";
 import { PageSkeleton } from "../../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
 
-function handleHire(template: DdRoleTemplate) {
-  // TODO(v0.2): pre-fill /agents/new with this template's name, description,
-  // systemPrompt, defaultBudgetUsd, defaultHeartbeatCron, and skillFiles.
-  // Until then surface the template content so users can manually copy.
-  // eslint-disable-next-line no-alert
-  alert(
-    `Hire ${template.name} — coming in v0.2.\n\n` +
-      `Skills: ${template.skillFiles.join(", ")}\n` +
-      `Heartbeat: ${template.defaultHeartbeatCron}\n` +
-      `Budget: $${template.defaultBudgetUsd}/mo\n\n` +
-      `System prompt:\n${template.systemPrompt}`,
-  );
-}
-
 export function HireRoles() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setBreadcrumbs([
@@ -103,7 +91,13 @@ export function HireRoles() {
               <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-mono">
                 {tpl.slug}
               </span>
-              <Button size="sm" variant="outline" onClick={() => handleHire(tpl)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  navigate(`/agents/new?dealDeskRole=${encodeURIComponent(tpl.slug)}`)
+                }
+              >
                 Hire
               </Button>
             </div>
