@@ -76,3 +76,20 @@ export { pluginDatabaseNamespaces, pluginMigrations } from "./plugin_database.js
 export { pluginJobs, pluginJobRuns } from "./plugin_jobs.js";
 export { pluginWebhookDeliveries } from "./plugin_webhooks.js";
 export { pluginLogs } from "./plugin_logs.js";
+// DEAL DESK: PE-specific tables (additive, no Paperclip tables modified)
+export {
+  ddTheses,
+  ddTargets,
+  ddIntermediaries,
+  ddContacts,
+  ddOutreachCampaigns,
+  ddOutreachSends,
+  ddSuppressionList,
+  ddMemos,
+  ddRoleTemplates,
+  ddThesisStatusEnum,
+  ddTargetStatusEnum,
+  ddEmailStatusEnum,
+  ddSuppressionReasonEnum,
+  ddOutreachSendStatusEnum,
+} from "./deal_desk.js";
