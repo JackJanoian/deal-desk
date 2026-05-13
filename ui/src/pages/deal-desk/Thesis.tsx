@@ -1,5 +1,5 @@
 // DEAL DESK: Phase 7 — Thesis detail page.
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@/lib/router";
 import { Target as TargetIcon, Pencil } from "lucide-react";
@@ -12,6 +12,8 @@ import { PageSkeleton } from "../../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+// DEAL DESK: Phase 6 v0.2 — thesis edit dialog.
+import { EditThesisDialog } from "@/components/deal-desk/EditThesisDialog";
 
 function fitScoreClasses(score: number | null): string {
   if (score == null) return "bg-muted text-muted-foreground";
@@ -33,6 +35,8 @@ export function Thesis() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const params = useParams<{ thesisId?: string }>();
   const thesisId = params.thesisId ?? null;
+  // DEAL DESK: Phase 6 v0.2 — edit dialog open state.
+  const [editOpen, setEditOpen] = useState(false);
 
   const { data: thesis, isLoading: thesisLoading } = useQuery({
     queryKey: queryKeys.dealDesk.thesis(selectedCompanyId!, thesisId ?? "__none__"),
@@ -72,15 +76,20 @@ export function Thesis() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => {
-            // TODO(v0.2): open thesis edit dialog/page.
-            window.alert("Thesis editing not yet implemented (v0.2).");
-          }}
+          onClick={() => setEditOpen(true)}
         >
           <Pencil className="h-3.5 w-3.5 mr-1.5" />
           Edit
         </Button>
       </div>
+
+      {/* DEAL DESK: Phase 6 v0.2 — edit thesis dialog. */}
+      <EditThesisDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        companyId={selectedCompanyId}
+        thesis={thesis}
+      />
 
       <div className="border border-border rounded-lg p-4 bg-card grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>

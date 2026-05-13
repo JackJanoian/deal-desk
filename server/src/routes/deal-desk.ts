@@ -60,6 +60,27 @@ const updateTargetStatusSchema = z.object({
   status: targetStatusEnum,
 });
 
+// DEAL DESK: Phase 6 v0.2 — edit thesis input schema. All fields optional
+// (partial update). Numerics accept number|string|null and pass through; the
+// handler stringifies for Drizzle's numeric() type.
+const updateThesisSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  sector: z.string().min(1).max(255).optional(),
+  subSectors: z.array(z.string()).optional(),
+  geos: z.array(z.string()).optional(),
+  revenueMin: decimalString,
+  revenueMax: decimalString,
+  ebitdaMin: decimalString,
+  ebitdaMax: decimalString,
+  dealSizeMin: decimalString,
+  dealSizeMax: decimalString,
+  ownershipPreferences: z.array(z.string()).optional(),
+  exclusionCriteria: z.string().nullable().optional(),
+  narrative: z.string().nullable().optional(),
+  templateSlug: z.string().max(255).nullable().optional(),
+  status: z.enum(["active", "paused", "archived"]).optional(),
+});
+
 export function dealDeskRoutes(db: Db) {
   const router = Router({ mergeParams: true });
 
@@ -129,6 +150,42 @@ export function dealDeskRoutes(db: Db) {
         return;
       }
       res.json(row);
+    },
+  );
+
+  // DEAL DESK: Phase 6 v0.2 — edit thesis (partial update).
+  router.patch(
+    "/:companyId/deal-desk/theses/:thesisId",
+    validate(updateThesisSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      const thesisId = req.params.thesisId as string;
+      assertCompanyAccess(req, companyId);
+
+      const body = req.body as z.infer<typeof updateThesisSchema>;
+      const updateValues: Record<string, unknown> = { updatedAt: new Date() };
+      for (const [key, value] of Object.entries(body)) {
+        if (value !== undefined) {
+          updateValues[key] = value;
+        }
+      }
+
+      const [updated] = await db
+        .update(ddTheses)
+        .set(updateValues)
+        .where(
+          and(
+            eq(ddTheses.paperclipCompanyId, companyId),
+            eq(ddTheses.id, thesisId),
+          ),
+        )
+        .returning();
+
+      if (!updated) {
+        res.status(404).json({ error: "Thesis not found" });
+        return;
+      }
+      res.json(updated);
     },
   );
 

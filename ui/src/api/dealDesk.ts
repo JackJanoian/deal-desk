@@ -142,6 +142,16 @@ export const dealDeskApi = {
     api.get<Thesis[]>(`/companies/${companyId}/deal-desk/theses`),
   getThesis: (companyId: string, thesisId: string) =>
     api.get<Thesis>(`/companies/${companyId}/deal-desk/theses/${thesisId}`),
+  // DEAL DESK: Phase 6 v0.2 — partial update of a thesis.
+  updateThesis: (
+    companyId: string,
+    thesisId: string,
+    data: Partial<CreateThesisInput & { status: "active" | "paused" | "archived" }>,
+  ) =>
+    api.patch<Thesis>(
+      `/companies/${companyId}/deal-desk/theses/${thesisId}`,
+      data,
+    ),
   listThesisTargets: (companyId: string, thesisId: string) =>
     api.get<DdTarget[]>(
       `/companies/${companyId}/deal-desk/theses/${thesisId}/targets`,
