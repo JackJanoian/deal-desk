@@ -26,7 +26,8 @@ const issueColumnLabels: Record<InboxIssueColumn, string> = {
   status: "Status",
   id: "ID",
   assignee: "Assignee",
-  project: "Project",
+  // DEAL DESK: column label "Project" → "Thesis"
+  project: "Thesis",
   workspace: "Workspace",
   parent: "Parent issue",
   labels: "Tags",
@@ -37,7 +38,8 @@ const issueColumnDescriptions: Record<InboxIssueColumn, string> = {
   status: "Issue state chip on the left edge.",
   id: "Ticket identifier like PAP-1009.",
   assignee: "Assigned agent or board user.",
-  project: "Linked project pill with its color.",
+  // DEAL DESK: column description "project" → "thesis"
+  project: "Linked thesis pill with its color.",
   workspace: "Execution or project workspace used for the issue.",
   parent: "Parent issue identifier and title.",
   labels: "Issue labels and tags.",

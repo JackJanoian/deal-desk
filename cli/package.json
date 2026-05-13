@@ -4,7 +4,8 @@
   "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "paperclipai": "./dist/index.js"
+    "paperclipai": "./dist/index.js",
+    "dealdesk": "./dist/index.js"
   },
   "keywords": [
     "paperclip",

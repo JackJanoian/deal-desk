@@ -128,7 +128,8 @@ export function NewGoalDialog() {
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>
-            <span>{newGoalDefaults.parentId ? "New sub-goal" : "New goal"}</span>
+            {/* DEAL DESK: "Goal" → "Investment Thesis" in dialog header */}
+            <span>{newGoalDefaults.parentId ? "New sub-thesis" : "New investment thesis"}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -154,7 +155,8 @@ export function NewGoalDialog() {
         <div className="px-4 pt-4 pb-2 shrink-0">
           <input
             className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
-            placeholder="Goal title"
+            // DEAL DESK: title placeholder "Goal title" → "Investment thesis title"
+            placeholder="Investment thesis title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -273,7 +275,8 @@ export function NewGoalDialog() {
             disabled={!title.trim() || createGoal.isPending}
             onClick={handleSubmit}
           >
-            {createGoal.isPending ? "Creating…" : newGoalDefaults.parentId ? "Create sub-goal" : "Create goal"}
+            {/* DEAL DESK: button labels Goal → Investment Thesis */}
+            {createGoal.isPending ? "Creating…" : newGoalDefaults.parentId ? "Create sub-thesis" : "Create investment thesis"}
           </Button>
         </div>
       </DialogContent>

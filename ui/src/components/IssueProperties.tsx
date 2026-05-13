@@ -1486,7 +1486,8 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder="Search projects..."
+        // DEAL DESK: search placeholder "projects" → "theses"
+        placeholder="Search theses..."
         value={projectSearch}
         onChange={(e) => setProjectSearch(e.target.value)}
         autoFocus={!inline}
@@ -1806,7 +1807,8 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label="Project"
+          // DEAL DESK: property picker label "Project" → "Thesis"
+          label="Thesis"
           open={projectOpen}
           onOpenChange={(open) => { setProjectOpen(open); if (!open) setProjectSearch(""); }}
           triggerContent={projectTrigger}

@@ -224,7 +224,8 @@ export function NewProjectDialog() {
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>
-            <span>New project</span>
+            {/* DEAL DESK: "New project" → "New thesis" */}
+            <span>New thesis</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -250,7 +251,8 @@ export function NewProjectDialog() {
         <div className="px-4 pt-4 pb-2 shrink-0">
           <input
             className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
-            placeholder="Project name"
+            // DEAL DESK: placeholder "Project name" → "Thesis name"
+            placeholder="Thesis name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
@@ -429,7 +431,8 @@ export function NewProjectDialog() {
         {/* Footer */}
         <div className="flex items-center justify-between px-4 py-2.5 border-t border-border">
           {createProject.isError ? (
-            <p className="text-xs text-destructive">Failed to create project.</p>
+            /* DEAL DESK: error message "project" → "thesis" */
+            <p className="text-xs text-destructive">Failed to create thesis.</p>
           ) : (
             <span />
           )}
@@ -438,7 +441,8 @@ export function NewProjectDialog() {
             disabled={!name.trim() || createProject.isPending}
             onClick={handleSubmit}
           >
-            {createProject.isPending ? "Creating…" : "Create project"}
+            {/* DEAL DESK: button label "Create project" → "Create thesis" */}
+            {createProject.isPending ? "Creating…" : "Create thesis"}
           </Button>
         </div>
       </DialogContent>

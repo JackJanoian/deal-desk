@@ -35,7 +35,8 @@ export function buildDocumentTitle(breadcrumbs: Breadcrumb[], companyName?: stri
     ? []
     : [...breadcrumbs].reverse().map((breadcrumb) => breadcrumb.label);
   const companyPart = companyName?.trim() ? [companyName.trim()] : [];
-  const parts = [...pageParts, ...companyPart, "Paperclip"];
+  // DEAL DESK: browser tab/document title wordmark "Paperclip" → "Deal Desk"
+  const parts = [...pageParts, ...companyPart, "Deal Desk"];
   return parts.join(" • ");
 }
 
