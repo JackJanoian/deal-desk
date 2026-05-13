@@ -1,6 +1,34 @@
 # Deal Desk — Fork Migration Prompt
 # Built on Paperclip (github.com/paperclipai/paperclip)
 
+## Status: COMPLETE
+Fork of Paperclip master @ b947a7d7
+Completed: 2026-05-13
+Deal Desk additions:
+- packages/db/src/schema/deal_desk.ts + migration 0085 (9 dd_* tables)
+- skills/deal-desk/ (4 markdown files)
+- server/src/deal-desk/tools/ (7 HTTP tool handlers + tests)
+- server/src/deal-desk/seeds/ (5 role templates + seeder)
+- server/src/routes/deal-desk.ts (PE-specific API routes)
+- ui/src/pages/deal-desk/ (5 dashboard pages)
+- ui/src/api/dealDesk.ts (typed client)
+
+Modified Paperclip files (all carry // DEAL DESK: comments):
+- package.json, cli/package.json, README.md (brand)
+- ui/index.html (title/wordmark)
+- ui/src/index.css (teal primary token)
+- ui/src/App.tsx (routes), ui/src/api/index.ts (export),
+  ui/src/lib/queryKeys.ts (keys)
+- ui/src/components/{OnboardingWizard,Sidebar,FileTree,
+  IssueColumns,IssueProperties,NewGoalDialog,NewProjectDialog}.tsx
+- ui/src/context/BreadcrumbContext.tsx
+- ui/src/pages/{Auth,InviteUxLab}.tsx
+- packages/db/src/schema/index.ts (export of dd_* tables)
+- server/src/index.ts (seed role templates after migrate)
+- server/src/app.ts (mount dealDeskRoutes)
+
+See FORK_REPORT.md for the full report.
+
 ## Project context
 
 You are migrating **Paperclip** (a generic AI company orchestration platform)
