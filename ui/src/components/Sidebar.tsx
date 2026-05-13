@@ -16,6 +16,8 @@ import {
   Crosshair,
   Users,
   FileText,
+  // DEAL DESK: Phase 8 — Hire roles icon.
+  Briefcase,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
@@ -120,6 +122,8 @@ export function Sidebar() {
           <SidebarNavItem to="/deal-desk/targets" label="Targets" icon={Crosshair} />
           <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Users} />
           <SidebarNavItem to="/deal-desk/memos" label="Memos" icon={FileText} />
+          {/* DEAL DESK: Phase 8 — pre-built role templates */}
+          <SidebarNavItem to="/deal-desk/hire" label="Hire a Role" icon={Briefcase} />
         </SidebarSection>
 
         {/* DEAL DESK: renamed sidebar section label "Company" → "Fund" */}

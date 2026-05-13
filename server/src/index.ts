@@ -26,6 +26,8 @@ import {
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
+// DEAL DESK: Seeder for pre-built PE agent role templates (Phase 8).
+import { seedDealDeskRoleTemplates } from "./deal-desk/seeds/seed-role-templates.js";
 import { logger } from "./middleware/logger.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
 import {
@@ -443,7 +445,19 @@ export async function startServer(): Promise<StartedServer> {
     resolvedEmbeddedPostgresPort = port;
     startupDbInfo = { mode: "embedded-postgres", dataDir, port };
   }
-  
+
+  // DEAL DESK: Seed pre-built PE agent role templates into dd_role_templates.
+  // Runs after migrations have applied (both external-postgres and embedded
+  // branches above). Idempotent — uses ON CONFLICT(slug) DO UPDATE so edits to
+  // server/src/deal-desk/seeds/role-templates.ts propagate on next boot.
+  try {
+    await seedDealDeskRoleTemplates(db as any);
+    logger.info("Seeded Deal Desk role templates");
+  } catch (err) {
+    logger.error({ err }, "Failed to seed Deal Desk role templates");
+    throw err;
+  }
+
   if (config.deploymentMode === "local_trusted" && !isLoopbackHost(config.host)) {
     throw new Error(
       `local_trusted mode requires loopback host binding (received: ${config.host}). ` +

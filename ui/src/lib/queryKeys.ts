@@ -202,5 +202,7 @@ export const queryKeys = {
     intermediaries: (companyId: string) =>
       ["deal-desk", "intermediaries", companyId] as const,
     memos: (companyId: string) => ["deal-desk", "memos", companyId] as const,
+    roleTemplates: (companyId: string) =>
+      ["deal-desk", "role-templates", companyId] as const,
   },
 };

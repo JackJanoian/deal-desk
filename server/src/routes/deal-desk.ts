@@ -12,6 +12,7 @@ import {
   ddTargets,
   ddIntermediaries,
   ddMemos,
+  ddRoleTemplates,
 } from "@paperclipai/db";
 
 import { validate } from "../middleware/validate.js";
@@ -193,6 +194,32 @@ export function dealDeskRoutes(db: Db) {
         .from(ddIntermediaries)
         .where(eq(ddIntermediaries.paperclipCompanyId, companyId))
         .orderBy(ddIntermediaries.nextTouchDue);
+      res.json(rows);
+    },
+  );
+
+  // ── Role templates (Phase 8) ──────────────────────────────────────────────
+  // Returns the pre-built PE agent role templates seeded at server startup.
+  // Consumed by the UI "Hire a Deal Desk Role" flow to pre-fill the new-agent
+  // form (name, description, system prompt, recommended budget, skills).
+  router.get(
+    "/:companyId/deal-desk/role-templates",
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      const rows = await db
+        .select({
+          id: ddRoleTemplates.id,
+          slug: ddRoleTemplates.slug,
+          name: ddRoleTemplates.name,
+          description: ddRoleTemplates.description,
+          defaultHeartbeatCron: ddRoleTemplates.defaultHeartbeatCron,
+          defaultBudgetUsd: ddRoleTemplates.defaultBudgetUsd,
+          skillFiles: ddRoleTemplates.skillFiles,
+          systemPrompt: ddRoleTemplates.systemPrompt,
+        })
+        .from(ddRoleTemplates)
+        .orderBy(ddRoleTemplates.name);
       res.json(rows);
     },
   );

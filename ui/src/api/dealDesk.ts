@@ -119,7 +119,23 @@ export type DdMemo = {
   createdAt: string;
 };
 
+// DEAL DESK: Phase 8 — pre-built PE agent role templates (read-only).
+export type DdRoleTemplate = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  defaultHeartbeatCron: string;
+  defaultBudgetUsd: number;
+  skillFiles: string[];
+  systemPrompt: string;
+};
+
 export const dealDeskApi = {
+  listRoleTemplates: (companyId: string) =>
+    api.get<DdRoleTemplate[]>(
+      `/companies/${companyId}/deal-desk/role-templates`,
+    ),
   createThesis: (companyId: string, data: CreateThesisInput) =>
     api.post<Thesis>(`/companies/${companyId}/deal-desk/theses`, data),
   listTheses: (companyId: string) =>

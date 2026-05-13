@@ -27,6 +27,8 @@ import { Targets as DealDeskTargets } from "./pages/deal-desk/Targets";
 import { Intermediaries as DealDeskIntermediaries } from "./pages/deal-desk/Intermediaries";
 import { Memos as DealDeskMemos } from "./pages/deal-desk/Memos";
 import { Thesis as DealDeskThesis } from "./pages/deal-desk/Thesis";
+// DEAL DESK: Phase 8 — pre-built role templates page.
+import { HireRoles as DealDeskHireRoles } from "./pages/deal-desk/HireRoles";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { Costs } from "./pages/Costs";
@@ -128,6 +130,8 @@ function boardRoutes() {
       <Route path="deal-desk/intermediaries" element={<DealDeskIntermediaries />} />
       <Route path="deal-desk/memos" element={<DealDeskMemos />} />
       <Route path="deal-desk/theses/:thesisId" element={<DealDeskThesis />} />
+      {/* DEAL DESK: Phase 8 — pre-built role templates */}
+      <Route path="deal-desk/hire" element={<DealDeskHireRoles />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />
