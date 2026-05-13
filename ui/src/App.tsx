@@ -22,6 +22,11 @@ import { UserProfile } from "./pages/UserProfile";
 import { ExecutionWorkspaceDetail } from "./pages/ExecutionWorkspaceDetail";
 import { Goals } from "./pages/Goals";
 import { GoalDetail } from "./pages/GoalDetail";
+// DEAL DESK: Phase 7 — dashboard pages.
+import { Targets as DealDeskTargets } from "./pages/deal-desk/Targets";
+import { Intermediaries as DealDeskIntermediaries } from "./pages/deal-desk/Intermediaries";
+import { Memos as DealDeskMemos } from "./pages/deal-desk/Memos";
+import { Thesis as DealDeskThesis } from "./pages/deal-desk/Thesis";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { Costs } from "./pages/Costs";
@@ -118,6 +123,11 @@ function boardRoutes() {
       <Route path="execution-workspaces/:workspaceId/routines" element={<ExecutionWorkspaceDetail />} />
       <Route path="goals" element={<Goals />} />
       <Route path="goals/:goalId" element={<GoalDetail />} />
+      {/* DEAL DESK: Phase 7 dashboard routes */}
+      <Route path="deal-desk/targets" element={<DealDeskTargets />} />
+      <Route path="deal-desk/intermediaries" element={<DealDeskIntermediaries />} />
+      <Route path="deal-desk/memos" element={<DealDeskMemos />} />
+      <Route path="deal-desk/theses/:thesisId" element={<DealDeskThesis />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />

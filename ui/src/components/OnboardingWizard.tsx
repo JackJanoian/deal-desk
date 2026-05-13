@@ -6,6 +6,8 @@ import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { companiesApi } from "../api/companies";
 import { goalsApi } from "../api/goals";
+// DEAL DESK: API client for thesis creation in the onboarding flow.
+import { dealDeskApi } from "../api/dealDesk";
 import { agentsApi } from "../api/agents";
 import { approvalsApi } from "../api/approvals";
 import { issuesApi } from "../api/issues";
@@ -51,6 +53,8 @@ import {
   Bot,
   ListTodo,
   Rocket,
+  // DEAL DESK: icon for the new Thesis step.
+  Target,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -60,7 +64,8 @@ import {
 } from "lucide-react";
 
 
-type Step = 1 | 2 | 3 | 4;
+// DEAL DESK: extended step union — step 2 is now Thesis; Agent/Task/Launch shifted.
+type Step = 1 | 2 | 3 | 4 | 5;
 type AdapterType = string;
 
 // DEAL DESK: default task copy reframed from "build a business" to "source deals"
@@ -109,7 +114,20 @@ export function OnboardingWizard() {
   const [companyName, setCompanyName] = useState("");
   const [companyGoal, setCompanyGoal] = useState("");
 
-  // Step 2
+  // DEAL DESK: Step 2 — Investment thesis setup state.
+  const [thesisName, setThesisName] = useState("");
+  const [thesisSector, setThesisSector] = useState("");
+  const [thesisGeos, setThesisGeos] = useState("");
+  const [thesisRevenueMin, setThesisRevenueMin] = useState("");
+  const [thesisRevenueMax, setThesisRevenueMax] = useState("");
+  const [thesisOwnershipFounder, setThesisOwnershipFounder] = useState(false);
+  const [thesisOwnershipFamily, setThesisOwnershipFamily] = useState(false);
+  const [thesisOwnershipSponsor, setThesisOwnershipSponsor] = useState(false);
+  const [thesisNarrative, setThesisNarrative] = useState("");
+  const [thesisTemplateSlug, setThesisTemplateSlug] = useState<string | null>(null);
+  const [createdThesisId, setCreatedThesisId] = useState<string | null>(null);
+
+  // Step 2 (now step 3 in DEAL DESK numbering)
   const [agentName, setAgentName] = useState("CEO");
   const [adapterType, setAdapterType] = useState<AdapterType>("claude_local");
   const [model, setModel] = useState("");
@@ -188,7 +206,8 @@ export function OnboardingWizard() {
 
   // Resize textarea when step 3 is shown or description changes
   useEffect(() => {
-    if (step === 3) autoResizeTextarea();
+    // DEAL DESK: task step is now step 4 after inserting Thesis at step 2.
+    if (step === 4) autoResizeTextarea();
   }, [step, taskDescription, autoResizeTextarea]);
 
   const { data: adapterModels } = useQuery({
@@ -198,7 +217,8 @@ export function OnboardingWizard() {
       ? queryKeys.agents.adapterModels(createdCompanyId, adapterType, null)
       : ["agents", "none", "adapter-models", adapterType, null],
     queryFn: () => agentsApi.adapterModels(createdCompanyId!, adapterType, { environmentId: null }),
-    enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 2
+    // DEAL DESK: agent step is now step 3 after inserting Thesis at step 2.
+    enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 3
   });
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(adapterType);
@@ -234,7 +254,8 @@ export function OnboardingWizard() {
     (COMMAND_PLACEHOLDERS[adapterType] ?? adapterType.replace(/_local$/, ""));
 
   useEffect(() => {
-    if (step !== 2) return;
+    // DEAL DESK: agent step is now step 3.
+    if (step !== 3) return;
     setAdapterEnvResult(null);
     setAdapterEnvError(null);
   }, [step, adapterType, model, command, args, url]);
@@ -414,6 +435,7 @@ export function OnboardingWizard() {
         setCreatedCompanyGoalId(null);
       }
 
+      // DEAL DESK: advance to new Thesis step (was Agent step).
       setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create company");
@@ -421,6 +443,89 @@ export function OnboardingWizard() {
       setLoading(false);
     }
   }
+
+  // DEAL DESK: thesis setup handler — POSTs to the new deal-desk route.
+  async function handleThesisNext() {
+    if (!createdCompanyId) return;
+    if (!thesisSector.trim()) {
+      setError("Sector is required.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const ownershipPreferences: string[] = [];
+      if (thesisOwnershipFounder) ownershipPreferences.push("Founder-owned");
+      if (thesisOwnershipFamily) ownershipPreferences.push("Family-owned");
+      if (thesisOwnershipSponsor) ownershipPreferences.push("Sponsor-backed");
+
+      const geos = thesisGeos
+        .split(",")
+        .map((g) => g.trim())
+        .filter((g) => g.length > 0);
+
+      const thesis = await dealDeskApi.createThesis(createdCompanyId, {
+        name: thesisName.trim() || `${thesisSector.trim()} thesis`,
+        sector: thesisSector.trim(),
+        geos,
+        revenueMin: thesisRevenueMin ? thesisRevenueMin : null,
+        revenueMax: thesisRevenueMax ? thesisRevenueMax : null,
+        ownershipPreferences,
+        narrative: thesisNarrative.trim() || null,
+        templateSlug: thesisTemplateSlug,
+      });
+      setCreatedThesisId(thesis.id);
+      // DEAL DESK: advance from Thesis (2) → Agent (3).
+      setStep(3);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save thesis");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // DEAL DESK: thesis templates pre-fill the form (user can still edit before submit).
+  const thesisTemplates = [
+    {
+      slug: "hvac-southeast-rollup",
+      title: "HVAC Roll-up — Southeast US",
+      summary: "Sector: HVAC Services · Geo: FL, GA, NC, SC, TN, AL · Revenue: $5–25M",
+      apply: () => {
+        setThesisName("HVAC Roll-up — Southeast US");
+        setThesisSector("HVAC Services");
+        setThesisGeos("FL, GA, NC, SC, TN, AL");
+        setThesisRevenueMin("5000000");
+        setThesisRevenueMax("25000000");
+        setThesisTemplateSlug("hvac-southeast-rollup");
+      },
+    },
+    {
+      slug: "healthcare-lmm",
+      title: "Healthcare Services — Lower Middle Market",
+      summary: "Sector: Healthcare Services · Geo: United States · Revenue: $5–50M",
+      apply: () => {
+        setThesisName("Healthcare Services — Lower Middle Market");
+        setThesisSector("Healthcare Services");
+        setThesisGeos("United States");
+        setThesisRevenueMin("5000000");
+        setThesisRevenueMax("50000000");
+        setThesisTemplateSlug("healthcare-lmm");
+      },
+    },
+    {
+      slug: "search-fund-generalist",
+      title: "Search Fund — Generalist LMM",
+      summary: "Sector: Diversified · Geo: United States · Revenue: $3–20M",
+      apply: () => {
+        setThesisName("Search Fund — Generalist LMM");
+        setThesisSector("Diversified");
+        setThesisGeos("United States");
+        setThesisRevenueMin("3000000");
+        setThesisRevenueMax("20000000");
+        setThesisTemplateSlug("search-fund-generalist");
+      },
+    },
+  ];
 
   async function handleStep2Next() {
     if (!createdCompanyId) return;
@@ -462,7 +567,8 @@ export function OnboardingWizard() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.list(createdCompanyId)
       });
-      setStep(3);
+      // DEAL DESK: task step is now step 4.
+      setStep(4);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create agent");
     } finally {
@@ -522,7 +628,8 @@ export function OnboardingWizard() {
   async function handleStep3Next() {
     if (!createdCompanyId || !createdAgentId) return;
     setError(null);
-    setStep(4);
+    // DEAL DESK: launch step is now step 5.
+    setStep(5);
   }
 
   async function handleLaunch() {
@@ -587,10 +694,12 @@ export function OnboardingWizard() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
+      // DEAL DESK: keyboard shortcuts shifted — Thesis at 2, Agent at 3, Task at 4, Launch at 5.
       if (step === 1 && companyName.trim()) handleStep1Next();
-      else if (step === 2 && agentName.trim()) handleStep2Next();
-      else if (step === 3 && taskTitle.trim()) handleStep3Next();
-      else if (step === 4) handleLaunch();
+      else if (step === 2 && thesisSector.trim()) handleThesisNext();
+      else if (step === 3 && agentName.trim()) handleStep2Next();
+      else if (step === 4 && taskTitle.trim()) handleStep3Next();
+      else if (step === 5) handleLaunch();
     }
   }
 
@@ -633,11 +742,13 @@ export function OnboardingWizard() {
               <div className="flex items-center gap-0 mb-8 border-b border-border">
                 {(
                   [
-                    // DEAL DESK: tab label "Company" → "Fund"
+                    // DEAL DESK: tab label "Company" → "Fund"; new Thesis tab inserted.
                     { step: 1 as Step, label: "Fund", icon: Building2 },
-                    { step: 2 as Step, label: "Agent", icon: Bot },
-                    { step: 3 as Step, label: "Task", icon: ListTodo },
-                    { step: 4 as Step, label: "Launch", icon: Rocket }
+                    // DEAL DESK: new Thesis step between Fund and Agent.
+                    { step: 2 as Step, label: "Thesis", icon: Target },
+                    { step: 3 as Step, label: "Agent", icon: Bot },
+                    { step: 4 as Step, label: "Task", icon: ListTodo },
+                    { step: 5 as Step, label: "Launch", icon: Rocket }
                   ] as const
                 ).map(({ step: s, label, icon: Icon }) => (
                   <button
@@ -717,7 +828,154 @@ export function OnboardingWizard() {
                 </div>
               )}
 
+              {/* DEAL DESK: New Step 2 — Investment thesis setup. */}
               {step === 2 && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="bg-muted/50 p-2">
+                      <Target className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Set up your first investment thesis</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Define the mandate your AI analysts will source against.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="group">
+                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                      Thesis name (optional)
+                    </label>
+                    <input
+                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      placeholder="e.g. HVAC Roll-up — Southeast US"
+                      value={thesisName}
+                      onChange={(e) => setThesisName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="group">
+                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                      Sector
+                    </label>
+                    <input
+                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      placeholder="HVAC Services, Healthcare, B2B SaaS, …"
+                      value={thesisSector}
+                      onChange={(e) => setThesisSector(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="group">
+                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                      Geography (comma-separated states or "United States")
+                    </label>
+                    <textarea
+                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[44px]"
+                      placeholder="FL, GA, NC, SC, TN, AL"
+                      value={thesisGeos}
+                      onChange={(e) => setThesisGeos(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <div className="flex-1 group">
+                      <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                        Revenue min (USD)
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        placeholder="5000000"
+                        value={thesisRevenueMin}
+                        onChange={(e) => setThesisRevenueMin(e.target.value)}
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <div className="flex-1 group">
+                      <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                        Revenue max (USD)
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        placeholder="25000000"
+                        value={thesisRevenueMax}
+                        onChange={(e) => setThesisRevenueMax(e.target.value)}
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs mb-2 block text-muted-foreground">
+                      Ownership preferences
+                    </label>
+                    <div className="flex flex-col gap-1.5 text-sm">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={thesisOwnershipFounder}
+                          onChange={(e) => setThesisOwnershipFounder(e.target.checked)}
+                        />
+                        Founder-owned
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={thesisOwnershipFamily}
+                          onChange={(e) => setThesisOwnershipFamily(e.target.checked)}
+                        />
+                        Family-owned
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={thesisOwnershipSponsor}
+                          onChange={(e) => setThesisOwnershipSponsor(e.target.checked)}
+                        />
+                        Sponsor-backed
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="group">
+                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
+                      Narrative
+                    </label>
+                    <textarea
+                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[80px]"
+                      placeholder="Describe your investment thesis in your own words"
+                      value={thesisNarrative}
+                      onChange={(e) => setThesisNarrative(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <p className="text-xs text-muted-foreground mb-2">Or start from a template:</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {thesisTemplates.map((tpl) => (
+                        <button
+                          key={tpl.slug}
+                          type="button"
+                          onClick={tpl.apply}
+                          className={cn(
+                            "text-left rounded-md border px-3 py-2 transition-colors",
+                            thesisTemplateSlug === tpl.slug
+                              ? "border-foreground bg-muted/40"
+                              : "border-border hover:bg-muted/30",
+                          )}
+                        >
+                          <div className="text-sm font-medium">{tpl.title}</div>
+                          <div className="text-xs text-muted-foreground">{tpl.summary}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* DEAL DESK: Agent step shifted from 2 → 3 to make room for Thesis. */}
+              {step === 3 && (
                 <div className="space-y-5">
                   <div className="flex items-center gap-3 mb-1">
                     <div className="bg-muted/50 p-2">
@@ -1092,7 +1350,8 @@ export function OnboardingWizard() {
                 </div>
               )}
 
-              {step === 3 && (
+              {/* DEAL DESK: Task step shifted 3 → 4 to make room for Thesis. */}
+              {step === 4 && (
                 <div className="space-y-5">
                   <div className="flex items-center gap-3 mb-1">
                     <div className="bg-muted/50 p-2">
@@ -1133,7 +1392,8 @@ export function OnboardingWizard() {
                 </div>
               )}
 
-              {step === 4 && (
+              {/* DEAL DESK: Launch step shifted 4 → 5 to make room for Thesis. */}
+              {step === 5 && (
                 <div className="space-y-5">
                   <div className="flex items-center gap-3 mb-1">
                     <div className="bg-muted/50 p-2">
@@ -1223,7 +1483,23 @@ export function OnboardingWizard() {
                       {loading ? "Creating..." : "Next"}
                     </Button>
                   )}
+                  {/* DEAL DESK: Step 2 footer — Thesis save & continue. */}
                   {step === 2 && (
+                    <Button
+                      size="sm"
+                      disabled={!thesisSector.trim() || loading}
+                      onClick={handleThesisNext}
+                    >
+                      {loading ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      {loading ? "Saving..." : "Save thesis & continue"}
+                    </Button>
+                  )}
+                  {/* DEAL DESK: Agent footer shifted 2 → 3. */}
+                  {step === 3 && (
                     <Button
                       size="sm"
                       disabled={
@@ -1239,7 +1515,8 @@ export function OnboardingWizard() {
                       {loading ? "Creating..." : "Next"}
                     </Button>
                   )}
-                  {step === 3 && (
+                  {/* DEAL DESK: Task footer shifted 3 → 4. */}
+                  {step === 4 && (
                     <Button
                       size="sm"
                       disabled={!taskTitle.trim() || loading}
@@ -1253,7 +1530,8 @@ export function OnboardingWizard() {
                       {loading ? "Creating..." : "Next"}
                     </Button>
                   )}
-                  {step === 4 && (
+                  {/* DEAL DESK: Launch footer shifted 4 → 5. */}
+                  {step === 5 && (
                     <Button size="sm" disabled={loading} onClick={handleLaunch}>
                       {loading ? (
                         <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />

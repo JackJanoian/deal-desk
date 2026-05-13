@@ -192,4 +192,15 @@ export const queryKeys = {
   adapters: {
     all: ["adapters"] as const,
   },
+  // DEAL DESK: Query keys for PE dashboard pages.
+  dealDesk: {
+    theses: (companyId: string) => ["deal-desk", "theses", companyId] as const,
+    thesis: (companyId: string, thesisId: string) =>
+      ["deal-desk", "thesis", companyId, thesisId] as const,
+    thesisTargets: (companyId: string, thesisId: string) =>
+      ["deal-desk", "thesis-targets", companyId, thesisId] as const,
+    intermediaries: (companyId: string) =>
+      ["deal-desk", "intermediaries", companyId] as const,
+    memos: (companyId: string) => ["deal-desk", "memos", companyId] as const,
+  },
 };

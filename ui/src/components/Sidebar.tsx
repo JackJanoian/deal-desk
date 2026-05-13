@@ -12,6 +12,10 @@ import {
   Repeat,
   GitBranch,
   Settings,
+  // DEAL DESK: Phase 7 — Deal Sourcing nav icons.
+  Crosshair,
+  Users,
+  FileText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
@@ -110,6 +114,13 @@ export function Sidebar() {
         <SidebarProjects />
 
         <SidebarAgents />
+
+        {/* DEAL DESK: Phase 7 — Deal Sourcing nav section */}
+        <SidebarSection label="Deal Sourcing">
+          <SidebarNavItem to="/deal-desk/targets" label="Targets" icon={Crosshair} />
+          <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Users} />
+          <SidebarNavItem to="/deal-desk/memos" label="Memos" icon={FileText} />
+        </SidebarSection>
 
         {/* DEAL DESK: renamed sidebar section label "Company" → "Fund" */}
         <SidebarSection label="Fund">
