@@ -128,6 +128,32 @@ export function Thesis() {
         )}
       </div>
 
+      {/* DEAL DESK: v0.3 — surface attached research files with inline downloads. */}
+      {thesis.attachments && thesis.attachments.length > 0 && (
+        <section className="rounded-md border border-border bg-card p-4">
+          <h2 className="mb-2 text-sm font-semibold">Research files</h2>
+          <ul className="space-y-1 text-sm">
+            {thesis.attachments.map((att) => (
+              <li key={att.name} className="flex items-center justify-between">
+                <span className="truncate">
+                  {att.name}{" "}
+                  <span className="text-muted-foreground">
+                    ({Math.round(att.sizeBytes / 1024) || 1} KB)
+                  </span>
+                </span>
+                <a
+                  href={`data:${att.mime};charset=utf-8,${encodeURIComponent(att.content)}`}
+                  download={att.name}
+                  className="text-xs underline"
+                >
+                  Download
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <Tabs defaultValue="targets">
         <TabsList>
           <TabsTrigger value="targets">Targets</TabsTrigger>

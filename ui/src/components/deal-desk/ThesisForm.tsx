@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  FolderAttachmentInput,
+  type ThesisAttachment,
+} from "./FolderAttachmentInput";
 
 export interface ThesisFormValues {
   name: string;
@@ -18,6 +22,8 @@ export interface ThesisFormValues {
   ownershipPreferences: string[];
   narrative: string;
   templateSlug: string | null;
+  // DEAL DESK: v0.3 — research files attached to a thesis (text only, capped).
+  attachments: ThesisAttachment[];
 }
 
 export const EMPTY_THESIS: ThesisFormValues = {
@@ -29,6 +35,7 @@ export const EMPTY_THESIS: ThesisFormValues = {
   ownershipPreferences: [],
   narrative: "",
   templateSlug: null,
+  attachments: [],
 };
 
 const OWNERSHIP_OPTIONS = [
@@ -159,6 +166,14 @@ export function ThesisForm({
         />
       </div>
 
+      <div className="space-y-1.5">
+        <Label>Research files (optional)</Label>
+        <FolderAttachmentInput
+          value={values.attachments}
+          onChange={(next) => update("attachments", next)}
+        />
+      </div>
+
       <div className="flex justify-end">
         <Button type="submit" disabled={submitting || !values.sector.trim()}>
           {submitting ? "Saving…" : submitLabel}
@@ -181,5 +196,6 @@ export function thesisFormValuesToApiPayload(v: ThesisFormValues) {
     ownershipPreferences: v.ownershipPreferences,
     narrative: v.narrative.trim() || null,
     templateSlug: v.templateSlug,
+    attachments: v.attachments,
   };
 }

@@ -157,5 +157,58 @@ describeEmbeddedPostgres(
         .send({ name: "Nope" })
         .expect(404);
     });
+
+    // DEAL DESK: v0.3 — attachments persist as jsonb array on dd_theses
+    it("persists thesis attachments", async () => {
+      const [thesis] = await db
+        .insert(ddTheses)
+        .values({
+          paperclipCompanyId: companyId,
+          name: "T",
+          sector: "S",
+        })
+        .returning();
+
+      const attachments = [
+        {
+          name: "memo.md",
+          mime: "text/markdown",
+          sizeBytes: 13,
+          content: "# Hello world",
+        },
+      ];
+
+      const app = createApp(companyId);
+      const res = await request(app)
+        .patch(`/api/companies/${companyId}/deal-desk/theses/${thesis!.id}`)
+        .send({ attachments })
+        .expect(200);
+
+      expect(res.body.attachments).toEqual(attachments);
+    });
+
+    it("rejects too many attachments", async () => {
+      const [thesis] = await db
+        .insert(ddTheses)
+        .values({
+          paperclipCompanyId: companyId,
+          name: "T",
+          sector: "S",
+        })
+        .returning();
+
+      const tooMany = Array.from({ length: 6 }, (_, i) => ({
+        name: `f${i}.md`,
+        mime: "text/markdown",
+        sizeBytes: 1,
+        content: "x",
+      }));
+
+      const app = createApp(companyId);
+      await request(app)
+        .patch(`/api/companies/${companyId}/deal-desk/theses/${thesis!.id}`)
+        .send({ attachments: tooMany })
+        .expect(400);
+    });
   },
 );

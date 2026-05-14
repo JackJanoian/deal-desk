@@ -1,6 +1,14 @@
 // DEAL DESK: Frontend HTTP client for PE-specific endpoints.
 import { api } from "./client";
 
+// DEAL DESK: v0.3 — attachments are small text files persisted as JSONB on dd_theses.
+export type DdThesisAttachment = {
+  name: string;
+  mime: string;
+  sizeBytes: number;
+  content: string;
+};
+
 export type CreateThesisInput = {
   name: string;
   sector: string;
@@ -16,6 +24,7 @@ export type CreateThesisInput = {
   exclusionCriteria?: string | null;
   narrative?: string | null;
   templateSlug?: string | null;
+  attachments?: DdThesisAttachment[];
 };
 
 export type Thesis = {
@@ -27,6 +36,7 @@ export type Thesis = {
   geos: unknown;
   narrative: string | null;
   templateSlug: string | null;
+  attachments?: DdThesisAttachment[];
   createdAt: string;
 };
 
@@ -109,16 +119,6 @@ export type CreateIntermediaryInput = {
   notes?: string | null;
 };
 
-export type DdMemo = {
-  id: string;
-  paperclipCompanyId: string;
-  generatedByAgentId: string | null;
-  weekStartDate: string;
-  markdown: string;
-  metricsSnapshot: unknown;
-  createdAt: string;
-};
-
 // DEAL DESK: Phase 8 — pre-built PE agent role templates (read-only).
 export type DdRoleTemplate = {
   id: string;
@@ -127,7 +127,6 @@ export type DdRoleTemplate = {
   description: string;
   defaultHeartbeatCron: string;
   defaultBudgetUsd: number;
-  skillFiles: string[];
   systemPrompt: string;
 };
 
@@ -175,6 +174,4 @@ export const dealDeskApi = {
       `/companies/${companyId}/deal-desk/tools/intermediaries`,
       data,
     ),
-  listMemos: (companyId: string) =>
-    api.get<DdMemo[]>(`/companies/${companyId}/deal-desk/memos`),
 };

@@ -94,6 +94,8 @@ export const ddTheses = pgTable(
     narrative: text("narrative"),
     status: ddThesisStatusEnum("status").notNull().default("active"),
     templateSlug: varchar("template_slug", { length: 255 }),
+    // DEAL DESK: v0.3 — small attached research files (jsonb array of {name, mime, sizeBytes, content})
+    attachments: jsonb("attachments").notNull().default([]),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

@@ -1,0 +1,1 @@
+ALTER TABLE "dd_theses" ADD COLUMN "attachments" jsonb DEFAULT '[]'::jsonb NOT NULL;

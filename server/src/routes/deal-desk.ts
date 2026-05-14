@@ -11,7 +11,6 @@ import {
   ddTheses,
   ddTargets,
   ddIntermediaries,
-  ddMemos,
   ddRoleTemplates,
 } from "@paperclipai/db";
 
@@ -39,6 +38,16 @@ const decimalString = z
   .nullable()
   .optional();
 
+// DEAL DESK: v0.3 — small attached text files on a thesis (jsonb on dd_theses.attachments)
+const attachmentSchema = z.array(
+  z.object({
+    name: z.string().min(1).max(255),
+    mime: z.string().min(1).max(100),
+    sizeBytes: z.number().int().nonnegative().max(50_000),
+    content: z.string().max(100_000),
+  }),
+).max(5).optional();
+
 const createThesisSchema = z.object({
   name: z.string().min(1).max(255),
   sector: z.string().min(1).max(255),
@@ -54,6 +63,7 @@ const createThesisSchema = z.object({
   exclusionCriteria: z.string().nullable().optional(),
   narrative: z.string().nullable().optional(),
   templateSlug: z.string().max(255).nullable().optional(),
+  attachments: attachmentSchema,
 });
 
 const updateTargetStatusSchema = z.object({
@@ -79,6 +89,7 @@ const updateThesisSchema = z.object({
   narrative: z.string().nullable().optional(),
   templateSlug: z.string().max(255).nullable().optional(),
   status: z.enum(["active", "paused", "archived"]).optional(),
+  attachments: attachmentSchema,
 });
 
 export function dealDeskRoutes(db: Db) {
@@ -111,6 +122,7 @@ export function dealDeskRoutes(db: Db) {
           exclusionCriteria: body.exclusionCriteria ?? null,
           narrative: body.narrative ?? null,
           templateSlug: body.templateSlug ?? null,
+          attachments: body.attachments ?? [],
         })
         .returning();
 
@@ -258,7 +270,7 @@ export function dealDeskRoutes(db: Db) {
   // ── Role templates (Phase 8) ──────────────────────────────────────────────
   // Returns the pre-built PE agent role templates seeded at server startup.
   // Consumed by the UI "Hire a Deal Desk Role" flow to pre-fill the new-agent
-  // form (name, description, system prompt, recommended budget, skills).
+  // form (name, description, system prompt, recommended budget).
   router.get(
     "/:companyId/deal-desk/role-templates",
     async (req, res) => {
@@ -272,7 +284,6 @@ export function dealDeskRoutes(db: Db) {
           description: ddRoleTemplates.description,
           defaultHeartbeatCron: ddRoleTemplates.defaultHeartbeatCron,
           defaultBudgetUsd: ddRoleTemplates.defaultBudgetUsd,
-          skillFiles: ddRoleTemplates.skillFiles,
           systemPrompt: ddRoleTemplates.systemPrompt,
         })
         .from(ddRoleTemplates)
@@ -280,18 +291,6 @@ export function dealDeskRoutes(db: Db) {
       res.json(rows);
     },
   );
-
-  // ── Memos ─────────────────────────────────────────────────────────────────
-  router.get("/:companyId/deal-desk/memos", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const rows = await db
-      .select()
-      .from(ddMemos)
-      .where(eq(ddMemos.paperclipCompanyId, companyId))
-      .orderBy(desc(ddMemos.weekStartDate));
-    res.json(rows);
-  });
 
   // ── Tool endpoints ────────────────────────────────────────────────────────
   // Mount the Phase 5 tools router under /tools, scoped by companyId.

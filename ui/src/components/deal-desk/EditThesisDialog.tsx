@@ -14,6 +14,7 @@ import {
   thesisFormValuesToApiPayload,
   type ThesisFormValues,
 } from "./ThesisForm";
+import type { ThesisAttachment } from "./FolderAttachmentInput";
 
 interface EditThesisDialogProps {
   open: boolean;
@@ -48,6 +49,8 @@ function thesisToFormValues(thesis: Thesis): ThesisFormValues {
     ownershipPreferences: ownership,
     narrative: thesis.narrative ?? "",
     templateSlug: thesis.templateSlug ?? null,
+    attachments:
+      (thesis as { attachments?: ThesisAttachment[] }).attachments ?? [],
   };
 }
 
