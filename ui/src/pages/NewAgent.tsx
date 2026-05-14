@@ -119,8 +119,9 @@ export function NewAgent() {
 
   useEffect(() => {
     if (isFirstAgent) {
-      if (!name) setName("CEO");
-      if (!title) setTitle("CEO");
+      // DEAL DESK: PE display defaults; role stays 'ceo' under the hood
+      if (!name) setName("Managing Partner");
+      if (!title) setTitle("Managing Partner");
     }
   }, [isFirstAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 

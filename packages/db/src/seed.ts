@@ -22,9 +22,9 @@ const [ceo] = await db
   .insert(agents)
   .values({
     companyId: company!.id,
-    name: "CEO Agent",
+    name: "Managing Partner", // DEAL DESK
     role: "ceo",
-    title: "Chief Executive Officer",
+    title: "Managing Partner",
     status: "idle",
     adapterType: "process",
     adapterConfig: { command: "echo", args: ["hello from ceo"] },

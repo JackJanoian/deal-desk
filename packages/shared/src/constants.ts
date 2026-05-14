@@ -59,7 +59,7 @@ export const AGENT_ROLES = [
 export type AgentRole = (typeof AGENT_ROLES)[number];
 
 export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
-  ceo: "CEO",
+  ceo: "Managing Partner", // DEAL DESK: PE-friendly display label; the role identifier stays 'ceo' for authz compatibility
   cto: "CTO",
   cmo: "CMO",
   cfo: "CFO",

@@ -128,7 +128,7 @@ export function OnboardingWizard() {
   const [createdThesisId, setCreatedThesisId] = useState<string | null>(null);
 
   // Step 2 (now step 3 in DEAL DESK numbering)
-  const [agentName, setAgentName] = useState("CEO");
+  const [agentName, setAgentName] = useState("Managing Partner"); // DEAL DESK
   const [adapterType, setAdapterType] = useState<AdapterType>("claude_local");
   const [model, setModel] = useState("");
   const [command, setCommand] = useState("");
@@ -312,7 +312,7 @@ export function OnboardingWizard() {
     setError(null);
     setCompanyName("");
     setCompanyGoal("");
-    setAgentName("CEO");
+    setAgentName("Managing Partner"); // DEAL DESK
     setAdapterType("claude_local");
     setModel("");
     setCommand("");
@@ -995,7 +995,7 @@ export function OnboardingWizard() {
                     </label>
                     <input
                       className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
-                      placeholder="CEO"
+                      placeholder="Managing Partner"
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
                       autoFocus
@@ -1253,7 +1253,7 @@ export function OnboardingWizard() {
                           <p className="text-[11px] text-amber-900/90 leading-relaxed">
                             Claude failed while{" "}
                             <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this CEO adapter config
+                            is set. You can clear it in this Managing Partner adapter config
                             and retry the probe.
                           </p>
                           <Button
