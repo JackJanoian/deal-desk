@@ -60,14 +60,23 @@ export function QuickHire() {
     mutationFn: async () => {
       if (!selectedCompanyId) throw new Error("No company selected");
       const budgetCents = Math.max(0, Math.round(Number(budgetUsd) * 100));
+      // DEAL DESK: v0.3.1 — Paperclip rejects adapterConfig.promptTemplate for new
+      // agents on adapters that support instructions bundles (server/src/routes/agents.ts
+      // assertNoNewAgentLegacyPromptTemplate). Send the prompt via the top-level
+      // instructionsBundle instead.
       return agentsApi.create(selectedCompanyId, {
         name: name.trim(),
         title: title.trim() || name.trim(),
         role: "general", // DEAL DESK: PE employees use 'general' role to avoid CEO authz path
         adapterType: "claude_local",
         adapterConfig: {
-          promptTemplate: systemPrompt,
           dangerouslySkipPermissions: true,
+        },
+        instructionsBundle: {
+          entryFile: "AGENTS.md",
+          files: {
+            "AGENTS.md": systemPrompt,
+          },
         },
         budgetMonthlyCents: budgetCents,
       });
