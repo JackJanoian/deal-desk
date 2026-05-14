@@ -1,13 +1,10 @@
 // DEAL DESK: Phase 8 — pre-built PE agent role templates (read-only list).
 //
-// Surfaces the 5 seeded role templates from /api/companies/:companyId/deal-desk/
-// role-templates. Clicking "Hire" currently shows a TODO alert — wiring this
-// into the existing /agents/new flow (NewAgent.tsx + AgentConfigForm) is left
-// for v0.2 because the agent-config schema (adapter type, model, etc.) needs
-// to be reconciled with the template's recommended fields.
+// Surfaces the seeded role templates from /api/companies/:companyId/deal-desk/
+// role-templates and routes "Hire" into the existing /agents/new prefill flow.
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Clock, DollarSign, FileBadge } from "lucide-react";
+import { Briefcase, Clock, DollarSign, Plus } from "lucide-react";
 import { useNavigate } from "@/lib/router";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
@@ -53,11 +50,30 @@ export function HireRoles() {
         <h1 className="text-lg font-semibold">Hire a Deal Desk Role</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Pre-built PE agent configurations. Each role ships with a focused
-          system prompt, recommended cadence, monthly budget, and skill files.
+          system prompt, recommended cadence, and monthly budget.
         </p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* DEAL DESK: v0.3 — create custom employee, no template */}
+        <div
+          key="custom"
+          className="rounded-md border border-dashed border-border bg-card p-4 hover:bg-accent/30 cursor-pointer"
+          onClick={() => navigate("/deal-desk/hire/custom")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") navigate("/deal-desk/hire/custom");
+          }}
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <Plus className="h-4 w-4" />
+            Create custom employee
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Start from a blank slate — pick a name, attach your own instructions, and hire.
+          </p>
+        </div>
         {templates.map((tpl) => (
           <article
             key={tpl.id}
@@ -79,12 +95,6 @@ export function HireRoles() {
                 <DollarSign className="h-3 w-3" />
                 <span>${tpl.defaultBudgetUsd}/mo recommended</span>
               </div>
-              {tpl.skillFiles.length > 0 && (
-                <div className="flex items-start gap-1.5">
-                  <FileBadge className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span className="break-all">{tpl.skillFiles.join(", ")}</span>
-                </div>
-              )}
             </dl>
 
             <div className="flex items-center justify-between gap-2 pt-1">
@@ -95,7 +105,8 @@ export function HireRoles() {
                 size="sm"
                 variant="outline"
                 onClick={() =>
-                  navigate(`/agents/new?dealDeskRole=${encodeURIComponent(tpl.slug)}`)
+                  // DEAL DESK: v0.3 — use the simpler Deal Desk QuickHire form
+                  navigate(`/deal-desk/hire/${encodeURIComponent(tpl.slug)}`)
                 }
               >
                 Hire
