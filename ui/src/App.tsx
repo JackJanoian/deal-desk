@@ -28,6 +28,8 @@ import { Intermediaries as DealDeskIntermediaries } from "./pages/deal-desk/Inte
 import { Thesis as DealDeskThesis } from "./pages/deal-desk/Thesis";
 // DEAL DESK: Phase 8 — pre-built role templates page.
 import { HireRoles as DealDeskHireRoles } from "./pages/deal-desk/HireRoles";
+// DEAL DESK: Task 12 — Email Accounts (connect / disconnect Gmail).
+import { EmailAccountsPage as DealDeskEmailAccounts } from "./pages/deal-desk/EmailAccounts";
 import { QuickHire as DealDeskQuickHire } from "./pages/deal-desk/QuickHire";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
@@ -133,6 +135,8 @@ function boardRoutes() {
       <Route path="deal-desk/hire" element={<DealDeskHireRoles />} />
       {/* DEAL DESK: v0.3 — quick hire flow (template + custom) */}
       <Route path="deal-desk/hire/:slug" element={<DealDeskQuickHire />} />
+      {/* DEAL DESK: Task 12 — Email Accounts (connect / disconnect Gmail) */}
+      <Route path="deal-desk/email-accounts" element={<DealDeskEmailAccounts />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />
