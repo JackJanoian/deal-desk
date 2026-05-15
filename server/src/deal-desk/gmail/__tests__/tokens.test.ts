@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { saveGmailTokens, loadGmailTokens, ensureFreshAccessToken, type GmailTokensRecord } from "../tokens";
+import { saveGmailTokens, loadGmailTokens, ensureFreshAccessToken, type GmailTokensRecord } from "../tokens.js";
 
 describe("Gmail token persistence", () => {
   it("saveGmailTokens creates a secret with the refresh+access token JSON", async () => {

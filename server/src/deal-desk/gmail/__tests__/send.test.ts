@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { buildRfc822Message, sendGmail } from "../send";
+import { buildRfc822Message, sendGmail } from "../send.js";
 
 describe("buildRfc822Message", () => {
   it("produces RFC822 with From, To, Subject, plain body", () => {

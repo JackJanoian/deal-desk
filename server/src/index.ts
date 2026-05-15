@@ -631,6 +631,8 @@ export async function startServer(): Promise<StartedServer> {
     betterAuthHandler,
     resolveSession,
     pluginWorkerManager,
+    // DEAL DESK: Pass Google OAuth config for Gmail account linking routes.
+    googleOAuth: config.googleOAuth,
   });
   const server = createServer(app as unknown as Parameters<typeof createServer>[0]);
 

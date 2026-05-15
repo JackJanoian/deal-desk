@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { buildGmailAuthorizeUrl, exchangeCodeForTokens } from "../oauth";
+import { buildGmailAuthorizeUrl, exchangeCodeForTokens } from "../oauth.js";
 
 describe("buildGmailAuthorizeUrl", () => {
   it("includes client_id, redirect_uri, send scope, offline access, and the state token", () => {

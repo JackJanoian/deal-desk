@@ -1,4 +1,4 @@
-import type { ExchangedTokens } from "./oauth";
+import type { ExchangedTokens } from "./oauth.js";
 
 export interface GmailTokensRecord {
   refreshToken: string;

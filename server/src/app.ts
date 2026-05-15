@@ -1,4 +1,6 @@
 import express, { Router, type Request as ExpressRequest } from "express";
+import cookieParser from "cookie-parser";
+import type { GoogleOAuthConfig } from "./config.js";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -13,6 +15,8 @@ import { healthRoutes } from "./routes/health.js";
 import { companyRoutes } from "./routes/companies.js";
 // DEAL DESK: PE-specific routes (theses, targets, intermediaries, tools).
 import { dealDeskRoutes } from "./routes/deal-desk.js";
+// DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
+import { createGmailOAuthRouter } from "./routes/gmail-oauth.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { agentRoutes } from "./routes/agents.js";
 import { projectRoutes } from "./routes/projects.js";
@@ -139,11 +143,14 @@ export async function createApp(
     pluginWorkerManager?: PluginWorkerManager;
     betterAuthHandler?: express.RequestHandler;
     resolveSession?: (req: ExpressRequest) => Promise<BetterAuthSessionResult | null>;
+    // DEAL DESK: Google OAuth config for Gmail account linking.
+    googleOAuth?: GoogleOAuthConfig | null;
   },
 ) {
   const app = express();
 
   app.use(httpLogger);
+  app.use(cookieParser());
   const privateHostnameGateEnabled = shouldEnablePrivateHostnameGuard({
     deploymentMode: opts.deploymentMode,
     deploymentExposure: opts.deploymentExposure,
@@ -202,6 +209,18 @@ export async function createApp(
   api.use("/companies", companyRoutes(db, opts.storageService));
   // DEAL DESK:
   api.use("/companies", dealDeskRoutes(db));
+  // DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
+  api.use(
+    "/oauth/gmail",
+    createGmailOAuthRouter({
+      config: opts.googleOAuth ?? null,
+      resolveCompanyId: (req) =>
+        (req.query.companyId as string | undefined) ??
+        (req as ExpressRequest & { user?: { companyId?: string } }).user?.companyId ??
+        null,
+      deps: { db },
+    }),
+  );
   api.use(companySkillRoutes(db));
   api.use(agentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(assetRoutes(db, opts.storageService));
