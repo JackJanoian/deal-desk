@@ -8,10 +8,23 @@
 // /api/companies/:companyId/deal-desk/...
 
 import { Router, type Request, type Response } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { ddEmailAccounts } from "@paperclipai/db";
+import { ddEmailAccounts, companySecrets } from "@paperclipai/db";
 import type { GoogleOAuthConfig } from "../../config.js";
+
+import {
+  gmailClientConfigGetHandler,
+  gmailClientConfigPostHandler,
+  gmailClientConfigDeleteHandler,
+} from "./gmail-client-config.js";
+import {
+  saveGmailOAuthClient,
+  loadGmailOAuthClient,
+  deleteGmailOAuthClient,
+  type GmailClientConfigStore,
+} from "../gmail/client-config.js";
+import { secretService } from "../../services/secrets.js";
 
 import { createTargetHandler } from "./create-target.js";
 import { listTargetsHandler } from "./list-targets.js";
@@ -115,6 +128,63 @@ export function registerDealDeskTools(
       .where(eq(ddEmailAccounts.id, id));
     res.status(200).json({ ok: true });
   });
+
+  const buildClientConfigStore = (): GmailClientConfigStore => {
+    const realSvc = secretService(db);
+    return {
+      getByKey: async ({ companyId, key }) => {
+        const row = await db
+          .select({ id: companySecrets.id })
+          .from(companySecrets)
+          .where(
+            and(
+              eq(companySecrets.companyId, companyId),
+              eq(companySecrets.key, key),
+              eq(companySecrets.status, "active"),
+            ),
+          )
+          .limit(1);
+        return row[0] ? { secretId: row[0].id } : null;
+      },
+      create: async ({ companyId, key, name, plaintext }) => {
+        const created = await realSvc.create(companyId, {
+          name,
+          key,
+          provider: "local_encrypted",
+          value: plaintext,
+          description: "Gmail OAuth client credentials (Outreach Analyst)",
+        });
+        return { secretId: created.id };
+      },
+      replace: async ({ secretId, plaintext }) => {
+        await realSvc.rotate(secretId, { value: plaintext });
+      },
+      remove: async ({ secretId }) => {
+        await realSvc.remove(secretId);
+      },
+      load: async ({ companyId, secretId }) => {
+        return await realSvc.resolveSecretValue(companyId, secretId, "latest");
+      },
+    };
+  };
+
+  const clientConfigDeps = {
+    loadConfig: ({ companyId }: { companyId: string }) =>
+      loadGmailOAuthClient({ companyId }, { store: buildClientConfigStore() }),
+    saveConfig: (args: { companyId: string; clientId: string; clientSecret: string }) =>
+      saveGmailOAuthClient(args, { store: buildClientConfigStore() }),
+    deleteConfig: ({ companyId }: { companyId: string }) =>
+      deleteGmailOAuthClient({ companyId }, { store: buildClientConfigStore() }),
+    resolveRedirectUri: (req: Request) => {
+      const fromEnv = process.env.PAPERCLIP_PUBLIC_URL;
+      const base = fromEnv ?? `${req.protocol}://${req.get("host")}`;
+      return `${base.replace(/\/$/, "")}/api/oauth/gmail/callback`;
+    },
+  };
+
+  parent.get("/gmail-oauth-client", gmailClientConfigGetHandler(clientConfigDeps));
+  parent.post("/gmail-oauth-client", gmailClientConfigPostHandler(clientConfigDeps));
+  parent.delete("/gmail-oauth-client", gmailClientConfigDeleteHandler(clientConfigDeps));
 
   return parent;
 }
