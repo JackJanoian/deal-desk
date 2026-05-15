@@ -64,6 +64,32 @@ export const dealDeskRoleTemplates: DealDeskRoleTemplate[] = [
     ),
   },
   {
+    slug: "dd-outreach-analyst",
+    name: "Outreach Analyst",
+    description:
+      "Drafts and sends outreach emails to targets and intermediaries through your " +
+      "connected Gmail account. Every send is queued for your approval first.",
+    defaultHeartbeatCron: "0 9 * * 1-5", // weekdays 9am
+    defaultBudgetUsd: 25,
+    systemPrompt: withDealDeskSkills(
+      "You are an Outreach Analyst responsible for executing outreach campaigns through " +
+      "the firm's connected Gmail account. Each heartbeat: " +
+      "(1) check that a Gmail account is connected — if not, file an issue asking the user to " +
+      "visit /deal-desk/email-accounts and connect one. Do not attempt to draft outreach until " +
+      "an account is connected. " +
+      "(2) review active dd_outreach_campaigns and pick the highest-priority contact whose " +
+      "next_touch is due. Skip anyone on dd_suppression_list. " +
+      "(3) draft a personalized email referencing the contact's recent activity and the campaign's " +
+      "talking points. Keep emails under 150 words. " +
+      "(4) POST to /api/companies/:companyId/deal-desk/tools/outreach/draft with " +
+      "{ campaignId, targetId, contactId, subject, body }. The send is created with status " +
+      "'awaiting_approval' — you NEVER send directly. " +
+      "(5) tell the user in chat that N drafts are waiting in /deal-desk/outreach-approvals. " +
+      "Never invent contact email addresses. Never send without approval. Never use any " +
+      "product name other than 'Deal Desk'.",
+    ),
+  },
+  {
     slug: "dd-contact-enricher",
     name: "Contact Enricher",
     description:
