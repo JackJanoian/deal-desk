@@ -16,6 +16,7 @@ import { createIntermediaryHandler } from "./create-intermediary.js";
 import { listIntermediariesHandler } from "./list-intermediaries.js";
 import { recordIntermediaryTouchHandler } from "./record-intermediary-touch.js";
 import { enrichContactHandler } from "./enrich-contact.js";
+import { outreachDraftHandler } from "./outreach-draft.js";
 
 export {
   createTargetHandler,
@@ -49,6 +50,11 @@ export {
   enrichContactInputSchema,
   type EnrichContactInput,
 } from "./enrich-contact.js";
+export {
+  outreachDraftHandler,
+  outreachDraftInputSchema,
+  type OutreachDraftInput,
+} from "./outreach-draft.js";
 
 /**
  * Mount all Deal Desk tool endpoints onto a parent router.
@@ -72,6 +78,7 @@ export function registerDealDeskTools(parent: Router, db: Db): Router {
   parent.get("/intermediaries", listIntermediariesHandler(db));
   parent.post("/intermediaries/touch", recordIntermediaryTouchHandler(db));
   parent.post("/contacts/enrich", enrichContactHandler(db));
+  parent.post("/outreach/draft", outreachDraftHandler(db));
   return parent;
 }
 
