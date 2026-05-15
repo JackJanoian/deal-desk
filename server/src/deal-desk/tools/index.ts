@@ -11,8 +11,6 @@ import { Router, type Request, type Response } from "express";
 import { eq, and } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import { ddEmailAccounts, companySecrets } from "@paperclipai/db";
-import type { GoogleOAuthConfig } from "../../config.js";
-
 import {
   gmailClientConfigGetHandler,
   gmailClientConfigPostHandler,
@@ -95,7 +93,6 @@ export { outreachApproveHandler, outreachRejectHandler } from "./outreach-approv
 export function registerDealDeskTools(
   parent: Router,
   db: Db,
-  opts: { googleOAuth?: GoogleOAuthConfig | null } = {},
 ): Router {
   parent.post("/targets", createTargetHandler(db));
   parent.get("/targets", listTargetsHandler(db));
@@ -104,10 +101,6 @@ export function registerDealDeskTools(
   parent.post("/intermediaries/touch", recordIntermediaryTouchHandler(db));
   parent.post("/contacts/enrich", enrichContactHandler(db));
   parent.post("/outreach/draft", outreachDraftHandler(db));
-  parent.post(
-    "/outreach/sends/:id/approve",
-    outreachApproveHandler({ db, googleOAuth: opts.googleOAuth ?? null }),
-  );
   parent.post("/outreach/sends/:id/reject", outreachRejectHandler({ db }));
 
   parent.get("/outreach/sends/pending", listPendingOutreachHandler(db));
@@ -182,6 +175,14 @@ export function registerDealDeskTools(
     },
   };
 
+  parent.post(
+    "/outreach/sends/:id/approve",
+    outreachApproveHandler({
+      db,
+      loadClientConfig: (companyId) => clientConfigDeps.loadConfig({ companyId }),
+    }),
+  );
+
   parent.get("/gmail-oauth-client", gmailClientConfigGetHandler(clientConfigDeps));
   parent.post("/gmail-oauth-client", gmailClientConfigPostHandler(clientConfigDeps));
   parent.delete("/gmail-oauth-client", gmailClientConfigDeleteHandler(clientConfigDeps));
@@ -193,10 +194,7 @@ export function registerDealDeskTools(
  * Build a self-contained Deal Desk tools router. Convenience wrapper for
  * callers that want a single router to mount (Phase 6 may use this directly).
  */
-export function dealDeskToolsRouter(
-  db: Db,
-  opts: { googleOAuth?: GoogleOAuthConfig | null } = {},
-): Router {
+export function dealDeskToolsRouter(db: Db): Router {
   const router = Router({ mergeParams: true });
-  return registerDealDeskTools(router, db, opts);
+  return registerDealDeskTools(router, db);
 }

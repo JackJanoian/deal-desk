@@ -32,7 +32,7 @@ describe("POST /outreach/sends/:id/approve", () => {
     app.use((req, _res, next) => { (req as never as { user: unknown }).user = { id: "u-1" }; next(); });
     app.post("/outreach/sends/:id/approve", outreachApproveHandler({
       db: fakeDb as never,
-      googleOAuth: { clientId: "c", clientSecret: "s", redirectUri: "r" },
+      loadClientConfig: async () => ({ clientId: "c", clientSecret: "s" }),
       sendGmail: fakeSendGmail,
       loadGmailTokens: fakeLoadTokens,
       ensureFreshAccessToken: fakeEnsureFresh,
@@ -46,13 +46,21 @@ describe("POST /outreach/sends/:id/approve", () => {
     );
   });
 
-  it("returns 503 when googleOAuth is null", async () => {
+  it("returns 412 when company has no OAuth client configured", async () => {
+    const fakeDb = {
+      query: {
+        ddOutreachSends: { findFirst: vi.fn().mockResolvedValue({
+          id: "s-1", paperclipCompanyId: "co-1", subject: "X", body: "Y",
+          contactId: "c-1", status: "awaiting_approval",
+        })},
+      },
+    };
     const app = express();
     app.post("/outreach/sends/:id/approve", outreachApproveHandler({
-      db: {} as never,
-      googleOAuth: null,
+      db: fakeDb as never,
+      loadClientConfig: async () => null,
     }));
-    const res = await request(app).post("/outreach/sends/x/approve");
-    expect(res.status).toBe(503);
+    const res = await request(app).post("/outreach/sends/s-1/approve");
+    expect(res.status).toBe(412);
   });
 });

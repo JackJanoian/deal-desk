@@ -87,6 +87,9 @@ export interface Config {
   heartbeatSchedulerIntervalMs: number;
   companyDeletionEnabled: boolean;
   telemetryEnabled: boolean;
+  // DEPRECATED: per-company OAuth client credentials are now stored via
+  // /deal-desk/tools/gmail-oauth-client. These env vars are no longer read at runtime.
+  // Field kept to avoid breaking existing .env files; safe to remove in a future cleanup.
   googleOAuth: GoogleOAuthConfig | null;
 }
 

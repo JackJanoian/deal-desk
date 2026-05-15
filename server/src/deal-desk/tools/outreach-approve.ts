@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { eq } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import { ddOutreachSends, ddContacts, ddEmailAccounts } from "@paperclipai/db";
-import type { GoogleOAuthConfig } from "../../config.js";
+import type { GmailClientConfig } from "../gmail/client-config.js";
 import { sendGmail as sendGmailReal } from "../gmail/send.js";
 import {
   loadGmailTokens as loadTokensReal,
@@ -14,7 +14,7 @@ import { secretService } from "../../services/secrets.js";
 
 export interface ApproveDeps {
   db: Db;
-  googleOAuth: GoogleOAuthConfig | null;
+  loadClientConfig: (companyId: string) => Promise<GmailClientConfig | null>;
   sendGmail?: typeof sendGmailReal;
   loadGmailTokens?: typeof loadTokensReal;
   ensureFreshAccessToken?: typeof ensureFreshReal;
@@ -26,16 +26,20 @@ export function outreachApproveHandler(deps: ApproveDeps) {
   const ensureFreshAccessToken = deps.ensureFreshAccessToken ?? ensureFreshReal;
 
   return async (req: Request, res: Response) => {
-    if (!deps.googleOAuth) {
-      res.status(503).json({ ok: false, reason: "Gmail OAuth not configured" });
-      return;
-    }
     const sendId = req.params.id as string;
     const send = await deps.db.query.ddOutreachSends.findFirst({
       where: eq(ddOutreachSends.id, sendId),
     });
     if (!send) {
       res.status(404).json({ ok: false, reason: "Send not found" });
+      return;
+    }
+    const clientConfig = await deps.loadClientConfig(send.paperclipCompanyId);
+    if (!clientConfig) {
+      res.status(412).json({
+        ok: false,
+        reason: "Gmail OAuth client not configured for this company",
+      });
       return;
     }
     if (send.status !== "awaiting_approval") {
@@ -80,8 +84,8 @@ export function outreachApproveHandler(deps: ApproveDeps) {
     );
     const fresh = await ensureFreshAccessToken({
       tokens: stored,
-      clientId: deps.googleOAuth.clientId,
-      clientSecret: deps.googleOAuth.clientSecret,
+      clientId: clientConfig.clientId,
+      clientSecret: clientConfig.clientSecret,
     });
 
     const result = await sendGmail({

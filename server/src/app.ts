@@ -1,6 +1,6 @@
 import express, { Router, type Request as ExpressRequest } from "express";
 import cookieParser from "cookie-parser";
-import type { GoogleOAuthConfig } from "./config.js";
+import { eq, and } from "drizzle-orm";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -17,6 +17,12 @@ import { companyRoutes } from "./routes/companies.js";
 import { dealDeskRoutes } from "./routes/deal-desk.js";
 // DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
 import { createGmailOAuthRouter } from "./routes/gmail-oauth.js";
+import {
+  loadGmailOAuthClient,
+  type GmailClientConfigStore,
+} from "./deal-desk/gmail/client-config.js";
+import { secretService } from "./services/secrets.js";
+import { companySecrets } from "@paperclipai/db";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { agentRoutes } from "./routes/agents.js";
 import { projectRoutes } from "./routes/projects.js";
@@ -143,8 +149,6 @@ export async function createApp(
     pluginWorkerManager?: PluginWorkerManager;
     betterAuthHandler?: express.RequestHandler;
     resolveSession?: (req: ExpressRequest) => Promise<BetterAuthSessionResult | null>;
-    // DEAL DESK: Google OAuth config for Gmail account linking.
-    googleOAuth?: GoogleOAuthConfig | null;
   },
 ) {
   const app = express();
@@ -208,12 +212,42 @@ export async function createApp(
   );
   api.use("/companies", companyRoutes(db, opts.storageService));
   // DEAL DESK:
-  api.use("/companies", dealDeskRoutes(db, { googleOAuth: opts.googleOAuth ?? null }));
+  api.use("/companies", dealDeskRoutes(db));
   // DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
+  const buildOAuthClientStore = (): GmailClientConfigStore => {
+    const realSvc = secretService(db);
+    return {
+      getByKey: async ({ companyId, key }) => {
+        const row = await db
+          .select({ id: companySecrets.id })
+          .from(companySecrets)
+          .where(
+            and(
+              eq(companySecrets.companyId, companyId),
+              eq(companySecrets.key, key),
+              eq(companySecrets.status, "active"),
+            ),
+          )
+          .limit(1);
+        return row[0] ? { secretId: row[0].id } : null;
+      },
+      create: async () => { throw new Error("create() not used in OAuth route"); },
+      replace: async () => { throw new Error("replace() not used in OAuth route"); },
+      remove: async () => { throw new Error("remove() not used in OAuth route"); },
+      load: async ({ companyId, secretId }) => {
+        return await realSvc.resolveSecretValue(companyId, secretId, "latest");
+      },
+    };
+  };
   api.use(
     "/oauth/gmail",
     createGmailOAuthRouter({
-      config: opts.googleOAuth ?? null,
+      loadClientConfig: (companyId) =>
+        loadGmailOAuthClient({ companyId }, { store: buildOAuthClientStore() }),
+      resolveRedirectUri: (req) => {
+        const base = process.env.PAPERCLIP_PUBLIC_URL ?? `${req.protocol}://${req.get("host")}`;
+        return `${base.replace(/\/$/, "")}/api/oauth/gmail/callback`;
+      },
       resolveCompanyId: (req) =>
         (req.query.companyId as string | undefined) ??
         (req as ExpressRequest & { user?: { companyId?: string } }).user?.companyId ??
