@@ -122,6 +122,9 @@ export function Sidebar() {
           <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Users} />
           {/* DEAL DESK: Phase 8 — pre-built role templates */}
           <SidebarNavItem to="/deal-desk/hire" label="Hire a Role" icon={Briefcase} />
+          {/* DEAL DESK: Phase 12-14 — Outreach tools */}
+          <SidebarNavItem to="/deal-desk/email-accounts" label="Email Accounts" icon={Inbox} />
+          <SidebarNavItem to="/deal-desk/outreach-approvals" label="Outreach Approvals" icon={CircleDot} />
         </SidebarSection>
 
         {/* DEAL DESK: renamed sidebar section label "Company" → "Fund" */}
