@@ -617,6 +617,13 @@
       "when": 1778731534757,
       "tag": "0087_closed_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1747180800000,
+      "tag": "0088_dd_email_accounts",
+      "breakpoints": true
     }
   ]
 }

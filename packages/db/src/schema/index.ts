@@ -92,3 +92,4 @@ export {
   ddSuppressionReasonEnum,
   ddOutreachSendStatusEnum,
 } from "./deal_desk.js";
+export { ddEmailAccounts, ddEmailProviderEnum } from "./dd_email_accounts.js";
