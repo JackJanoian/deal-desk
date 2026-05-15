@@ -208,7 +208,7 @@ export async function createApp(
   );
   api.use("/companies", companyRoutes(db, opts.storageService));
   // DEAL DESK:
-  api.use("/companies", dealDeskRoutes(db));
+  api.use("/companies", dealDeskRoutes(db, { googleOAuth: opts.googleOAuth ?? null }));
   // DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
   api.use(
     "/oauth/gmail",

@@ -17,6 +17,7 @@ import {
 import { validate } from "../middleware/validate.js";
 import { assertCompanyAccess } from "./authz.js";
 import { dealDeskToolsRouter } from "../deal-desk/tools/index.js";
+import type { GoogleOAuthConfig } from "../config.js";
 
 // Mirror dd_target_status enum values (server/db enum is the source of truth).
 const targetStatusValues = [
@@ -92,7 +93,7 @@ const updateThesisSchema = z.object({
   attachments: attachmentSchema,
 });
 
-export function dealDeskRoutes(db: Db) {
+export function dealDeskRoutes(db: Db, opts: { googleOAuth?: GoogleOAuthConfig | null } = {}) {
   const router = Router({ mergeParams: true });
 
   // ── Theses ────────────────────────────────────────────────────────────────
@@ -302,7 +303,7 @@ export function dealDeskRoutes(db: Db) {
       assertCompanyAccess(req, req.params.companyId as string);
       next();
     },
-    dealDeskToolsRouter(db),
+    dealDeskToolsRouter(db, { googleOAuth: opts.googleOAuth }),
   );
 
   return router;

@@ -9,6 +9,7 @@
 
 import { Router } from "express";
 import type { Db } from "@paperclipai/db";
+import type { GoogleOAuthConfig } from "../../config.js";
 
 import { createTargetHandler } from "./create-target.js";
 import { listTargetsHandler } from "./list-targets.js";
@@ -17,6 +18,7 @@ import { listIntermediariesHandler } from "./list-intermediaries.js";
 import { recordIntermediaryTouchHandler } from "./record-intermediary-touch.js";
 import { enrichContactHandler } from "./enrich-contact.js";
 import { outreachDraftHandler } from "./outreach-draft.js";
+import { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
 
 export {
   createTargetHandler,
@@ -55,6 +57,7 @@ export {
   outreachDraftInputSchema,
   type OutreachDraftInput,
 } from "./outreach-draft.js";
+export { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
 
 /**
  * Mount all Deal Desk tool endpoints onto a parent router.
@@ -64,14 +67,20 @@ export {
  * mount this router under `/api/companies/:companyId/deal-desk/tools`.
  *
  * Sub-paths exposed (all relative to the parent):
- *   POST /targets                — create a sourced target
- *   GET  /targets                — list targets for a thesis
- *   POST /intermediaries         — create an intermediary
- *   GET  /intermediaries         — list intermediaries (overdue-first)
- *   POST /intermediaries/touch   — record a touch with an intermediary
- *   POST /contacts/enrich        — enrich a contact (stub w/o API keys)
+ *   POST /targets                      — create a sourced target
+ *   GET  /targets                      — list targets for a thesis
+ *   POST /intermediaries               — create an intermediary
+ *   GET  /intermediaries               — list intermediaries (overdue-first)
+ *   POST /intermediaries/touch         — record a touch with an intermediary
+ *   POST /contacts/enrich              — enrich a contact (stub w/o API keys)
+ *   POST /outreach/sends/:id/approve   — approve and dispatch a queued send
+ *   POST /outreach/sends/:id/reject    — reject a queued send
  */
-export function registerDealDeskTools(parent: Router, db: Db): Router {
+export function registerDealDeskTools(
+  parent: Router,
+  db: Db,
+  opts: { googleOAuth?: GoogleOAuthConfig | null } = {},
+): Router {
   parent.post("/targets", createTargetHandler(db));
   parent.get("/targets", listTargetsHandler(db));
   parent.post("/intermediaries", createIntermediaryHandler(db));
@@ -79,6 +88,11 @@ export function registerDealDeskTools(parent: Router, db: Db): Router {
   parent.post("/intermediaries/touch", recordIntermediaryTouchHandler(db));
   parent.post("/contacts/enrich", enrichContactHandler(db));
   parent.post("/outreach/draft", outreachDraftHandler(db));
+  parent.post(
+    "/outreach/sends/:id/approve",
+    outreachApproveHandler({ db, googleOAuth: opts.googleOAuth ?? null }),
+  );
+  parent.post("/outreach/sends/:id/reject", outreachRejectHandler({ db }));
   return parent;
 }
 
@@ -86,7 +100,10 @@ export function registerDealDeskTools(parent: Router, db: Db): Router {
  * Build a self-contained Deal Desk tools router. Convenience wrapper for
  * callers that want a single router to mount (Phase 6 may use this directly).
  */
-export function dealDeskToolsRouter(db: Db): Router {
+export function dealDeskToolsRouter(
+  db: Db,
+  opts: { googleOAuth?: GoogleOAuthConfig | null } = {},
+): Router {
   const router = Router({ mergeParams: true });
-  return registerDealDeskTools(router, db);
+  return registerDealDeskTools(router, db, opts);
 }
