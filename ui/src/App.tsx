@@ -30,6 +30,8 @@ import { Thesis as DealDeskThesis } from "./pages/deal-desk/Thesis";
 import { HireRoles as DealDeskHireRoles } from "./pages/deal-desk/HireRoles";
 // DEAL DESK: Task 12 — Email Accounts (connect / disconnect Gmail).
 import { EmailAccountsPage as DealDeskEmailAccounts } from "./pages/deal-desk/EmailAccounts";
+// DEAL DESK: Task 13 — Outreach Approvals (approve / reject pending sends).
+import { OutreachApprovalsPage as DealDeskOutreachApprovals } from "./pages/deal-desk/OutreachApprovals";
 import { QuickHire as DealDeskQuickHire } from "./pages/deal-desk/QuickHire";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
@@ -137,6 +139,8 @@ function boardRoutes() {
       <Route path="deal-desk/hire/:slug" element={<DealDeskQuickHire />} />
       {/* DEAL DESK: Task 12 — Email Accounts (connect / disconnect Gmail) */}
       <Route path="deal-desk/email-accounts" element={<DealDeskEmailAccounts />} />
+      {/* DEAL DESK: Task 13 — Outreach Approvals (approve / reject pending sends) */}
+      <Route path="deal-desk/outreach-approvals" element={<DealDeskOutreachApprovals />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />
