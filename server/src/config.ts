@@ -87,6 +87,13 @@ export interface Config {
   heartbeatSchedulerIntervalMs: number;
   companyDeletionEnabled: boolean;
   telemetryEnabled: boolean;
+  googleOAuth: GoogleOAuthConfig | null;
+}
+
+export interface GoogleOAuthConfig {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -239,6 +246,14 @@ export function loadConfig(): Config {
         .filter(Boolean),
     ),
   );
+  const googleClientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const googleRedirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
+  const googleOAuth =
+    googleClientId && googleClientSecret && googleRedirectUri
+      ? { clientId: googleClientId, clientSecret: googleClientSecret, redirectUri: googleRedirectUri }
+      : null;
+
   const companyDeletionEnvRaw = process.env.PAPERCLIP_ENABLE_COMPANY_DELETION;
   const companyDeletionEnabled =
     companyDeletionEnvRaw !== undefined
@@ -333,5 +348,6 @@ export function loadConfig(): Config {
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
     companyDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
+    googleOAuth,
   };
 }
