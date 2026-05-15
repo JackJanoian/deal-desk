@@ -7,15 +7,19 @@ export interface GmailTokensRecord {
   scope: string;
 }
 
-export interface SecretServiceLike {
-  createSecret: (args: {
+/**
+ * A minimal secret-store contract Gmail token persistence depends on.
+ * Implementations adapt this to whatever underlying secret backend exists
+ * (in production: companySecrets via secretService; in tests: an in-memory stub).
+ */
+export interface GmailSecretStore {
+  store(args: {
     companyId: string;
     key: string;
     name: string;
-    description?: string;
-  }) => Promise<{ id: string }>;
-  addVersion: (args: { secretId: string; key: string; value: string }) => Promise<{ version: number }>;
-  getLatestPlaintext: (args: { secretId: string }) => Promise<string>;
+    plaintext: string;
+  }): Promise<{ secretId: string }>;
+  loadLatest(args: { companyId: string; secretId: string }): Promise<string>;
 }
 
 export interface SaveGmailTokensInput {
@@ -24,40 +28,34 @@ export interface SaveGmailTokensInput {
   tokens: ExchangedTokens;
 }
 
-export interface SaveDeps {
-  secretService: SecretServiceLike;
-}
-
 export async function saveGmailTokens(
   input: SaveGmailTokensInput,
-  deps: SaveDeps,
+  deps: { store: GmailSecretStore },
 ): Promise<string> {
   const key = `gmail_account:${input.emailAddress}`;
-  const created = await deps.secretService.createSecret({
-    companyId: input.companyId,
-    key,
-    name: `Gmail OAuth (${input.emailAddress})`,
-    description: "Gmail OAuth refresh + access tokens for Outreach Analyst",
-  });
   const record: GmailTokensRecord = {
     refreshToken: input.tokens.refreshToken,
     accessToken: input.tokens.accessToken,
     expiresAt: Date.now() + input.tokens.expiresInSeconds * 1000,
     scope: input.tokens.scope,
   };
-  await deps.secretService.addVersion({
-    secretId: created.id,
+  const created = await deps.store.store({
+    companyId: input.companyId,
     key,
-    value: JSON.stringify(record),
+    name: `Gmail OAuth (${input.emailAddress})`,
+    plaintext: JSON.stringify(record),
   });
-  return created.id;
+  return created.secretId;
 }
 
 export async function loadGmailTokens(
-  args: { secretId: string },
-  deps: SaveDeps,
+  args: { companyId: string; secretId: string },
+  deps: { store: GmailSecretStore },
 ): Promise<GmailTokensRecord> {
-  const raw = await deps.secretService.getLatestPlaintext({ secretId: args.secretId });
+  const raw = await deps.store.loadLatest({
+    companyId: args.companyId,
+    secretId: args.secretId,
+  });
   return JSON.parse(raw) as GmailTokensRecord;
 }
 

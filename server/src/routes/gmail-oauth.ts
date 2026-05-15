@@ -2,60 +2,11 @@
 import { Router, type Request, type Response } from "express";
 import crypto from "node:crypto";
 import { buildGmailAuthorizeUrl, exchangeCodeForTokens, fetchGoogleUserEmail } from "../deal-desk/gmail/oauth.js";
-import { saveGmailTokens } from "../deal-desk/gmail/tokens.js";
+import { saveGmailTokens, type GmailSecretStore } from "../deal-desk/gmail/tokens.js";
+import { secretService } from "../services/secrets.js";
 import type { GoogleOAuthConfig } from "../config.js";
 import type { Db } from "@paperclipai/db";
 import { ddEmailAccounts } from "@paperclipai/db";
-
-// IMPORTANT: The real `secretService` from `../services/secrets.js` does NOT implement the
-// `SecretServiceLike` interface expected by `saveGmailTokens`. Specifically:
-//
-//   - secretService.create() requires `provider`, `providerConfigId`, and `value` as top-level
-//     fields, routed through the full provider system (local-encrypted, AWS SSM, etc.).
-//     It does NOT accept `{ companyId, key, name, description }` alone.
-//   - There is no `addVersion` method on secretService — version creation is bundled into `create`.
-//   - There is no `getLatestPlaintext` method — value retrieval goes through `resolveSecretValue`
-//     which requires a binding context and the full provider machinery.
-//
-// TODO (Task 8 gap): Implement a real secretService adapter for the Gmail OAuth callback once the
-// team decides which secret provider to use for Gmail tokens (e.g. "local_encrypted") and
-// whether a default providerConfig record will be pre-seeded for each company. Until then, the
-// /callback route will throw a runtime error if invoked. The /start route and all tests are
-// fully functional.
-//
-// Once resolved, replace `unimplementedSecretAdapter` below with a real adapter such as:
-//
-//   const realSvc = secretService(input.deps.db);
-//   const secretAdapter: SecretServiceLike = {
-//     createSecret: async ({ companyId, key, name, description }) => {
-//       const created = await realSvc.create(companyId, {
-//         name,
-//         provider: "local_encrypted", // or configurable
-//         value: "__placeholder__",    // replaced by addVersion below
-//         key,
-//         description,
-//       });
-//       return { id: created.id };
-//     },
-//     addVersion: async ({ secretId, key, value }) => {
-//       // secretService.create() already writes the first version inline; addVersion
-//       // is not a separate operation. Use secretService.addVersion / updateVersion
-//       // once that API is exposed, or store the value directly in createSecret above.
-//       throw new Error("addVersion: not yet implemented — see Task 8 gap");
-//     },
-//     getLatestPlaintext: async ({ secretId }) => {
-//       // secretService does not expose a plaintext-by-secretId method without a binding
-//       // context. Use resolveSecretValue with appropriate consumer context once available.
-//       throw new Error("getLatestPlaintext: not yet implemented — see Task 8 gap");
-//     },
-//   };
-
-function unimplementedSecretAdapter(): never {
-  throw new Error(
-    "Gmail OAuth callback: secretService adapter is not yet implemented. " +
-    "See IMPORTANT comment in server/src/routes/gmail-oauth.ts (Task 8 gap).",
-  );
-}
 
 const STATE_COOKIE = "dd_gmail_oauth_state";
 
@@ -115,18 +66,26 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
       });
       const emailAddress = await fetchGoogleUserEmail(tokens.accessToken);
 
-      // TODO (Task 8 gap): Replace unimplementedSecretAdapter() with a real SecretServiceLike
-      // adapter wired to secretService(input.deps.db). See the IMPORTANT comment at the top of
-      // this file for the full explanation of the API mismatch.
-      const secretAdapter = {
-        createSecret: () => unimplementedSecretAdapter(),
-        addVersion: () => unimplementedSecretAdapter(),
-        getLatestPlaintext: () => unimplementedSecretAdapter(),
+      const realSvc = secretService(input.deps.db);
+      const store: GmailSecretStore = {
+        store: async ({ companyId, key, name, plaintext }) => {
+          const created = await realSvc.create(companyId, {
+            name,
+            key,
+            provider: "local_encrypted",
+            value: plaintext,
+            description: "Gmail OAuth refresh + access tokens for Outreach Analyst",
+          });
+          return { secretId: created.id };
+        },
+        loadLatest: async ({ companyId, secretId }) => {
+          return await realSvc.resolveSecretValue(companyId, secretId, "latest");
+        },
       };
 
       const secretId = await saveGmailTokens(
         { companyId, emailAddress, tokens },
-        { secretService: secretAdapter as never },
+        { store },
       );
       await input.deps.db.insert(ddEmailAccounts).values({
         paperclipCompanyId: companyId,
