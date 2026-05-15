@@ -6,7 +6,7 @@
 
 import type { Db } from "@paperclipai/db";
 import { ddRoleTemplates } from "@paperclipai/db";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { dealDeskRoleTemplates } from "./role-templates.js";
 
 export async function seedDealDeskRoleTemplates(db: Db): Promise<void> {
@@ -21,7 +21,6 @@ export async function seedDealDeskRoleTemplates(db: Db): Promise<void> {
         description: tpl.description,
         defaultHeartbeatCron: tpl.defaultHeartbeatCron,
         defaultBudgetUsd: tpl.defaultBudgetUsd,
-        skillFiles: tpl.skillFiles,
         systemPrompt: tpl.systemPrompt,
       })),
     )
@@ -32,9 +31,14 @@ export async function seedDealDeskRoleTemplates(db: Db): Promise<void> {
         description: sql`excluded.description`,
         defaultHeartbeatCron: sql`excluded.default_heartbeat_cron`,
         defaultBudgetUsd: sql`excluded.default_budget_usd`,
-        skillFiles: sql`excluded.skill_files`,
         systemPrompt: sql`excluded.system_prompt`,
         updatedAt: sql`now()`,
       },
     });
+
+  // DEAL DESK: Remove the retired memo-only role if it was seeded before
+  // the memo feature was scrapped.
+  await db
+    .delete(ddRoleTemplates)
+    .where(eq(ddRoleTemplates.slug, "dd-pipeline-reporter"));
 }

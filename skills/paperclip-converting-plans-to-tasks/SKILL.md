@@ -1,42 +1,110 @@
 ---
-name: paperclip-converting-plans-to-tasks
+slug: paperclip-converting-plans-to-tasks
+name: deal-desk-converting-plans-to-tasks
 description: >
-  The Paperclip way of converting a plan into executable tasks. Use whenever
-  you are asked to plan, scope, or break down work inside a Paperclip company.
-  Industry-agnostic guidance on how to translate a plan into assigned issues
-  with the right specialty, dependencies, and parallelization so Paperclip's
-  executor can pick up the work — it does not prescribe a plan format. Pair
-  with the `paperclip` skill, which covers the mechanics of writing the plan
-  document and reassigning the issue.
+  Convert a Deal Desk sourcing, diligence, or coverage plan into executable
+  private-equity workstreams. Use when breaking an investment thesis, pipeline
+  cleanup effort, intermediary coverage campaign, or diligence plan into
+  assigned Deal Desk tasks with clear dependencies and success criteria.
+domain: deal-desk
+required: false
 ---
 
-# Paperclip — Converting Plans to Tasks
+# Deal Desk — Converting Plans To Tasks
 
-A companion skill for turning a plan into executable Paperclip work. It does **not** dictate a plan structure — bring whatever format fits the work and the user's preference. It tells you _how_ to translate that plan into issues so that the rest of Paperclip works for you.
+Use this skill to turn a Deal Desk plan into work that agents can execute without re-asking what to do.
 
-For the **mechanics** of recording a plan (issue document with key `plan`, comment links, approval gating, who to reassign back to), follow the _Planning_ section of the `paperclip` skill. This skill covers planning method, not the API surface.
+The goal is not to create a beautiful plan. The goal is to create a clean operating graph: each task has an owner, a concrete deliverable, the right Deal Desk records to update, and real blockers.
 
-## When you're asked to plan
+## Inputs To Gather
 
-- **Plan deeply.** Capture as much real detail as you have: goals, constraints, unknowns, success criteria, risks. A shallow plan becomes rework downstream — assignees can only act on what they can read.
-- **Know your team.** Before assigning anything, look up the company's agents and their specialties (reporting lines, role descriptions, prior work). Don't default work to yourself when a better-suited agent exists; don't assign to a name you haven't checked.
-- **Assign for specialty.** Hand each piece of work to the agent most relevant to it. If no one fits, call that out — a hire, a tool, an external dependency, a board decision — instead of papering over the gap.
-- **Take responsibility.** Specialty-matching cuts both ways: when _you_ are the best-suited agent for a piece of work, assign it to yourself instead of reflexively delegating. Don't hand off to avoid load.
-- **Use the dependency tree.** Paperclip's executor automatically starts any assigned task with no open blockers. Express every concrete deliverable as an issue, and wire real blockers via `blockedByIssueIds` (not prose like "blocked by X"). When `done`, dependents auto-wake.
-- **Order, then parallelize.** Sequence work by real dependencies, not by personal preference. Independent branches of the graph should start in parallel. Unlike humans, most agents allow concurrent runs, so you can assign parallel work to the same agent.
-- **Enough is enough.** Plans exist to unblock execution, not replace it. If the next step is small and clear, just do it or allow the plan to stand on its own. Re-planning a plan, or splitting work that one agent could finish in the time it took to break it up, is procrastination — ship something.
+Before creating tasks, identify:
 
-## Quick checklist before you publish a plan
+- Active thesis or mandate.
+- Target sectors, geography, revenue range, and ownership signals.
+- Current pipeline gaps.
+- Intermediary coverage gaps.
+- Diligence questions or partner decisions.
+- Available Deal Desk employees and their specialties.
 
-- [ ] Enough detail that assignees can act without re-asking.
-- [ ] Every concrete deliverable is an issue (or named as a known follow-up).
-- [ ] Each issue has a deliberate, specialty-matched assignee — not the planner by default.
-- [ ] Each issue's real blockers are declared via `blockedByIssueIds`.
-- [ ] Independent branches can start in parallel.
-- [ ] Gaps (missing skills, hires, decisions, external inputs) are surfaced, not hidden.
+If the plan lacks enough detail for an assignee to act, add a first task to clarify the missing input rather than creating vague research tickets.
 
-## What this skill is not
+## Task Types
 
-- Not a plan template. Use any format — prose, outline, table, RACI, Gantt, whatever fits.
-- Not software-development–specific. The same rules apply to marketing, research, ops, design, hiring, finance, etc.
-- Not a replacement for the `paperclip` skill's planning mechanics. Use both.
+Use these task categories:
+
+- **Sourcing slice**: find companies in a defined sector/geography/size band.
+- **Pipeline cleanup**: dedupe, normalize stages, update stale records, or add missing citations.
+- **Contact enrichment**: identify owners, CEOs, founders, bankers, brokers, or advisors.
+- **Intermediary coverage**: map relationships, draft check-ins, and schedule next touches.
+- **Diligence question**: answer a focused market, customer, financial, or competitive question.
+- **Partner review**: summarize evidence and ask for a decision.
+- **Tooling gap**: request or implement missing Deal Desk workflow support.
+
+## Decomposition Rules
+
+- One task should produce one inspectable result.
+- Give each task a Deal Desk object to update when possible: thesis, target, intermediary, contact, outreach draft, or pipeline summary.
+- Use dependencies for real ordering constraints. Do not serialize work that can run in parallel.
+- Assign by specialty. A sourcer should source; a contact enricher should enrich; Head of BD should orchestrate and summarize.
+- Call out missing employees or skills as a staffing gap instead of assigning mismatched work.
+
+## Task Template
+
+Each task should include:
+
+```markdown
+## Goal
+What business outcome this task supports.
+
+## Scope
+Sector/geography/revenue/stage/contact/intermediary boundaries.
+
+## Inputs
+Thesis, existing records, source lists, or partner notes to use.
+
+## Deliverable
+Exact Deal Desk record updates or summary expected.
+
+## Quality Bar
+Citation, dedupe, scoring, confidence, and approval requirements.
+
+## Blockers
+Any tasks or partner decisions that must happen first.
+```
+
+## Common Workstream Patterns
+
+### New Thesis Launch
+
+1. Normalize the thesis into searchable criteria.
+2. Create sourcing slices by sector and geography.
+3. Assign target sourcing in parallel.
+4. Assign intermediary mapping in parallel.
+5. After initial targets exist, assign contact enrichment.
+6. Head of BD summarizes pipeline coverage and gaps.
+
+### Pipeline Quality Sprint
+
+1. Deduplicate target records.
+2. Add missing citations and score rationales.
+3. Re-score stale or weak targets.
+4. Enrich top-priority contacts.
+5. Summarize which records are partner-ready.
+
+### Coverage Campaign
+
+1. Segment intermediaries by relevance and freshness.
+2. Draft overdue check-ins.
+3. Add missing intermediary profiles.
+4. Surface relationship gaps for partner review.
+
+## Done Criteria
+
+A task breakdown is ready when:
+
+- Every task has an owner or explicitly states a staffing gap.
+- Each task has a concrete Deal Desk deliverable.
+- Dependencies are represented as blockers, not buried in prose.
+- Partner approval points are explicit.
+- No task asks an agent to fabricate data, send outreach without approval, or bypass Deal Desk records.

@@ -11,6 +11,13 @@ async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
+async function createSkillDir(root: string, name: string) {
+  const skillDir = path.join(root, name);
+  await fs.mkdir(skillDir, { recursive: true });
+  await fs.writeFile(path.join(skillDir, "SKILL.md"), `---\nname: ${name}\n---\n`, "utf8");
+  return skillDir;
+}
+
 describe("opencode local skill sync", () => {
   const paperclipKey = "paperclipai/paperclip/paperclip";
   const cleanupDirs = new Set<string>();
@@ -20,9 +27,12 @@ describe("opencode local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports configured Paperclip skills and installs them into the shared Claude/OpenCode skills home", async () => {
+  it("installs converted Deal Desk skills that keep Paperclip-compatible keys", async () => {
     const home = await makeTempDir("paperclip-opencode-skill-sync-");
+    const runtimeSkills = await makeTempDir("paperclip-opencode-skill-src-");
     cleanupDirs.add(home);
+    cleanupDirs.add(runtimeSkills);
+    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
 
     const ctx = {
       agentId: "agent-1",
@@ -35,6 +45,12 @@ describe("opencode local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [paperclipKey],
         },
+        paperclipRuntimeSkills: [{
+          key: paperclipKey,
+          runtimeName: "paperclip",
+          source: paperclipDir,
+          sourceKind: "deal_desk",
+        }],
       },
     } as const;
 
@@ -42,17 +58,20 @@ describe("opencode local skill sync", () => {
     expect(before.mode).toBe("persistent");
     expect(before.warnings).toContain("OpenCode currently uses the shared Claude skills home (~/.claude/skills).");
     expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
     expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
 
     const after = await syncOpenCodeSkills(ctx, [paperclipKey]);
+    expect(after.desiredSkills).toContain(paperclipKey);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
   });
 
-  it("keeps required bundled Paperclip skills installed even when the desired set is emptied", async () => {
+  it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
     const home = await makeTempDir("paperclip-opencode-skill-prune-");
+    const runtimeSkills = await makeTempDir("paperclip-opencode-skill-prune-src-");
     cleanupDirs.add(home);
+    cleanupDirs.add(runtimeSkills);
+    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -65,6 +84,12 @@ describe("opencode local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [paperclipKey],
         },
+        paperclipRuntimeSkills: [{
+          key: paperclipKey,
+          runtimeName: "paperclip",
+          source: paperclipDir,
+          sourceKind: "deal_desk",
+        }],
       },
     } as const;
 
@@ -79,12 +104,15 @@ describe("opencode local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [],
         },
+        paperclipRuntimeSkills: configuredCtx.config.paperclipRuntimeSkills,
       },
     } as const;
 
     const after = await syncOpenCodeSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect(after.desiredSkills).not.toContain(paperclipKey);
+    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("available");
+    await expect(fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
   });
 });

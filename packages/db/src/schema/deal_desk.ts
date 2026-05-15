@@ -294,28 +294,6 @@ export const ddSuppressionList = pgTable(
   }),
 );
 
-// ── dd_memos ───────────────────────────────────────────────────────────────────
-
-export const ddMemos = pgTable(
-  "dd_memos",
-  {
-    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
-    generatedByAgentId: uuid("generated_by_agent_id"),
-    weekStartDate: date("week_start_date").notNull(),
-    markdown: text("markdown").notNull(),
-    metricsSnapshot: jsonb("metrics_snapshot").notNull().default({}),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => ({
-    companyIdx: index("dd_memos_company_id_idx").on(table.paperclipCompanyId),
-    companyWeekUq: uniqueIndex("dd_memos_company_week_idx").on(
-      table.paperclipCompanyId,
-      table.weekStartDate,
-    ),
-  }),
-);
-
 // ── dd_role_templates ──────────────────────────────────────────────────────────
 // Phase 8 — pre-built agent role configurations the UI "Hire" dialog reads.
 // Seeded at server startup from server/src/deal-desk/seeds/role-templates.ts.
@@ -329,7 +307,6 @@ export const ddRoleTemplates = pgTable(
     description: text("description").notNull(),
     defaultHeartbeatCron: varchar("default_heartbeat_cron", { length: 100 }).notNull(),
     defaultBudgetUsd: integer("default_budget_usd").notNull().default(50),
-    skillFiles: jsonb("skill_files").notNull().default([]),
     systemPrompt: text("system_prompt").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

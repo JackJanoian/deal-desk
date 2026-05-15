@@ -1,154 +1,92 @@
 ---
-name: paperclip-create-plugin
+slug: paperclip-create-plugin
+name: deal-desk-create-plugin
 description: >
-  Create and develop external Paperclip plugins with the CLI-first workflow.
-  Use when scaffolding a new plugin, working on a local plugin against a running
-  Paperclip instance, or updating plugin authoring docs. Covers `paperclipai
-  plugin init`, the local install loop via `paperclipai plugin install <path>`,
-  worker/UI rebuild and reload semantics, and the required success checklist.
+  Design Deal Desk integrations and workflow extensions for PE sourcing,
+  diligence, contact enrichment, intermediary coverage, and reporting. Use when
+  connecting external data sources, adding Deal Desk tools, or shaping a plugin
+  that improves acquisition-target workflow.
+domain: deal-desk
+required: false
 ---
 
-# Create and develop a Paperclip plugin
+# Deal Desk Integration Skill
 
-Use this skill when the task is to create, scaffold, or iterate on a Paperclip plugin against a local Paperclip instance.
+Use this skill when the user asks to add a Deal Desk tool, data integration, workflow extension, or plugin-like capability.
 
-## 1. Default: build the plugin OUTSIDE Paperclip core
+The focus is PE workflow value, not generic platform extension. Every integration should improve sourcing, diligence, contact quality, intermediary coverage, or partner reporting.
 
-Plugins are their own packages. Unless the task **explicitly** asks for a bundled in-repo example, do not add plugin source under `packages/plugins/` in this repo.
+## Good Integration Candidates
 
-- Scaffold the plugin into a directory outside the Paperclip checkout (e.g. `~/dev/paperclip-plugins/<name>`).
-- Install it into the running Paperclip instance by local absolute path.
-- Edit code in the external package; let Paperclip pick up rebuilt output.
+- Company data providers.
+- Contact enrichment sources.
+- LinkedIn or web research workflows.
+- CRM imports/exports.
+- Outreach draft repositories.
+- Intermediary/deal database connectors.
+- Data-room or diligence document summarizers.
+- Portfolio or thesis reporting exports.
 
-Only edit Paperclip core itself when the user asks to surface a plugin as a bundled example (`server/src/routes/plugins.ts`, in-repo example lists, docs).
+Avoid building a plugin when a small Deal Desk route, seed, field, or UI addition solves the job.
 
-## 2. Ground rules
+## Discovery Questions
 
-Reference docs when you need detail:
+Answer these before proposing implementation:
 
-1. `doc/plugins/PLUGIN_AUTHORING_GUIDE.md`
-2. `packages/plugins/sdk/README.md`
-3. `doc/plugins/PLUGIN_SPEC.md` — future-looking context only
+- Which Deal Desk object is affected: thesis, target, contact, intermediary, outreach draft, or report?
+- Is the integration read-only, draft-only, or allowed to mutate records?
+- What external credentials or secrets are required?
+- What is the dedupe key?
+- What provenance must be stored?
+- What approval boundary applies?
+- What failure state should the user see?
 
-Current runtime assumptions:
+## Integration Contract
 
-- plugin workers are trusted code
-- plugin UI is trusted same-origin host code
-- worker APIs are capability-gated
-- plugin UI is not sandboxed by manifest capabilities
-- no host-provided shared plugin UI component kit yet
-- `ctx.assets` is not supported in the current runtime
+Any new Deal Desk integration should define:
 
-## 3. CLI-first scaffold workflow
+- Input schema.
+- Output schema.
+- Record mapping.
+- Source/citation behavior.
+- Idempotency and dedupe behavior.
+- Permission and approval boundary.
+- Logging or audit trail.
+- Retry/failure behavior.
 
-Use `paperclipai plugin init`. Do not invoke the scaffold package node entrypoint by hand unless the CLI command is unavailable in the environment.
+## Data Safety
 
-```bash
-paperclipai plugin init @acme/my-plugin --output ~/dev/paperclip-plugins
-```
+- Never store raw secrets in Deal Desk records.
+- Do not send outreach automatically without explicit authorization.
+- Tag imported or enriched data with its source.
+- Keep confidence separate from facts.
+- Prefer staged/draft outputs for anything partner- or counterparty-facing.
 
-Useful flags (all optional):
+## Implementation Guidance
 
-- `--output <dir>` — parent directory; the command creates `<dir>/<unscoped-name>/`. Defaults to the current directory.
-- `--template <default|connector|workspace|environment>` — starter template.
-- `--category <connector|workspace|automation|ui|environment>` — manifest category.
-- `--display-name <name>`, `--description <text>`, `--author <name>` — manifest metadata.
-- `--sdk-path <path>` — snapshot the local SDK from a Paperclip checkout into `.paperclip-sdk/` (useful when developing against an unreleased SDK).
+For a small in-app workflow:
 
-On success the command prints the exact next commands (`cd`, `pnpm install`, `pnpm dev`, `paperclipai plugin install <abs-path>`). Run them in order.
+1. Add or update the server route under the Deal Desk API.
+2. Add validation and company scoping.
+3. Update the DB schema/migration if new persisted fields are needed.
+4. Add UI affordances only where operators need to inspect or approve the output.
+5. Add tests around company boundaries, dedupe, and error states.
 
-If `paperclipai` is not on PATH in your environment, fall back to:
+For a true plugin-style integration:
 
-```bash
-pnpm --filter @paperclipai/create-paperclip-plugin build
-node packages/plugins/create-paperclip-plugin/dist/index.js @acme/my-plugin \
-  --output /absolute/path \
-  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk
-```
+1. Keep the integration package isolated.
+2. Declare only the capabilities required.
+3. Keep UI self-contained.
+4. Store credentials through the app’s secret/config mechanism.
+5. Verify install, runtime execution, and reload behavior.
 
-## 4. Local install + rebuild loop
+## Done Criteria
 
-In the scaffolded plugin folder:
+The integration is ready when:
 
-```bash
-pnpm install
-pnpm dev            # esbuild --watch: rebuilds dist/manifest.js, dist/worker.js, dist/ui/
-paperclipai plugin install /absolute/path/to/my-plugin
-```
-
-Notes:
-
-- `paperclipai plugin install` auto-detects local paths (absolute, `./`, `../`, `~`, or an existing relative folder) and forwards `isLocalPath: true` to the server. Pass `--local` to force local mode if the heuristic is ambiguous.
-- Paths are resolved to absolute paths before being sent to the server.
-- The server watches built outputs (`dist/`) for local-path plugins and restarts the plugin worker on rebuild — you do not need to reinstall after every edit.
-- UI hot reload via the SDK dev server (`pnpm dev:ui`, port `4177`) is optional and template-dependent; only mention it if the template wires `devUiUrl` and you verified it works end to end.
-- `--version` only applies to npm package installs. Combining it with a local path is an error.
-
-After install, inspect with:
-
-```bash
-paperclipai plugin list
-paperclipai plugin inspect <plugin-key>
-```
-
-## 5. After scaffolding, sanity-check the package
-
-Open and confirm:
-
-- `src/manifest.ts` — declared capabilities and slots
-- `src/worker.ts` — worker entry
-- `src/ui/index.tsx` — UI entry (if applicable)
-- `tests/plugin.spec.ts` — placeholder test
-- `package.json` — `paperclipPlugin` block points at `dist/manifest.js`, `dist/worker.js`, `dist/ui/`
-
-Make sure the plugin:
-
-- declares only supported capabilities
-- does not use `ctx.assets`
-- does not import host UI component stubs
-- keeps UI self-contained
-- uses `routePath` only on `page` slots
-
-## 6. Verification (run before declaring success)
-
-From the plugin folder:
-
-```bash
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-If the plugin is already running under `pnpm dev`, you can keep the watcher up and run `pnpm typecheck` and `pnpm test` in a separate shell.
-
-If you changed Paperclip SDK/host/plugin runtime code in addition to the plugin, also run the relevant Paperclip workspace checks.
-
-## 7. Success checklist (report this back)
-
-When you finish a local plugin task, report:
-
-- **Scaffold path** — absolute path of the created plugin folder.
-- **Commands run** — the exact `paperclipai plugin init`, `pnpm install`, `pnpm dev`, `paperclipai plugin install <path>` invocations (and any verification commands).
-- **Install status** — output of `paperclipai plugin list` / `plugin inspect` (plugin key, version, status). Note if `status` is anything other than `ready` and include `lastError`.
-- **Tests / build result** — `pnpm typecheck`, `pnpm test`, `pnpm build` pass/fail with the failing output if any.
-- **Reload limitations** — call out anything that did not hot-reload (e.g. manifest changes required a reinstall, UI dev server was not wired, etc.).
-
-If any item is missing, mark it as such — do not silently skip.
-
-## 8. When NOT to edit Paperclip core
-
-Do not add the plugin under `packages/plugins/` or update bundled-example wiring unless the user explicitly asks for a bundled example. Local-path installs are the supported development model; npm packages are the production deployment path.
-
-If the user does ask for a bundled example, also update:
-
-- `server/src/routes/plugins.ts` example list
-- any docs that enumerate in-repo example plugins
-
-## 9. Documentation expectations
-
-When authoring or updating plugin docs:
-
-- distinguish current implementation from future spec ideas
-- be explicit about the trusted-code model
-- do not promise host UI components or asset APIs
-- prefer local-path development + npm-package deployment guidance over repo-local workflows
+- It improves a specific Deal Desk workflow.
+- It writes structured records or draft outputs, not just prose.
+- It can be re-run without duplicate records.
+- It exposes source provenance.
+- It fails visibly and recoverably.
+- It respects company boundaries and approval requirements.

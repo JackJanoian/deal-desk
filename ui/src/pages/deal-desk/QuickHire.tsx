@@ -12,6 +12,65 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PromptFileInput } from "../../components/deal-desk/PromptFileInput";
+import { ReportsToPicker } from "../../components/ReportsToPicker";
+
+export const DEAL_DESK_SKILL_KEYS = [
+  "paperclip",
+  "paperclip-converting-plans-to-tasks",
+  "paperclip-create-agent",
+  "paperclip-create-plugin",
+  "paperclip-dev",
+] as const;
+
+type DealDeskQuickHireInput = {
+  name: string;
+  title: string;
+  systemPrompt: string;
+  budgetUsd: string;
+  reportsTo?: string | null;
+};
+
+export type DealDeskQuickHirePayload = {
+  name: string;
+  title: string;
+  role: "general";
+  adapterType: "claude_local";
+  adapterConfig: {
+    dangerouslySkipPermissions: boolean;
+  };
+  instructionsBundle: {
+    entryFile: "AGENTS.md";
+    files: {
+      "AGENTS.md": string;
+    };
+  };
+  desiredSkills: string[];
+  budgetMonthlyCents: number;
+  reportsTo?: string;
+};
+
+export function buildDealDeskQuickHirePayload(input: DealDeskQuickHireInput): DealDeskQuickHirePayload {
+  const budgetCents = Math.max(0, Math.round(Number(input.budgetUsd) * 100));
+  const { reportsTo } = input;
+  return {
+    name: input.name.trim(),
+    title: input.title.trim() || input.name.trim(),
+    role: "general", // DEAL DESK: PE employees use 'general' role to avoid CEO authz path
+    adapterType: "claude_local",
+    adapterConfig: {
+      dangerouslySkipPermissions: true,
+    },
+    instructionsBundle: {
+      entryFile: "AGENTS.md",
+      files: {
+        "AGENTS.md": input.systemPrompt,
+      },
+    },
+    desiredSkills: [...DEAL_DESK_SKILL_KEYS],
+    budgetMonthlyCents: budgetCents,
+    ...(reportsTo ? { reportsTo } : {}),
+  };
+}
 
 export function QuickHire() {
   const { slug } = useParams<{ slug: string }>();
@@ -34,11 +93,18 @@ export function QuickHire() {
     [isCustom, templatesQuery.data, slug],
   );
 
+  const { data: agents } = useQuery({
+    queryKey: queryKeys.agents.list(selectedCompanyId ?? ""),
+    queryFn: () => agentsApi.list(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId),
+  });
+
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [promptFileName, setPromptFileName] = useState<string | null>(null);
   const [budgetUsd, setBudgetUsd] = useState<string>("50");
+  const [reportsTo, setReportsTo] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -59,31 +125,22 @@ export function QuickHire() {
   const createAgent = useMutation({
     mutationFn: async () => {
       if (!selectedCompanyId) throw new Error("No company selected");
-      const budgetCents = Math.max(0, Math.round(Number(budgetUsd) * 100));
-      // DEAL DESK: v0.3.1 — Paperclip rejects adapterConfig.promptTemplate for new
-      // agents on adapters that support instructions bundles (server/src/routes/agents.ts
-      // assertNoNewAgentLegacyPromptTemplate). Send the prompt via the top-level
-      // instructionsBundle instead.
-      return agentsApi.create(selectedCompanyId, {
-        name: name.trim(),
-        title: title.trim() || name.trim(),
-        role: "general", // DEAL DESK: PE employees use 'general' role to avoid CEO authz path
-        adapterType: "claude_local",
-        adapterConfig: {
-          dangerouslySkipPermissions: true,
-        },
-        instructionsBundle: {
-          entryFile: "AGENTS.md",
-          files: {
-            "AGENTS.md": systemPrompt,
-          },
-        },
-        budgetMonthlyCents: budgetCents,
-      });
+      // DEAL DESK: v0.3.1 — the server rejects adapterConfig.promptTemplate for new
+      // agents on adapters that support instructions bundles (see
+      // server/src/routes/agents.ts assertNoNewAgentLegacyPromptTemplate). Send the
+      // prompt via the top-level instructionsBundle instead.
+      return agentsApi.create(selectedCompanyId, buildDealDeskQuickHirePayload({
+        name,
+        title,
+        systemPrompt,
+        budgetUsd,
+        reportsTo,
+      }));
     },
     onSuccess: (agent) => {
       pushToast({ title: "Employee hired", body: `${agent.name} is ready`, tone: "success" });
       void queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId ?? "") });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.org(selectedCompanyId ?? "") });
       navigate("/agents");
     },
     onError: (err: Error) => {
@@ -101,7 +158,7 @@ export function QuickHire() {
           {isCustom ? "Hire a custom employee" : `Hire: ${template?.name ?? "…"}`}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Five fields. Set up an AI analyst in under a minute.
+          Set up an AI analyst in under a minute. Optionally place them in your org chart.
         </p>
       </header>
 
@@ -148,6 +205,16 @@ export function QuickHire() {
             inputMode="numeric"
             value={budgetUsd}
             onChange={(e) => setBudgetUsd(e.target.value.replace(/[^\d.]/g, ""))}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-muted-foreground font-normal">Org chart</Label>
+          <ReportsToPicker
+            agents={agents ?? []}
+            value={reportsTo}
+            onChange={setReportsTo}
+            disabled={!agents?.length}
           />
         </div>
       </div>

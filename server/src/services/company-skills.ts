@@ -75,8 +75,9 @@ type CompanySkillReferenceRow = Pick<
   | "id"
   | "key"
   | "slug"
+  | "metadata"
 >;
-type SkillReferenceTarget = Pick<CompanySkill, "id" | "key" | "slug">;
+type SkillReferenceTarget = Pick<CompanySkill, "id" | "key" | "slug" | "metadata">;
 type SkillSourceInfoTarget = Pick<
   CompanySkill,
   | "companyId"
@@ -1254,6 +1255,15 @@ function getSkillMeta(skill: Pick<CompanySkill, "metadata">): SkillSourceMeta {
   return isPlainRecord(skill.metadata) ? skill.metadata as SkillSourceMeta : {};
 }
 
+function isDealDeskSkillMarkdown(markdown: string): boolean {
+  return /^\s*domain\s*:\s*deal-desk\s*$/m.test(markdown);
+}
+
+function isPaperclipRuntimeToolSkill(skill: Pick<CompanySkill, "metadata">): boolean {
+  const sourceKind = asString(getSkillMeta(skill).sourceKind);
+  return sourceKind === "paperclip_bundled";
+}
+
 function resolveSkillReference(
   skills: SkillReferenceTarget[],
   reference: string,
@@ -1299,12 +1309,13 @@ function resolveRequestedSkillKeysOrThrow(
   const missing = new Set<string>();
   const ambiguous = new Set<string>();
   const resolved = new Set<string>();
+  const assignableSkills = skills.filter((skill) => !isPaperclipRuntimeToolSkill(skill));
 
   for (const reference of requestedReferences) {
     const trimmed = reference.trim();
     if (!trimmed) continue;
 
-    const match = resolveSkillReference(skills, trimmed);
+    const match = resolveSkillReference(assignableSkills, trimmed);
     if (match.skill) {
       resolved.add(match.skill.key);
       continue;
@@ -1335,12 +1346,13 @@ function resolveRequestedSkillKeysOrThrow(
 function resolveDesiredSkillKeys(
   skills: SkillReferenceTarget[],
   config: Record<string, unknown>,
-) {
+): string[] {
   const preference = readPaperclipSkillSyncPreference(config);
+  const assignableSkills = skills.filter((skill) => !isPaperclipRuntimeToolSkill(skill));
   return Array.from(new Set(
     preference.desiredSkills
-      .map((reference) => resolveSkillReference(skills, reference).skill?.key ?? normalizeSkillKey(reference))
-      .filter((value): value is string => Boolean(value)),
+      .map((reference) => resolveSkillReference(assignableSkills, reference).skill?.key ?? normalizeSkillKey(reference))
+      .filter((value): value is string => typeof value === "string")
   ));
 }
 
@@ -1554,20 +1566,22 @@ export function companySkillService(db: Db) {
       const stats = await fs.stat(skillsRoot).catch(() => null);
       if (!stats?.isDirectory()) continue;
       const bundledSkills = await readLocalSkillImports(companyId, skillsRoot)
-        .then((skills) => skills.map((skill) => ({
-          ...skill,
-          key: deriveCanonicalSkillKey(companyId, {
-            ...skill,
-            metadata: {
-              ...(skill.metadata ?? {}),
-              sourceKind: "paperclip_bundled",
-            },
-          }),
-          metadata: {
+        .then((skills) => skills.map((skill) => {
+          const sourceKind = isDealDeskSkillMarkdown(skill.markdown) ? "deal_desk" : "paperclip_bundled";
+          const metadata = {
             ...(skill.metadata ?? {}),
-            sourceKind: "paperclip_bundled",
-          },
-        })))
+            sourceKind,
+            ...(sourceKind === "deal_desk" ? { skillKey: `paperclipai/paperclip/${skill.slug}` } : {}),
+          };
+          return {
+            ...skill,
+            key: deriveCanonicalSkillKey(companyId, {
+              ...skill,
+              metadata,
+            }),
+            metadata,
+          };
+        }))
         .catch(() => [] as ImportedSkill[]);
       if (bundledSkills.length === 0) continue;
       return upsertImportedSkills(companyId, bundledSkills);
@@ -1682,6 +1696,7 @@ export function companySkillService(db: Db) {
         id: companySkills.id,
         key: companySkills.key,
         slug: companySkills.slug,
+        metadata: companySkills.metadata,
       })
       .from(companySkills)
       .where(eq(companySkills.companyId, companyId));
@@ -2171,7 +2186,8 @@ export function companySkillService(db: Db) {
 
     const out: PaperclipSkillEntry[] = [];
     for (const skill of skills) {
-      const sourceKind = asString(getSkillMeta(skill).sourceKind);
+      if (isPaperclipRuntimeToolSkill(skill)) continue;
+
       let source = normalizeSkillDirectory(skill);
       if (!source) {
         source = options.materializeMissing === false
@@ -2180,15 +2196,13 @@ export function companySkillService(db: Db) {
       }
       if (!source) continue;
 
-      const required = sourceKind === "paperclip_bundled";
       out.push({
         key: skill.key,
         runtimeName: buildSkillRuntimeName(skill.key, skill.slug),
         source,
-        required,
-        requiredReason: required
-          ? "Bundled Paperclip skills are always available for local adapters."
-          : null,
+        required: false,
+        requiredReason: null,
+        sourceKind: asString(getSkillMeta(skill).sourceKind),
       });
     }
 

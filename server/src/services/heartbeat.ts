@@ -472,6 +472,7 @@ async function resolveRunScopedMentionedSkillKeys(input: {
     .select({
       id: companySkillsTable.id,
       key: companySkillsTable.key,
+      metadata: companySkillsTable.metadata,
     })
     .from(companySkillsTable)
     .where(
@@ -480,10 +481,23 @@ async function resolveRunScopedMentionedSkillKeys(input: {
         inArray(companySkillsTable.id, mentionedSkillIds),
       ),
     );
-  const skillKeyById = new Map(skillRows.map((row) => [row.id, row.key]));
+  const skillKeyById = new Map(
+    skillRows
+      .filter((row) => !hasPaperclipBundledSourceKind(row.metadata))
+      .map((row) => [row.id, row.key]),
+  );
   return mentionedSkillIds
     .map((skillId) => skillKeyById.get(skillId) ?? null)
     .filter((skillKey): skillKey is string => Boolean(skillKey));
+}
+
+function hasPaperclipBundledSourceKind(metadata: unknown): boolean {
+  return (
+    Boolean(metadata) &&
+    typeof metadata === "object" &&
+    !Array.isArray(metadata) &&
+    (metadata as Record<string, unknown>).sourceKind === "paperclip_bundled"
+  );
 }
 
 function leaseReleaseStatusForRunStatus(

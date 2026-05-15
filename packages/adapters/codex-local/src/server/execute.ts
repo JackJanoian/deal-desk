@@ -28,6 +28,7 @@ import {
   ensureAbsoluteDirectory,
   ensurePaperclipSkillSymlink,
   ensurePathInEnv,
+  isPaperclipBundledRuntimeSkillEntry,
   refreshPaperclipWorkspaceEnvForExecution,
   readPaperclipRuntimeSkillEntries,
   readPaperclipIssueWorkModeFromContext,
@@ -166,7 +167,7 @@ function resolveCodexSkillsDir(codexHome: string): string {
 
 type EnsureCodexSkillsInjectedOptions = {
   skillsHome?: string;
-  skillsEntries?: Array<{ key: string; runtimeName: string; source: string }>;
+  skillsEntries?: Array<{ key: string; runtimeName: string; source: string; sourceKind?: string | null }>;
   desiredSkillNames?: string[];
   linkSkill?: (source: string, target: string) => Promise<void>;
 };
@@ -176,6 +177,14 @@ type CodexTransientFallbackMode =
   | "safer_invocation"
   | "fresh_session"
   | "fresh_session_safer_invocation";
+
+async function isUnavailablePaperclipRuntimeSkill(
+  entry: { key: string; runtimeName: string; source: string; sourceKind?: string | null },
+): Promise<boolean> {
+  if (isPaperclipBundledRuntimeSkillEntry(entry)) return true;
+  if (entry.sourceKind) return false;
+  return isLikelyPaperclipRuntimeSkillPath(entry.source, entry.runtimeName);
+}
 
 function readCodexTransientFallbackMode(context: Record<string, unknown>): CodexTransientFallbackMode | null {
   const value = asString(context.codexTransientFallbackMode, "").trim();
@@ -221,7 +230,12 @@ export async function ensureCodexSkillsInjected(
   onLog: AdapterExecutionContext["onLog"],
   options: EnsureCodexSkillsInjectedOptions = {},
 ) {
-  const allSkillsEntries = options.skillsEntries ?? await readPaperclipRuntimeSkillEntries({}, __moduleDir);
+  const configuredSkillsEntries = options.skillsEntries ?? await readPaperclipRuntimeSkillEntries({}, __moduleDir);
+  const allSkillsEntries = [];
+  for (const entry of configuredSkillsEntries) {
+    if (await isUnavailablePaperclipRuntimeSkill(entry)) continue;
+    allSkillsEntries.push(entry);
+  }
   const desiredSkillNames =
     options.desiredSkillNames ?? allSkillsEntries.map((entry) => entry.key);
   const desiredSet = new Set(desiredSkillNames);

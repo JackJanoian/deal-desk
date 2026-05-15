@@ -6,7 +6,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   createDb,
   ddIntermediaries,
-  ddMemos,
   ddTargets,
   ddTheses,
   getEmbeddedPostgresTestSupport,
@@ -46,7 +45,6 @@ describeEmbeddedPostgres("deal-desk tools", () => {
   beforeEach(async () => {
     await db.delete(ddTargets);
     await db.delete(ddIntermediaries);
-    await db.delete(ddMemos);
     await db.delete(ddTheses);
     companyId = randomUUID();
     const inserted = await db
@@ -172,26 +170,5 @@ describeEmbeddedPostgres("deal-desk tools", () => {
     expect(touchRes.body.intermediary.nextTouchDue).toBe(
       expectedNext.toISOString().slice(0, 10),
     );
-  });
-
-  it("generateMemo: upsert returns same memoId on second call for same week", async () => {
-    const week = "2026-05-11";
-    const first = await request(app)
-      .post(`/companies/${companyId}/deal-desk/tools/memos`)
-      .send({ markdown: "# Week 1\n\nFirst memo.", weekStartDate: week });
-    expect(first.status).toBe(201);
-    expect(first.body.ok).toBe(true);
-    const memoId = first.body.memoId as string;
-
-    const second = await request(app)
-      .post(`/companies/${companyId}/deal-desk/tools/memos`)
-      .send({ markdown: "# Week 1\n\nUpdated memo.", weekStartDate: week });
-    expect(second.status).toBe(200);
-    expect(second.body.action).toBe("updated");
-    expect(second.body.memoId).toBe(memoId);
-
-    const rows = await db.query.ddMemos.findMany({});
-    expect(rows.length).toBe(1);
-    expect(rows[0]?.markdown).toContain("Updated memo");
   });
 });

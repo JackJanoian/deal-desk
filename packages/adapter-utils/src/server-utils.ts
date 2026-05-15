@@ -135,6 +135,7 @@ export interface PaperclipSkillEntry {
   source: string;
   required?: boolean;
   requiredReason?: string | null;
+  sourceKind?: string | null;
 }
 
 export interface InstalledSkillTarget {
@@ -1492,6 +1493,7 @@ function normalizeConfiguredPaperclipRuntimeSkills(value: unknown): PaperclipSki
     const runtimeName = asString(entry.runtimeName, asString(entry.name, "")).trim();
     const source = asString(entry.source, "").trim();
     if (!key || !runtimeName || !source) continue;
+    if (isPaperclipBundledRuntimeSkillEntry(entry)) continue;
     out.push({
       key,
       runtimeName,
@@ -1501,19 +1503,25 @@ function normalizeConfiguredPaperclipRuntimeSkills(value: unknown): PaperclipSki
         typeof entry.requiredReason === "string" && entry.requiredReason.trim().length > 0
           ? entry.requiredReason.trim()
           : null,
+      sourceKind:
+        typeof entry.sourceKind === "string" && entry.sourceKind.trim().length > 0
+          ? entry.sourceKind.trim()
+          : null,
     });
   }
   return out;
 }
 
+export function isPaperclipBundledRuntimeSkillEntry(entry: { sourceKind?: unknown }): boolean {
+  return typeof entry.sourceKind === "string" && entry.sourceKind.trim() === "paperclip_bundled";
+}
+
 export async function readPaperclipRuntimeSkillEntries(
   config: Record<string, unknown>,
-  moduleDir: string,
-  additionalCandidates: string[] = [],
+  _moduleDir: string,
+  _additionalCandidates: string[] = [],
 ): Promise<PaperclipSkillEntry[]> {
-  const configuredEntries = normalizeConfiguredPaperclipRuntimeSkills(config.paperclipRuntimeSkills);
-  if (configuredEntries.length > 0) return configuredEntries;
-  return listPaperclipSkillEntries(moduleDir, additionalCandidates);
+  return normalizeConfiguredPaperclipRuntimeSkills(config.paperclipRuntimeSkills);
 }
 
 export async function readPaperclipSkillMarkdown(

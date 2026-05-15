@@ -33,6 +33,7 @@ import {
   ensureAbsoluteDirectory,
   ensurePaperclipSkillSymlink,
   ensurePathInEnv,
+  isPaperclipBundledRuntimeSkillEntry,
   refreshPaperclipWorkspaceEnvForExecution,
   readPaperclipRuntimeSkillEntries,
   readPaperclipIssueWorkModeFromContext,
@@ -132,7 +133,7 @@ async function buildCursorSkillsDir(config: Record<string, unknown>): Promise<st
 
 type EnsureCursorSkillsInjectedOptions = {
   skillsDir?: string | null;
-  skillsEntries?: Array<{ key: string; runtimeName: string; source: string }>;
+  skillsEntries?: Array<{ key: string; runtimeName: string; source: string; sourceKind?: string | null }>;
   skillsHome?: string;
   linkSkill?: (source: string, target: string) => Promise<void>;
 };
@@ -141,7 +142,7 @@ export async function ensureCursorSkillsInjected(
   onLog: AdapterExecutionContext["onLog"],
   options: EnsureCursorSkillsInjectedOptions = {},
 ) {
-  const skillsEntries = options.skillsEntries
+  const skillsEntries = (options.skillsEntries
     ?? (options.skillsDir
       ? (await fs.readdir(options.skillsDir, { withFileTypes: true }))
           .filter((entry) => entry.isDirectory())
@@ -149,8 +150,10 @@ export async function ensureCursorSkillsInjected(
             key: entry.name,
             runtimeName: entry.name,
             source: path.join(options.skillsDir!, entry.name),
+            sourceKind: "paperclip_bundled",
           }))
-      : await readPaperclipRuntimeSkillEntries({}, __moduleDir));
+      : await readPaperclipRuntimeSkillEntries({}, __moduleDir)))
+    .filter((entry) => !isPaperclipBundledRuntimeSkillEntry(entry));
   if (skillsEntries.length === 0) return;
 
   const skillsHome = options.skillsHome ?? cursorSkillsHome();

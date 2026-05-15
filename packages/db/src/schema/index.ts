@@ -85,7 +85,6 @@ export {
   ddOutreachCampaigns,
   ddOutreachSends,
   ddSuppressionList,
-  ddMemos,
   ddRoleTemplates,
   ddThesisStatusEnum,
   ddTargetStatusEnum,

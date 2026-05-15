@@ -27,9 +27,13 @@ describe("cursor local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports configured Paperclip skills and installs them into the Cursor skills home", async () => {
+  it("installs converted Deal Desk skills that keep Paperclip-compatible keys", async () => {
     const home = await makeTempDir("paperclip-cursor-skill-sync-");
+    const runtimeSkills = await makeTempDir("paperclip-cursor-skill-src-");
     cleanupDirs.add(home);
+    cleanupDirs.add(runtimeSkills);
+
+    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
 
     const ctx = {
       agentId: "agent-1",
@@ -42,16 +46,22 @@ describe("cursor local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [paperclipKey],
         },
+        paperclipRuntimeSkills: [{
+          key: paperclipKey,
+          runtimeName: "paperclip",
+          source: paperclipDir,
+          sourceKind: "deal_desk",
+        }],
       },
     } as const;
 
     const before = await listCursorSkills(ctx);
     expect(before.mode).toBe("persistent");
     expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
     expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
 
     const after = await syncCursorSkills(ctx, [paperclipKey]);
+    expect(after.desiredSkills).toContain(paperclipKey);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
   });
@@ -80,6 +90,7 @@ describe("cursor local skill sync", () => {
             source: paperclipDir,
             required: true,
             requiredReason: "Bundled Paperclip skills are always available for local adapters.",
+            sourceKind: "paperclip_bundled",
           },
           {
             key: "ascii-heart",
@@ -95,7 +106,8 @@ describe("cursor local skill sync", () => {
 
     const before = await listCursorSkills(ctx);
     expect(before.warnings).toEqual([]);
-    expect(before.desiredSkills).toEqual(["paperclip", "ascii-heart"]);
+    expect(before.desiredSkills).toEqual(["ascii-heart"]);
+    expect(before.entries.find((entry) => entry.key === "paperclip")).toBeUndefined();
     expect(before.entries.find((entry) => entry.key === "ascii-heart")?.state).toBe("missing");
 
     const after = await syncCursorSkills(ctx, ["ascii-heart"]);
@@ -104,9 +116,12 @@ describe("cursor local skill sync", () => {
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "ascii-heart"))).isSymbolicLink()).toBe(true);
   });
 
-  it("keeps required bundled Paperclip skills installed even when the desired set is emptied", async () => {
+  it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
     const home = await makeTempDir("paperclip-cursor-skill-prune-");
+    const runtimeSkills = await makeTempDir("paperclip-cursor-skill-prune-src-");
     cleanupDirs.add(home);
+    cleanupDirs.add(runtimeSkills);
+    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -119,6 +134,12 @@ describe("cursor local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [paperclipKey],
         },
+        paperclipRuntimeSkills: [{
+          key: paperclipKey,
+          runtimeName: "paperclip",
+          source: paperclipDir,
+          sourceKind: "deal_desk",
+        }],
       },
     } as const;
 
@@ -133,12 +154,15 @@ describe("cursor local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [],
         },
+        paperclipRuntimeSkills: configuredCtx.config.paperclipRuntimeSkills,
       },
     } as const;
 
     const after = await syncCursorSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect(after.desiredSkills).not.toContain(paperclipKey);
+    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("available");
+    await expect(fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
   });
 });

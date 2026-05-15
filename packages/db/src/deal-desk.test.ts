@@ -31,7 +31,6 @@ afterEach(async () => {
 const EXPECTED_DD_TABLES = [
   "dd_contacts",
   "dd_intermediaries",
-  "dd_memos",
   "dd_outreach_campaigns",
   "dd_outreach_sends",
   "dd_role_templates",

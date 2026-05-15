@@ -1,8 +1,7 @@
 // DEAL DESK: Tool handler factories and registration helper.
 //
 // These are exposed as HTTP endpoints because Paperclip's tool model is
-// per-adapter (no generic tool registry). Skills in skills/deal-desk/*.md
-// document the endpoints agents call.
+// per-adapter (no generic tool registry).
 //
 // Phase 5 only builds the handlers + a registration helper. Phase 6 will
 // mount the company-scoped router in server/src/app.ts under
@@ -16,7 +15,6 @@ import { listTargetsHandler } from "./list-targets.js";
 import { createIntermediaryHandler } from "./create-intermediary.js";
 import { listIntermediariesHandler } from "./list-intermediaries.js";
 import { recordIntermediaryTouchHandler } from "./record-intermediary-touch.js";
-import { generateMemoHandler } from "./generate-memo.js";
 import { enrichContactHandler } from "./enrich-contact.js";
 
 export {
@@ -47,11 +45,6 @@ export {
   type RecordIntermediaryTouchInput,
 } from "./record-intermediary-touch.js";
 export {
-  generateMemoHandler,
-  generateMemoInputSchema,
-  type GenerateMemoInput,
-} from "./generate-memo.js";
-export {
   enrichContactHandler,
   enrichContactInputSchema,
   type EnrichContactInput,
@@ -70,7 +63,6 @@ export {
  *   POST /intermediaries         — create an intermediary
  *   GET  /intermediaries         — list intermediaries (overdue-first)
  *   POST /intermediaries/touch   — record a touch with an intermediary
- *   POST /memos                  — upsert a weekly pipeline memo
  *   POST /contacts/enrich        — enrich a contact (stub w/o API keys)
  */
 export function registerDealDeskTools(parent: Router, db: Db): Router {
@@ -79,7 +71,6 @@ export function registerDealDeskTools(parent: Router, db: Db): Router {
   parent.post("/intermediaries", createIntermediaryHandler(db));
   parent.get("/intermediaries", listIntermediariesHandler(db));
   parent.post("/intermediaries/touch", recordIntermediaryTouchHandler(db));
-  parent.post("/memos", generateMemoHandler(db));
   parent.post("/contacts/enrich", enrichContactHandler(db));
   return parent;
 }

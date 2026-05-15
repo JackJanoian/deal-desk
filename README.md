@@ -4,8 +4,7 @@
 
 Run your private equity business development team as a team of AI agents.
 Define an investment thesis, hire AI analysts, set budgets, and the system
-sources acquisition targets, maps intermediary relationships, and reports
-pipeline progress — autonomously.
+sources acquisition targets and maps intermediary relationships autonomously.
 
 Open source. Self-hosted. MIT licensed. Built on [Paperclip](https://github.com/paperclipai/paperclip).
 Bring your own agent.
@@ -25,7 +24,7 @@ Then open http://localhost:3100
 | Step | Action | Example |
 |---|---|---|
 | **01** | Define your thesis | "HVAC roll-up — Southeast US, $5–25M revenue, founder-owned" |
-| **02** | Hire AI analysts | Sector Sourcer, Intermediary Coverage Analyst, Pipeline Reporter |
+| **02** | Hire AI analysts | Sector Sourcer, Intermediary Coverage Analyst, Contact Enricher |
 | **03** | Approve and run | Review targets. Set budgets. Monitor from the dashboard. |
 
 ## What it is

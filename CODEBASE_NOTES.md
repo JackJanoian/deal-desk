@@ -59,24 +59,7 @@ Hardcoded display strings appear in:
   - External adapters via `buildExternalAdapters()` (plugin loader)
 - UI: `cli/src/adapters/registry.ts` (or `ui/src/adapters/registry.ts`)
 
-**Note:** Paperclip's tools-per-adapter pattern isn't a generic "tool registry" the way FORK.md Phase 5 anticipates. Tools are exposed to agents via the adapter's `execute()` context. PE-specific tools will need to be exposed either (a) through a new in-process MCP-style server the adapter can reach, or (b) as HTTP endpoints under `/api/deal-desk/*` that skills instruct agents to call. Strategy for Phase 5: register tools as HTTP endpoints and document them in the Deal Desk skill files.
-
-## Skills loading
-
-- `skills/` directory at repo root, format: `skills/<name>/SKILL.md` with YAML frontmatter:
-  ```yaml
-  ---
-  name: <slug>
-  description: >
-    ...
-  ---
-  # Body
-  ```
-- `server/src/services/company-skills.ts` — skill registry service
-- `server/src/services/default-agent-instructions.ts` — orchestrates skill→instructions sync
-- Per-adapter `listSkills()` / `syncSkills()` (e.g. `listClaudeSkills`) scan the directory and write to the agent's `adapterConfig.instructionsBundle`
-
-**For Phase 4:** dropping files into `skills/deal-desk/SKILL.md` etc. should auto-load — but we'll confirm by reading `company-skills.ts`.
+**Note:** Paperclip's tools-per-adapter pattern isn't a generic "tool registry" the way FORK.md Phase 5 anticipates. Paperclip's actual model is per-adapter. Strategy for Phase 5: expose Deal Desk tools as HTTP endpoints under `/api/companies/:companyId/deal-desk/tools`.
 
 ## DB migrations (Drizzle)
 
@@ -108,7 +91,6 @@ Phase 8 will resolve this concretely after reading the hire dialog UI.
 
 - **Phase 2 (rebrand):** root `package.json`, `cli/src/index.ts`, `cli/package.json`, `ui/src/index.css`, `ui/src/components/OnboardingWizard.tsx`, `ui/src/components/Sidebar.tsx`, `server/src/ui-branding.ts`, `README.md`, various display-string locations
 - **Phase 3 (DB):** new `packages/db/src/schema/deal-desk.ts`, generated SQL in `packages/db/src/migrations/`
-- **Phase 4 (skills):** new `skills/deal-desk/*.md` files only
 - **Phase 5 (tools):** new `server/src/deal-desk/tools/*.ts`, possibly new HTTP endpoints in `server/src/routes/deal-desk.ts`
 - **Phase 6 (fund setup):** `ui/src/components/OnboardingWizard.tsx`, new `server/src/routes/deal-desk.ts`
 - **Phase 7 (dashboard pages):** new `ui/src/pages/deal-desk/*.tsx`, router config, sidebar nav

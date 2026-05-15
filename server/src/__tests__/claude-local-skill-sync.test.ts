@@ -20,15 +20,23 @@ async function createSkillDir(root: string, name: string) {
 
 describe("claude local skill sync", () => {
   const paperclipKey = "paperclipai/paperclip/paperclip";
-  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
   const cleanupDirs = new Set<string>();
+
+  function convertedPaperclipSkill(source: string) {
+    return {
+      key: paperclipKey,
+      runtimeName: "paperclip",
+      source,
+      sourceKind: "deal_desk",
+    };
+  }
 
   afterEach(async () => {
     await Promise.all(Array.from(cleanupDirs).map((dir) => fs.rm(dir, { recursive: true, force: true })));
     cleanupDirs.clear();
   });
 
-  it("defaults to mounting all built-in Paperclip skills when no explicit selection exists", async () => {
+  it("does not default to mounting built-in Paperclip skills", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-1",
       companyId: "company-1",
@@ -38,12 +46,14 @@ describe("claude local skill sync", () => {
 
     expect(snapshot.mode).toBe("ephemeral");
     expect(snapshot.supported).toBe(true);
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).not.toContain(paperclipKey);
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)).toBeUndefined();
   });
 
-  it("respects an explicit desired skill list without mutating a persistent home", async () => {
+  it("keeps explicit converted Deal Desk skill selections without mutating a persistent home", async () => {
+    const skillDir = await makeTempDir("paperclip-claude-converted-skill-");
+    cleanupDirs.add(skillDir);
+
     const snapshot = await syncClaudeSkills({
       agentId: "agent-2",
       companyId: "company-1",
@@ -52,15 +62,18 @@ describe("claude local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: [paperclipKey],
         },
+        paperclipRuntimeSkills: [convertedPaperclipSkill(skillDir)],
       },
     }, [paperclipKey]);
 
     expect(snapshot.desiredSkills).toContain(paperclipKey);
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("configured");
   });
 
-  it("normalizes legacy flat Paperclip skill refs to canonical keys", async () => {
+  it("normalizes legacy flat refs for converted Deal Desk skills", async () => {
+    const skillDir = await makeTempDir("paperclip-claude-legacy-skill-");
+    cleanupDirs.add(skillDir);
+
     const snapshot = await listClaudeSkills({
       agentId: "agent-3",
       companyId: "company-1",
@@ -69,6 +82,7 @@ describe("claude local skill sync", () => {
         paperclipSkillSync: {
           desiredSkills: ["paperclip"],
         },
+        paperclipRuntimeSkills: [convertedPaperclipSkill(skillDir)],
       },
     });
 

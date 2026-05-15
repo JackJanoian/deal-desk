@@ -15,7 +15,6 @@ import {
   // DEAL DESK: Phase 7 — Deal Sourcing nav icons.
   Crosshair,
   Users,
-  FileText,
   // DEAL DESK: Phase 8 — Hire roles icon.
   Briefcase,
 } from "lucide-react";
@@ -121,7 +120,6 @@ export function Sidebar() {
         <SidebarSection label="Deal Sourcing">
           <SidebarNavItem to="/deal-desk/targets" label="Targets" icon={Crosshair} />
           <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Users} />
-          <SidebarNavItem to="/deal-desk/memos" label="Memos" icon={FileText} />
           {/* DEAL DESK: Phase 8 — pre-built role templates */}
           <SidebarNavItem to="/deal-desk/hire" label="Hire a Role" icon={Briefcase} />
         </SidebarSection>

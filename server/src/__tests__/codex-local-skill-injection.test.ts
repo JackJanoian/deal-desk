@@ -40,7 +40,7 @@ describe("codex local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("repairs a Codex Paperclip skill symlink that still points at another live checkout", async () => {
+  it("skips Codex Paperclip skills instead of repairing or injecting them", async () => {
     const currentRepo = await makeTempDir("paperclip-codex-current-");
     const oldRepo = await makeTempDir("paperclip-codex-old-");
     const skillsHome = await makeTempDir("paperclip-codex-home-");
@@ -76,23 +76,10 @@ describe("codex local adapter skill injection", () => {
     );
 
     expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "paperclip")),
+      await fs.realpath(path.join(oldRepo, "skills", "paperclip")),
     );
-    expect(await fs.realpath(path.join(skillsHome, "paperclip-create-agent"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "paperclip-create-agent")),
-    );
-    expect(logs).toContainEqual(
-      expect.objectContaining({
-        stream: "stdout",
-        chunk: expect.stringContaining('Repaired Codex skill "paperclip"'),
-      }),
-    );
-    expect(logs).toContainEqual(
-      expect.objectContaining({
-        stream: "stdout",
-        chunk: expect.stringContaining('Injected Codex skill "paperclip-create-agent"'),
-      }),
-    );
+    await expect(fs.lstat(path.join(skillsHome, "paperclip-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
+    expect(logs.some((entry) => entry.chunk.includes("Codex skill"))).toBe(false);
   });
 
   it("preserves a custom Codex skill symlink outside Paperclip repo checkouts", async () => {
@@ -121,7 +108,7 @@ describe("codex local adapter skill injection", () => {
     );
   });
 
-  it("prunes broken symlinks for unavailable Paperclip repo skills before Codex starts", async () => {
+  it("does not process broken symlinks for unavailable Paperclip repo skills", async () => {
     const currentRepo = await makeTempDir("paperclip-codex-current-");
     const oldRepo = await makeTempDir("paperclip-codex-old-");
     const skillsHome = await makeTempDir("paperclip-codex-home-");
@@ -150,18 +137,11 @@ describe("codex local adapter skill injection", () => {
       },
     );
 
-    await expect(fs.lstat(path.join(skillsHome, "agent-browser"))).rejects.toMatchObject({
-      code: "ENOENT",
-    });
-    expect(logs).toContainEqual(
-      expect.objectContaining({
-        stream: "stdout",
-        chunk: expect.stringContaining('Removed stale Codex skill "agent-browser"'),
-      }),
-    );
+    expect((await fs.lstat(path.join(skillsHome, "agent-browser"))).isSymbolicLink()).toBe(true);
+    expect(logs.some((entry) => entry.chunk.includes('Removed stale Codex skill "agent-browser"'))).toBe(false);
   });
 
-  it("preserves other live Paperclip skill symlinks in the shared workspace skill directory", async () => {
+  it("preserves existing Paperclip symlinks but does not add missing ones", async () => {
     const currentRepo = await makeTempDir("paperclip-codex-current-");
     const skillsHome = await makeTempDir("paperclip-codex-home-");
     cleanupDirs.add(currentRepo);
@@ -183,7 +163,7 @@ describe("codex local adapter skill injection", () => {
       }],
     });
 
-    expect((await fs.lstat(path.join(skillsHome, "paperclip"))).isSymbolicLink()).toBe(true);
+    await expect(fs.lstat(path.join(skillsHome, "paperclip"))).rejects.toMatchObject({ code: "ENOENT" });
     expect((await fs.lstat(path.join(skillsHome, "agent-browser"))).isSymbolicLink()).toBe(true);
     expect(await fs.realpath(path.join(skillsHome, "agent-browser"))).toBe(
       await fs.realpath(path.join(currentRepo, "skills", "agent-browser")),

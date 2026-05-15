@@ -176,6 +176,10 @@ vi.mock("../services/feedback-share-client.js", () => ({
   createFeedbackTraceShareClientFromConfig: vi.fn(() => ({ id: "feedback-share-client" })),
 }));
 
+vi.mock("../deal-desk/seeds/seed-role-templates.js", () => ({
+  seedDealDeskRoleTemplates: vi.fn(async () => undefined),
+}));
+
 vi.mock("../startup-banner.js", () => ({
   printStartupBanner: vi.fn(),
 }));

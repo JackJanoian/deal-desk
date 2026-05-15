@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   listPaperclipSkillEntries,
+  readPaperclipRuntimeSkillEntries,
   removeMaintainerOnlySkillSymlinks,
 } from "@paperclipai/adapter-utils/server-utils";
 
@@ -41,6 +42,47 @@ describe("paperclip skill utils", () => {
     ]);
     expect(entries[0]?.source).toBe(path.join(root, "skills", "paperclip"));
     expect(entries[1]?.source).toBe(path.join(root, "skills", "paperclip-create-agent"));
+  });
+
+  it("does not use bundled Paperclip skills as runtime entries by fallback", async () => {
+    const root = await makeTempDir("paperclip-skill-runtime-fallback-");
+    cleanupDirs.add(root);
+
+    const moduleDir = path.join(root, "a", "b", "c", "d", "e");
+    await fs.mkdir(moduleDir, { recursive: true });
+    await fs.mkdir(path.join(root, "skills", "paperclip"), { recursive: true });
+
+    await expect(readPaperclipRuntimeSkillEntries({}, moduleDir)).resolves.toEqual([]);
+  });
+
+  it("keeps converted Deal Desk runtime skills while dropping true bundled Paperclip tools", async () => {
+    const root = await makeTempDir("paperclip-skill-runtime-config-");
+    cleanupDirs.add(root);
+
+    const convertedDir = path.join(root, "converted", "paperclip");
+    const bundledDir = path.join(root, "bundled", "paperclip-create-agent");
+    await fs.mkdir(convertedDir, { recursive: true });
+    await fs.mkdir(bundledDir, { recursive: true });
+
+    const entries = await readPaperclipRuntimeSkillEntries({
+      paperclipRuntimeSkills: [
+        {
+          key: "paperclipai/paperclip/paperclip",
+          runtimeName: "paperclip",
+          source: convertedDir,
+          sourceKind: "deal_desk",
+        },
+        {
+          key: "paperclipai/paperclip/paperclip-create-agent",
+          runtimeName: "paperclip-create-agent",
+          source: bundledDir,
+          sourceKind: "paperclip_bundled",
+        },
+      ],
+    }, root);
+
+    expect(entries.map((entry) => entry.key)).toEqual(["paperclipai/paperclip/paperclip"]);
+    expect(entries[0]?.sourceKind).toBe("deal_desk");
   });
 
   it("marks skills with required: false in SKILL.md frontmatter as optional", async () => {

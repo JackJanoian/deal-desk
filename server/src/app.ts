@@ -11,7 +11,7 @@ import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
 import { healthRoutes } from "./routes/health.js";
 import { companyRoutes } from "./routes/companies.js";
-// DEAL DESK: PE-specific routes (theses, targets, intermediaries, memos, tools).
+// DEAL DESK: PE-specific routes (theses, targets, intermediaries, tools).
 import { dealDeskRoutes } from "./routes/deal-desk.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { agentRoutes } from "./routes/agents.js";
@@ -107,6 +107,10 @@ export function shouldEnablePrivateHostnameGuard(opts: {
   );
 }
 
+function isPaperclipManagedAuthPath(pathname: string): boolean {
+  return pathname === "/api/auth/get-session" || pathname === "/api/auth/profile";
+}
+
 export async function createApp(
   db: Db,
   opts: {
@@ -139,13 +143,6 @@ export async function createApp(
 ) {
   const app = express();
 
-  app.use(express.json({
-    // Company import/export payloads can inline full portable packages.
-    limit: "10mb",
-    verify: (req, _res, buf) => {
-      (req as unknown as { rawBody: Buffer }).rawBody = buf;
-    },
-  }));
   app.use(httpLogger);
   const privateHostnameGateEnabled = shouldEnablePrivateHostnameGuard({
     deploymentMode: opts.deploymentMode,
@@ -162,6 +159,22 @@ export async function createApp(
       bindHost: opts.bindHost,
     }),
   );
+  if (opts.betterAuthHandler) {
+    app.all("/api/auth/{*authPath}", (req, res, next) => {
+      if (isPaperclipManagedAuthPath(req.path)) {
+        next();
+        return;
+      }
+      opts.betterAuthHandler!(req, res, next);
+    });
+  }
+  app.use(express.json({
+    // Company import/export payloads can inline full portable packages.
+    limit: "10mb",
+    verify: (req, _res, buf) => {
+      (req as unknown as { rawBody: Buffer }).rawBody = buf;
+    },
+  }));
   app.use(
     actorMiddleware(db, {
       deploymentMode: opts.deploymentMode,
@@ -169,9 +182,6 @@ export async function createApp(
     }),
   );
   app.use("/api/auth", authRoutes(db));
-  if (opts.betterAuthHandler) {
-    app.all("/api/auth/{*authPath}", opts.betterAuthHandler);
-  }
   app.use(llmRoutes(db));
 
   const hostServicesDisposers = new Map<string, () => void>();

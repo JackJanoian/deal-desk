@@ -10,7 +10,6 @@
 849f1189 feat(seeds): deal desk PE role templates ...
 c6fc9818 feat(server+ui): deal desk fund thesis flow and dashboard pages
 29d09dba feat(tools): deal desk PE toolset
-7f824283 feat(skills): deal desk PE skills
 39a22ae4 feat(db): add deal desk PE tables via additive migration
 57e82c25 feat(brand): rename to deal desk, retheme UI, update onboarding copy
 d0cafe5f chore(fork): codebase analysis notes
@@ -32,12 +31,12 @@ comment so future merges from upstream stay surgical.
 | `README.md` | Replaced with Deal Desk marketing/quickstart |
 | `ui/index.html` | Browser title + apple-mobile-web-app-title → Deal Desk; favicon TODO comment |
 | `ui/src/index.css` | `--primary` token → teal-600 `oklch(0.55 0.11 184)` |
-| `ui/src/App.tsx` | 5 new routes under `:companyPrefix` (Targets, Intermediaries, Memos, Thesis, HireRoles) |
+| `ui/src/App.tsx` | 4 new routes under `:companyPrefix` (Targets, Intermediaries, Thesis, HireRoles) |
 | `ui/src/api/index.ts` | Re-export `dealDeskApi` |
 | `ui/src/lib/queryKeys.ts` | Add `dealDesk` query key block |
 | `ui/src/context/BreadcrumbContext.tsx` | Document title wordmark `Paperclip` → `Deal Desk` |
 | `ui/src/components/OnboardingWizard.tsx` | Step union 4→5; new Thesis step + 3 template cards; fund/strategy/analyst copy |
-| `ui/src/components/Sidebar.tsx` | "Fund" section label; new "Deal Sourcing" nav section (Targets/Intermediaries/Memos/Hire) |
+| `ui/src/components/Sidebar.tsx` | "Fund" section label; new "Deal Sourcing" nav section (Targets/Intermediaries/Hire) |
 | `ui/src/components/FileTree.tsx` | Frontmatter `project` label → "Thesis" |
 | `ui/src/components/IssueColumns.tsx` | Kanban "Project" column label → "Thesis" |
 | `ui/src/components/IssueProperties.tsx` | PropertyPicker label "Project" → "Thesis" |
@@ -60,11 +59,6 @@ packages/db/src/migrations/0085_rapid_fantastic_four.sql   manually pruned migra
 packages/db/src/migrations/meta/0085_snapshot.json    generated
 packages/db/src/deal-desk.test.ts                     migration smoke tests
 
-skills/deal-desk/SKILL.md                             core skill
-skills/deal-desk/sector-sourcer.md                    role skill
-skills/deal-desk/pipeline-reporter.md                 role skill
-skills/deal-desk/intermediary-coverage.md             role skill
-
 server/src/routes/deal-desk.ts                        feature router
 server/src/deal-desk/tools/index.ts                   tool router factory
 server/src/deal-desk/tools/create-target.ts
@@ -72,16 +66,14 @@ server/src/deal-desk/tools/list-targets.ts
 server/src/deal-desk/tools/create-intermediary.ts
 server/src/deal-desk/tools/list-intermediaries.ts
 server/src/deal-desk/tools/record-intermediary-touch.ts
-server/src/deal-desk/tools/generate-memo.ts
 server/src/deal-desk/tools/enrich-contact.ts          stub (needs Apollo/Hunter)
 server/src/deal-desk/tools/__tests__/deal-desk-tools.test.ts
-server/src/deal-desk/seeds/role-templates.ts          5 role templates
+server/src/deal-desk/seeds/role-templates.ts          4 role templates
 server/src/deal-desk/seeds/seed-role-templates.ts     idempotent upsert
 
 ui/src/api/dealDesk.ts                                typed client
 ui/src/pages/deal-desk/Targets.tsx
 ui/src/pages/deal-desk/Intermediaries.tsx
-ui/src/pages/deal-desk/Memos.tsx
 ui/src/pages/deal-desk/Thesis.tsx
 ui/src/pages/deal-desk/HireRoles.tsx
 
@@ -91,7 +83,7 @@ FORK.md                                               (the spec)
 
 ## Database additions
 
-9 new tables (all prefixed `dd_`) plus 5 enums:
+8 active tables (all prefixed `dd_`) plus 5 enums:
 
 | Table | Purpose |
 |---|---|
@@ -102,7 +94,6 @@ FORK.md                                               (the spec)
 | `dd_outreach_campaigns` | Email sequence definitions (v0.1 schema only) |
 | `dd_outreach_sends` | Individual email rows with approval workflow |
 | `dd_suppression_list` | Bounced/unsubscribed emails or domains |
-| `dd_memos` | Weekly pipeline memos, unique per (fund, week) |
 | `dd_role_templates` | Pre-built agent role configurations, seeded at startup |
 
 All FKs to Paperclip's own tables (`companies`, `agents`, `issues`) are stored
@@ -118,29 +109,25 @@ failed with "table already exists" errors.
 
 ## Known issues / TODOs (v0.2)
 
-1. **Memo markdown rendering** — `ui/src/pages/deal-desk/Memos.tsx` renders
-   memos as `<pre>` with whitespace-pre-wrap because the existing
-   `MarkdownBody` component pulls in issue-thread context. Adopt the
-   existing renderer (or a focused subset) when available.
-2. **"Source targets now" button** on Targets page — currently shows an
+1. **"Source targets now" button** on Targets page — currently shows an
    alert. Needs wiring to the issues API to create a ticket assigned to
    the Sector Sourcer agent.
-3. **Thesis editing** — Edit button on Thesis page is a placeholder.
-4. **Hire Roles → NewAgent prefill** — `HireRoles.tsx` lists the 5 role
+2. **Thesis editing** — Edit button on Thesis page is a placeholder.
+3. **Hire Roles → NewAgent prefill** — `HireRoles.tsx` lists the 4 role
    templates with full metadata, but clicking "Hire" alerts the template
    payload instead of pre-filling the new-agent form. `NewAgent.tsx` is
    1840 lines of adapter-specific state and a clean prefill path needs a
    focused refactor that was out of scope for v0.1.
-5. **Contact enrichment** — `enrichContact` tool returns a configuration
+4. **Contact enrichment** — `enrichContact` tool returns a configuration
    message until `APOLLO_API_KEY` or `HUNTER_API_KEY` is wired through
    the Paperclip secret system. Tool surface is in place.
-6. **Outreach send infrastructure** — schema present (`dd_outreach_*`,
+5. **Outreach send infrastructure** — schema present (`dd_outreach_*`,
    `dd_suppression_list`), no Gmail OAuth or send logic yet.
-7. **Onboarding `initialStep` shift** — `OnboardingWizard` was renumbered
+6. **Onboarding `initialStep` shift** — `OnboardingWizard` was renumbered
    from 4 steps to 5. Any caller passing `initialStep: 2` now lands on
    the Thesis step instead of the Agent step. None of the routing
    call sites scanned do this explicitly, but flag for QA.
-8. **`as any` at seed call site** — `server/src/index.ts` casts `db` when
+7. **`as any` at seed call site** — `server/src/index.ts` casts `db` when
    calling `seedDealDeskRoleTemplates` because the local `db` binding in
    that scope is untyped. Tighten the binding when comfortable.
 
@@ -177,7 +164,7 @@ something we depend on. Fix the fork edge rather than the merge.
 - `pnpm test` — clean across all workspaces at HEAD `849f1189`
 - End-to-end manual flow (FORK.md §9a) — **not run**; orchestrator did not
   launch the embedded dev server interactively. Recommend a manual pass
-  through onboarding → org chart → Hire Roles → Targets → Memos before
+  through onboarding → org chart → Hire Roles → Targets before
   shipping.
 - Upstream merge dry-run (FORK.md §9d) — **not run**; no
   `upstream-paperclip` remote is configured in this clone. After adding
