@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { buildGmailAuthorizeUrl } from "../oauth";
+import { describe, it, expect, vi } from "vitest";
+import { buildGmailAuthorizeUrl, exchangeCodeForTokens } from "../oauth";
 
 describe("buildGmailAuthorizeUrl", () => {
   it("includes client_id, redirect_uri, send scope, offline access, and the state token", () => {
@@ -18,5 +18,27 @@ describe("buildGmailAuthorizeUrl", () => {
     expect(url.searchParams.get("prompt")).toBe("consent");
     expect(url.searchParams.get("state")).toBe("state-abc");
     expect(url.searchParams.get("scope")).toContain("gmail.send");
+  });
+});
+
+describe("exchangeCodeForTokens", () => {
+  it("POSTs to Google token endpoint and returns parsed tokens", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "at",
+        refresh_token: "rt",
+        expires_in: 3599,
+        scope: "https://www.googleapis.com/auth/gmail.send",
+        token_type: "Bearer",
+      }),
+    });
+    const result = await exchangeCodeForTokens(
+      { clientId: "cid", clientSecret: "csec", redirectUri: "https://x.test/cb", code: "abc" },
+      { fetch: fakeFetch as unknown as typeof fetch },
+    );
+    expect(result.refreshToken).toBe("rt");
+    expect(result.accessToken).toBe("at");
+    expect(result.expiresInSeconds).toBe(3599);
   });
 });
