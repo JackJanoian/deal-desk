@@ -60,3 +60,43 @@ export async function loadGmailTokens(
   const raw = await deps.secretService.getLatestPlaintext({ secretId: args.secretId });
   return JSON.parse(raw) as GmailTokensRecord;
 }
+
+const REFRESH_THRESHOLD_MS = 60_000;
+
+export interface RefreshDeps {
+  fetch?: typeof fetch;
+}
+
+export interface EnsureFreshInput {
+  tokens: GmailTokensRecord;
+  clientId: string;
+  clientSecret: string;
+}
+
+export async function ensureFreshAccessToken(
+  input: EnsureFreshInput,
+  deps: RefreshDeps = {},
+): Promise<GmailTokensRecord> {
+  if (input.tokens.expiresAt - Date.now() > REFRESH_THRESHOLD_MS) {
+    return input.tokens;
+  }
+  const f = deps.fetch ?? fetch;
+  const body = new URLSearchParams({
+    client_id: input.clientId,
+    client_secret: input.clientSecret,
+    refresh_token: input.tokens.refreshToken,
+    grant_type: "refresh_token",
+  });
+  const res = await f("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
+  if (!res.ok) throw new Error(`Gmail token refresh failed: ${res.status}`);
+  const json = (await res.json()) as { access_token: string; expires_in: number };
+  return {
+    ...input.tokens,
+    accessToken: json.access_token,
+    expiresAt: Date.now() + json.expires_in * 1000,
+  };
+}
