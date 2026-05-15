@@ -7,8 +7,10 @@
 // mount the company-scoped router in server/src/app.ts under
 // /api/companies/:companyId/deal-desk/...
 
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
+import { eq } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
+import { ddEmailAccounts } from "@paperclipai/db";
 import type { GoogleOAuthConfig } from "../../config.js";
 
 import { createTargetHandler } from "./create-target.js";
@@ -19,6 +21,7 @@ import { recordIntermediaryTouchHandler } from "./record-intermediary-touch.js";
 import { enrichContactHandler } from "./enrich-contact.js";
 import { outreachDraftHandler } from "./outreach-draft.js";
 import { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
+import { listPendingOutreachHandler } from "./outreach-list-pending.js";
 
 export {
   createTargetHandler,
@@ -93,6 +96,26 @@ export function registerDealDeskTools(
     outreachApproveHandler({ db, googleOAuth: opts.googleOAuth ?? null }),
   );
   parent.post("/outreach/sends/:id/reject", outreachRejectHandler({ db }));
+
+  parent.get("/outreach/sends/pending", listPendingOutreachHandler(db));
+
+  parent.get("/email-accounts", async (req: Request, res: Response) => {
+    const companyId = req.params.companyId as string;
+    const rows = await db.query.ddEmailAccounts.findMany({
+      where: eq(ddEmailAccounts.paperclipCompanyId, companyId),
+    });
+    res.status(200).json({ accounts: rows });
+  });
+
+  parent.delete("/email-accounts/:id", async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    await db
+      .update(ddEmailAccounts)
+      .set({ revokedAt: new Date() })
+      .where(eq(ddEmailAccounts.id, id));
+    res.status(200).json({ ok: true });
+  });
+
   return parent;
 }
 
