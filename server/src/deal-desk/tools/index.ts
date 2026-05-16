@@ -190,7 +190,15 @@ export function registerDealDeskTools(
     testGmailSendHandler({
       db,
       loadClientConfig: (companyId) => clientConfigDeps.loadConfig({ companyId }),
-      buildStore: () => buildClientConfigStore() as unknown as GmailSecretStore,
+      buildStore: (): GmailSecretStore => {
+        const inner = buildClientConfigStore();
+        return {
+          store: async () => {
+            throw new Error("store() not used by test-gmail-send");
+          },
+          loadLatest: ({ companyId, secretId }) => inner.load({ companyId, secretId }),
+        };
+      },
     }),
   );
 
