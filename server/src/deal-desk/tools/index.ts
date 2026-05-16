@@ -22,6 +22,7 @@ import {
   deleteGmailOAuthClient,
   type GmailClientConfigStore,
 } from "../gmail/client-config.js";
+import type { GmailSecretStore } from "../gmail/tokens.js";
 import { secretService } from "../../services/secrets.js";
 
 import { createTargetHandler } from "./create-target.js";
@@ -33,6 +34,7 @@ import { enrichContactHandler } from "./enrich-contact.js";
 import { outreachDraftHandler } from "./outreach-draft.js";
 import { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
 import { listPendingOutreachHandler } from "./outreach-list-pending.js";
+import { testGmailSendHandler } from "./test-gmail-send.js";
 
 export {
   createTargetHandler,
@@ -180,6 +182,15 @@ export function registerDealDeskTools(
     outreachApproveHandler({
       db,
       loadClientConfig: (companyId) => clientConfigDeps.loadConfig({ companyId }),
+    }),
+  );
+
+  parent.post(
+    "/test-gmail-send",
+    testGmailSendHandler({
+      db,
+      loadClientConfig: (companyId) => clientConfigDeps.loadConfig({ companyId }),
+      buildStore: () => buildClientConfigStore() as unknown as GmailSecretStore,
     }),
   );
 
