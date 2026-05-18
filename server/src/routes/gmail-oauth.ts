@@ -5,9 +5,9 @@ import {
   exchangeCodeForTokens,
   fetchGoogleUserEmail,
 } from "../deal-desk/gmail/oauth.js";
-import { saveGmailTokens, type GmailSecretStore } from "../deal-desk/gmail/tokens.js";
 import type { GmailClientConfig } from "../deal-desk/gmail/client-config.js";
-import { eq } from "drizzle-orm";
+import type { GmailTokensRecord } from "../deal-desk/gmail/tokens.js";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import { ddEmailAccounts, companies } from "@paperclipai/db";
 import { secretService } from "../services/secrets.js";
@@ -79,33 +79,47 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
     });
     const emailAddress = await fetchGoogleUserEmail(tokens.accessToken);
 
-    const realSvc = secretService(input.deps.db);
-    const store: GmailSecretStore = {
-      store: async ({ companyId: cid, key, name, plaintext }) => {
-        const created = await realSvc.create(cid, {
-          name,
-          key,
-          provider: "local_encrypted",
-          value: plaintext,
-          description: "Gmail OAuth refresh + access tokens for Outreach Analyst",
-        });
-        return { secretId: created.id };
-      },
-      loadLatest: async ({ companyId: cid, secretId }) => {
-        return await realSvc.resolveSecretValue(cid, secretId, "latest");
-      },
+    const tokenRecord: GmailTokensRecord = {
+      refreshToken: tokens.refreshToken,
+      accessToken: tokens.accessToken,
+      expiresAt: Date.now() + tokens.expiresInSeconds * 1000,
+      scope: tokens.scope,
     };
+    const tokenJson = JSON.stringify(tokenRecord);
+    const realSvc = secretService(input.deps.db);
 
-    const secretId = await saveGmailTokens(
-      { companyId, emailAddress, tokens },
-      { store },
-    );
-    await input.deps.db.insert(ddEmailAccounts).values({
-      paperclipCompanyId: companyId,
-      provider: "gmail",
-      emailAddress,
-      secretId,
-    });
+    const existingAccount = await input.deps.db
+      .select({ id: ddEmailAccounts.id, secretId: ddEmailAccounts.secretId })
+      .from(ddEmailAccounts)
+      .where(
+        and(
+          eq(ddEmailAccounts.paperclipCompanyId, companyId),
+          eq(ddEmailAccounts.emailAddress, emailAddress),
+        ),
+      )
+      .limit(1);
+
+    if (existingAccount[0]) {
+      await realSvc.rotate(existingAccount[0].secretId, { value: tokenJson });
+      await input.deps.db
+        .update(ddEmailAccounts)
+        .set({ revokedAt: null, connectedAt: new Date() })
+        .where(eq(ddEmailAccounts.id, existingAccount[0].id));
+    } else {
+      const created = await realSvc.create(companyId, {
+        name: `Gmail OAuth (${emailAddress})`,
+        key: `gmail_account:${emailAddress}`,
+        provider: "local_encrypted",
+        value: tokenJson,
+        description: "Gmail OAuth refresh + access tokens for Outreach Analyst",
+      });
+      await input.deps.db.insert(ddEmailAccounts).values({
+        paperclipCompanyId: companyId,
+        provider: "gmail",
+        emailAddress,
+        secretId: created.id,
+      });
+    }
 
     const companyRow = await input.deps.db
       .select({ issuePrefix: companies.issuePrefix })
