@@ -7,8 +7,9 @@ import {
 } from "../deal-desk/gmail/oauth.js";
 import { saveGmailTokens, type GmailSecretStore } from "../deal-desk/gmail/tokens.js";
 import type { GmailClientConfig } from "../deal-desk/gmail/client-config.js";
+import { eq } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { ddEmailAccounts } from "@paperclipai/db";
+import { ddEmailAccounts, companies } from "@paperclipai/db";
 import { secretService } from "../services/secrets.js";
 
 const STATE_COOKIE = "dd_gmail_oauth_state";
@@ -106,9 +107,16 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
       secretId,
     });
 
+    const companyRow = await input.deps.db
+      .select({ issuePrefix: companies.issuePrefix })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+    const prefix = companyRow[0]?.issuePrefix ?? companyId;
+
     res.clearCookie(STATE_COOKIE);
     res.redirect(
-      `/${companyId}/deal-desk/email-accounts?connected=${encodeURIComponent(emailAddress)}`,
+      `/${prefix}/deal-desk/email-accounts?connected=${encodeURIComponent(emailAddress)}`,
     );
   });
 
