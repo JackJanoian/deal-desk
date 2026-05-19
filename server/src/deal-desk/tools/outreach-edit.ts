@@ -1,6 +1,6 @@
 import type { Request, Response, RequestHandler } from "express";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ddOutreachSends } from "@paperclipai/db";
 import type { Db } from "@paperclipai/db";
 
@@ -55,7 +55,7 @@ export function outreachEditHandler(deps: { db: Db }): RequestHandler {
     await deps.db
       .update(ddOutreachSends)
       .set(patch)
-      .where(eq(ddOutreachSends.id, id));
+      .where(and(eq(ddOutreachSends.id, id as string), eq(ddOutreachSends.status, "awaiting_approval")));
 
     res.status(200).json({ ok: true });
   };
