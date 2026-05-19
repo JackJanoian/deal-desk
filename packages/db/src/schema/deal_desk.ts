@@ -257,6 +257,8 @@ export const ddOutreachSends = pgTable(
     status: ddOutreachSendStatusEnum("status").notNull().default("queued"),
     draftedByAgentId: uuid("drafted_by_agent_id"),
     approvedByUserId: uuid("approved_by_user_id"),
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    editedByUserId: uuid("edited_by_user_id"),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     scheduledSendAt: timestamp("scheduled_send_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
