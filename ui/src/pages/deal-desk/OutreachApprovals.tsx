@@ -7,7 +7,155 @@ export interface PendingSend {
   subject: string;
   body: string;
   status: "awaiting_approval";
+  contactEmail?: string | null;
+  contactName?: string | null;
 }
+
+// ─── Inline-editable card (used by OutreachApprovalsPage) ───────────────────
+
+function PendingSendCard({
+  send,
+  companyId,
+  onChanged,
+}: {
+  send: PendingSend;
+  companyId: string;
+  onChanged: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [subject, setSubject] = useState(send.subject);
+  const [body, setBody] = useState(send.body);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/companies/${companyId}/deal-desk/tools/outreach/sends/${send.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ subject, body }),
+        },
+      );
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+      setEditing(false);
+      onChanged();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const onApprove = async () => {
+    await fetch(
+      `/api/companies/${companyId}/deal-desk/tools/outreach/sends/${send.id}/approve`,
+      { method: "POST", credentials: "include" },
+    );
+    onChanged();
+  };
+
+  const onReject = async () => {
+    await fetch(
+      `/api/companies/${companyId}/deal-desk/tools/outreach/sends/${send.id}/reject`,
+      { method: "POST", credentials: "include" },
+    );
+    onChanged();
+  };
+
+  return (
+    <div className="border rounded p-4">
+      {(send.contactName ?? send.contactEmail) && (
+        <div className="text-sm text-gray-600 mb-1">
+          To:{" "}
+          <strong>{send.contactName ?? send.contactEmail}</strong>
+          {send.contactEmail && send.contactName ? ` <${send.contactEmail}>` : ""}
+        </div>
+      )}
+      {editing ? (
+        <div className="space-y-2">
+          <label className="block text-xs text-gray-500">
+            Subject
+            <input
+              aria-label="subject"
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </label>
+          <label className="block text-xs text-gray-500">
+            Body
+            <textarea
+              aria-label="body"
+              className="mt-1 h-40 w-full rounded border border-gray-300 px-2 py-1 text-sm font-mono"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </label>
+          {error && <div className="text-xs text-red-600">{error}</div>}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={save}
+              className="rounded bg-gray-900 px-3 py-1 text-sm text-white disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setSubject(send.subject);
+                setBody(send.body);
+              }}
+              className="rounded border border-gray-300 px-3 py-1 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="font-medium">{send.subject}</div>
+          <pre className="whitespace-pre-wrap text-sm mt-2">{send.body}</pre>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="rounded border border-gray-300 px-3 py-1 text-sm"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1 bg-green-600 text-white rounded"
+              onClick={onApprove}
+            >
+              Approve &amp; Send
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1 bg-gray-200 rounded"
+              onClick={onReject}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Presentational component (preserved for existing tests) ────────────────
 
 export interface OutreachApprovalsProps {
   sends: PendingSend[];
@@ -48,6 +196,8 @@ export function OutreachApprovals(props: OutreachApprovalsProps) {
   );
 }
 
+// ─── Connected page (uses PendingSendCard with inline edit) ─────────────────
+
 export function OutreachApprovalsPage() {
   const { selectedCompanyId: companyId } = useCompany();
   const [sends, setSends] = useState<PendingSend[]>([]);
@@ -63,25 +213,23 @@ export function OutreachApprovalsPage() {
 
   useEffect(refresh, [companyId]);
 
-  const onApprove = async (id: string) => {
-    if (!companyId) return;
-    await fetch(
-      `/api/companies/${companyId}/deal-desk/tools/outreach/sends/${id}/approve`,
-      { method: "POST", credentials: "include" },
-    );
-    refresh();
-  };
-
-  const onReject = async (id: string) => {
-    if (!companyId) return;
-    await fetch(
-      `/api/companies/${companyId}/deal-desk/tools/outreach/sends/${id}/reject`,
-      { method: "POST", credentials: "include" },
-    );
-    refresh();
-  };
-
   if (!companyId) return null;
 
-  return <OutreachApprovals sends={sends} onApprove={onApprove} onReject={onReject} />;
+  if (sends.length === 0) {
+    return <div className="p-6 text-gray-500">No outreach awaiting approval.</div>;
+  }
+
+  return (
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-semibold">Outreach Approvals</h1>
+      {sends.map((s) => (
+        <PendingSendCard
+          key={s.id}
+          send={s}
+          companyId={companyId}
+          onChanged={refresh}
+        />
+      ))}
+    </div>
+  );
 }
