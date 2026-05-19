@@ -33,6 +33,7 @@ import { recordIntermediaryTouchHandler } from "./record-intermediary-touch.js";
 import { enrichContactHandler } from "./enrich-contact.js";
 import { outreachDraftHandler } from "./outreach-draft.js";
 import { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
+import { outreachEditHandler } from "./outreach-edit.js";
 import { listPendingOutreachHandler } from "./outreach-list-pending.js";
 import { testGmailSendHandler } from "./test-gmail-send.js";
 
@@ -176,6 +177,8 @@ export function registerDealDeskTools(
       return `${base.replace(/\/$/, "")}/api/oauth/gmail/callback`;
     },
   };
+
+  parent.patch("/outreach/sends/:id", outreachEditHandler({ db }));
 
   parent.post(
     "/outreach/sends/:id/approve",
