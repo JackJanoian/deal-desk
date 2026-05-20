@@ -24,6 +24,15 @@ import {
 } from "../gmail/client-config.js";
 import type { GmailSecretStore } from "../gmail/tokens.js";
 import { secretService } from "../../services/secrets.js";
+import {
+  apolloApiKeyGetHandler,
+  apolloApiKeyPostHandler,
+  apolloApiKeyDeleteHandler,
+} from "./apollo-api-key.js";
+import {
+  type ApolloConfigStore,
+  APOLLO_API_KEY_SECRET_KEY,
+} from "../enrichment/apollo-config.js";
 
 import { createTargetHandler } from "./create-target.js";
 import { listTargetsHandler } from "./list-targets.js";
@@ -208,6 +217,50 @@ export function registerDealDeskTools(
   parent.get("/gmail-oauth-client", gmailClientConfigGetHandler(clientConfigDeps));
   parent.post("/gmail-oauth-client", gmailClientConfigPostHandler(clientConfigDeps));
   parent.delete("/gmail-oauth-client", gmailClientConfigDeleteHandler(clientConfigDeps));
+
+  const buildApolloConfigStore = (): ApolloConfigStore => {
+    const realSvc = secretService(db);
+    return {
+      getByKey: async (companyId: string, key: string) => {
+        const row = await db
+          .select({ id: companySecrets.id })
+          .from(companySecrets)
+          .where(
+            and(
+              eq(companySecrets.companyId, companyId),
+              eq(companySecrets.key, key),
+              eq(companySecrets.status, "active"),
+            ),
+          )
+          .limit(1);
+        return row[0] ? { id: row[0].id } : null;
+      },
+      create: async (companyId: string, args: { name: string; key: string; value: string; description?: string }) => {
+        const created = await realSvc.create(companyId, {
+          name: args.name,
+          key: args.key,
+          provider: "local_encrypted",
+          value: args.value,
+          description: args.description ?? "Apollo.io API key for contact enrichment",
+        });
+        return { id: created.id };
+      },
+      replace: async (secretId: string, args: { value: string }) => {
+        await realSvc.rotate(secretId, { value: args.value });
+      },
+      remove: async (secretId: string) => {
+        await realSvc.remove(secretId);
+      },
+      load: async (companyId: string, secretId: string) => {
+        return await realSvc.resolveSecretValue(companyId, secretId, "latest");
+      },
+    };
+  };
+
+  const apolloStore = buildApolloConfigStore();
+  parent.get("/apollo-api-key", apolloApiKeyGetHandler({ store: apolloStore }));
+  parent.post("/apollo-api-key", apolloApiKeyPostHandler({ store: apolloStore }));
+  parent.delete("/apollo-api-key", apolloApiKeyDeleteHandler({ store: apolloStore }));
 
   return parent;
 }
