@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useCompany } from "../../context/CompanyContext";
 import { GmailSetupWizard } from "./GmailSetupWizard";
+import ApolloSetupSection from "./ApolloSetupSection";
 
 export interface EmailAccount {
   id: string;
@@ -84,6 +85,9 @@ export function EmailAccounts(props: EmailAccountsProps) {
           </li>
         ))}
       </ul>
+      <div className="mt-6">
+        <ApolloSetupSection companyId={props.companyId} />
+      </div>
     </div>
   );
 }
