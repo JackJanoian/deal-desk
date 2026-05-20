@@ -32,6 +32,7 @@ import {
 import {
   type ApolloConfigStore,
   APOLLO_API_KEY_SECRET_KEY,
+  loadApolloApiKey,
 } from "../enrichment/apollo-config.js";
 
 import { createTargetHandler } from "./create-target.js";
@@ -98,7 +99,7 @@ export { outreachApproveHandler, outreachRejectHandler } from "./outreach-approv
  *   POST /intermediaries               — create an intermediary
  *   GET  /intermediaries               — list intermediaries (overdue-first)
  *   POST /intermediaries/touch         — record a touch with an intermediary
- *   POST /contacts/enrich              — enrich a contact (stub w/o API keys)
+ *   POST /contacts/enrich/:contactId   — enrich a contact via Apollo.io
  *   POST /outreach/sends/:id/approve   — approve and dispatch a queued send
  *   POST /outreach/sends/:id/reject    — reject a queued send
  */
@@ -111,7 +112,6 @@ export function registerDealDeskTools(
   parent.post("/intermediaries", createIntermediaryHandler(db));
   parent.get("/intermediaries", listIntermediariesHandler(db));
   parent.post("/intermediaries/touch", recordIntermediaryTouchHandler(db));
-  parent.post("/contacts/enrich", enrichContactHandler(db));
   parent.post("/outreach/draft", outreachDraftHandler(db));
   parent.post("/outreach/sends/:id/reject", outreachRejectHandler({ db }));
 
@@ -258,6 +258,14 @@ export function registerDealDeskTools(
   };
 
   const apolloStore = buildApolloConfigStore();
+  parent.post(
+    "/contacts/enrich/:contactId",
+    enrichContactHandler({
+      db,
+      loadApolloKey: (companyId) =>
+        loadApolloApiKey({ companyId }, { store: apolloStore }),
+    }),
+  );
   parent.get("/apollo-api-key", apolloApiKeyGetHandler({ store: apolloStore }));
   parent.post("/apollo-api-key", apolloApiKeyPostHandler({ store: apolloStore }));
   parent.delete("/apollo-api-key", apolloApiKeyDeleteHandler({ store: apolloStore }));
