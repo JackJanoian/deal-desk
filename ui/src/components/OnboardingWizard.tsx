@@ -58,9 +58,9 @@ import {
 type Step = 1 | 2 | 3 | 4 | 5;
 type AdapterType = string;
 
-const DEFAULT_TASK_DESCRIPTION = `You are the lead analyst. You set the direction for sourcing deals.
+const DEFAULT_TASK_DESCRIPTION = `You are the Managing Partner. You set the direction for sourcing deals.
 
-- hire a founding sector analyst
+- hire a Head of Business Development to lead outbound coverage
 - write a sourcing plan
 - break the pipeline into concrete tasks and start delegating work`;
 
@@ -159,7 +159,7 @@ export function OnboardingWizard() {
 
   // Step 4 — Task
   const [taskTitle, setTaskTitle] = useState(
-    "Hire your first sector analyst and create a sourcing plan"
+    "Hire your first Head of BD and create a sourcing plan"
   );
   const [taskDescription, setTaskDescription] = useState(
     DEFAULT_TASK_DESCRIPTION
@@ -328,7 +328,7 @@ export function OnboardingWizard() {
     setAdapterEnvLoading(false);
     setForceUnsetAnthropicApiKey(false);
     setUnsetAnthropicLoading(false);
-    setTaskTitle("Hire your first sector analyst and create a sourcing plan");
+    setTaskTitle("Hire your first Head of BD and create a sourcing plan");
     setTaskDescription(DEFAULT_TASK_DESCRIPTION);
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
@@ -1605,12 +1605,20 @@ function DdCheckbox({
   label: string;
 }) {
   return (
-    <label
-      className="flex items-center gap-2 cursor-pointer"
-      style={{ fontSize: 14, color: "var(--dd-text-primary)" }}
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-2 cursor-pointer text-left"
+      style={{
+        fontSize: 14,
+        color: "var(--dd-text-primary)",
+        background: "transparent",
+        border: "none",
+        padding: 0
+      }}
     >
       <span
-        onClick={() => onChange(!checked)}
+        aria-hidden
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -1620,21 +1628,16 @@ function DdCheckbox({
           border: checked
             ? "1px solid var(--dd-accent)"
             : "1px solid var(--dd-border)",
-          background: checked ? "var(--dd-accent)" : "var(--dd-surface-2)"
+          background: checked ? "var(--dd-accent)" : "var(--dd-surface-2)",
+          flexShrink: 0
         }}
       >
         {checked && (
           <Check className="h-3 w-3" style={{ color: "#000" }} />
         )}
       </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="sr-only"
-      />
       {label}
-    </label>
+    </button>
   );
 }
 
