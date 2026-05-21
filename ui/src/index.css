@@ -168,8 +168,8 @@
     touch-action: manipulation;
   }
   /* Let font-mono (utilities layer) override for monospace editors */
-  .paperclip-mdxeditor [class*="_placeholder_"],
-  .paperclip-mdxeditor-content {
+  .dealdesk-mdxeditor [class*="_placeholder_"],
+  .dealdesk-mdxeditor-content {
     font-family: inherit;
   }
 }
@@ -367,8 +367,8 @@
 }
 
 /* MDXEditor theme integration */
-.paperclip-mdxeditor-scope,
-.paperclip-mdxeditor {
+.dealdesk-mdxeditor-scope,
+.dealdesk-mdxeditor {
   --baseBase: var(--background);
   --baseBg: transparent;
   --baseBgSubtle: color-mix(in oklab, var(--accent) 35%, transparent);
@@ -400,83 +400,83 @@
 }
 
 @media (min-width: 768px) {
-  .paperclip-mdxeditor-scope,
-  .paperclip-mdxeditor {
+  .dealdesk-mdxeditor-scope,
+  .dealdesk-mdxeditor {
     font-size: 0.875rem;
   }
 }
 
-.paperclip-mdxeditor-scope [class*="_iconButton_"],
-.paperclip-mdxeditor [class*="_iconButton_"] {
+.dealdesk-mdxeditor-scope [class*="_iconButton_"],
+.dealdesk-mdxeditor [class*="_iconButton_"] {
   color: var(--baseText);
 }
 
-.paperclip-mdxeditor-scope [class*="_iconButton_"]:hover,
-.paperclip-mdxeditor [class*="_iconButton_"]:hover {
+.dealdesk-mdxeditor-scope [class*="_iconButton_"]:hover,
+.dealdesk-mdxeditor [class*="_iconButton_"]:hover {
   color: var(--baseTextContrast);
 }
 
-.paperclip-mdxeditor .mdxeditor-root-contenteditable {
+.dealdesk-mdxeditor .mdxeditor-root-contenteditable {
   min-height: 2.5rem;
   padding: 0;
   line-height: 1.5;
 }
 
-.paperclip-mdxeditor [class*="_contentEditable_"] {
+.dealdesk-mdxeditor [class*="_contentEditable_"] {
   padding: 0.375rem 0.625rem !important;
 }
 
-.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
+.dealdesk-mdxeditor--borderless [class*="_contentEditable_"] {
   padding: 0 !important;
 }
 
-.paperclip-mdxeditor [class*="_placeholder_"] {
+.dealdesk-mdxeditor [class*="_placeholder_"] {
   font-size: inherit;
   line-height: 1.5;
   color: var(--muted-foreground);
 }
 
-.paperclip-mdxeditor-content {
+.dealdesk-mdxeditor-content {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
 }
 
-.paperclip-edit-in-place-content {
+.dealdesk-edit-in-place-content {
   font-size: 0.9375rem;
   line-height: 1.75rem;
 }
 
-.paperclip-mdxeditor-content > *:first-child {
+.dealdesk-mdxeditor-content > *:first-child {
   margin-top: 0;
 }
 
-.paperclip-mdxeditor-content > *:last-child {
+.dealdesk-mdxeditor-content > *:last-child {
   margin-bottom: 0;
 }
 
-.paperclip-mdxeditor-content p {
+.dealdesk-mdxeditor-content p {
   margin: 0;
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content p + p {
+.dealdesk-mdxeditor-content p + p {
   margin-top: 1.1em;
 }
 
-.paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
+.dealdesk-mdxeditor-content a:not(.dealdesk-mention-chip):not(.dealdesk-project-mention-chip) {
   color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
-.dark .paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
+.dark .dealdesk-mdxeditor-content a:not(.dealdesk-mention-chip):not(.dealdesk-project-mention-chip) {
   color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip,
-.paperclip-mdxeditor-content a.paperclip-project-mention-chip {
+.dealdesk-mdxeditor-content a.dealdesk-mention-chip,
+.dealdesk-mdxeditor-content a.dealdesk-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -496,35 +496,35 @@
 
 /* Strip the MDXEditor's default inline-code styling from the text inside chips
    (the link label otherwise picks up a monospace font + gray tint). */
-.paperclip-mdxeditor-content a.paperclip-mention-chip code,
-.paperclip-mdxeditor-content a.paperclip-project-mention-chip code {
+.dealdesk-mdxeditor-content a.dealdesk-mention-chip code,
+.dealdesk-mdxeditor-content a.dealdesk-project-mention-chip code {
   font-family: inherit;
   background: none;
   color: inherit;
   padding: 0;
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip::before,
-a.paperclip-mention-chip::before {
+.dealdesk-mdxeditor-content a.dealdesk-mention-chip::before,
+a.dealdesk-mention-chip::before {
   content: "";
   flex: none;
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip[data-mention-kind="project"]::before,
-a.paperclip-mention-chip[data-mention-kind="project"]::before {
+.dealdesk-mdxeditor-content a.dealdesk-mention-chip[data-mention-kind="project"]::before,
+a.dealdesk-mention-chip[data-mention-kind="project"]::before {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
-  background-color: var(--paperclip-mention-project-color, currentColor);
+  background-color: var(--dealdesk-mention-project-color, currentColor);
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip[data-mention-kind="agent"]::before,
-a.paperclip-mention-chip[data-mention-kind="agent"]::before {
+.dealdesk-mdxeditor-content a.dealdesk-mention-chip[data-mention-kind="agent"]::before,
+a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
   width: 0.75rem;
   height: 0.75rem;
   background-color: currentColor;
-  -webkit-mask-image: var(--paperclip-mention-icon-mask);
-  mask-image: var(--paperclip-mention-icon-mask);
+  -webkit-mask-image: var(--dealdesk-mention-icon-mask);
+  mask-image: var(--dealdesk-mention-icon-mask);
   -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: no-repeat;
@@ -533,57 +533,57 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   mask-size: contain;
 }
 
-.paperclip-mdxeditor-content ul,
-.paperclip-mdxeditor-content ol {
+.dealdesk-mdxeditor-content ul,
+.dealdesk-mdxeditor-content ol {
   margin: 1.1em 0;
   padding-left: 1.6em;
 }
 
-.paperclip-mdxeditor-content ul {
+.dealdesk-mdxeditor-content ul {
   list-style: disc;
 }
 
-.paperclip-mdxeditor-content ol {
+.dealdesk-mdxeditor-content ol {
   list-style: decimal;
 }
 
-.paperclip-mdxeditor-content li {
+.dealdesk-mdxeditor-content li {
   display: list-item;
   margin: 0.3em 0;
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content li::marker {
+.dealdesk-mdxeditor-content li::marker {
   color: var(--muted-foreground);
 }
 
-.paperclip-mdxeditor-content h1 {
+.dealdesk-mdxeditor-content h1 {
   margin: 1.4em 0 0.9em;
   font-size: 1.75em;
   font-weight: 700;
   line-height: 1.2;
 }
 
-.paperclip-mdxeditor-content h2 {
+.dealdesk-mdxeditor-content h2 {
   margin: 1.3em 0 0.85em;
   font-size: 1.35em;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.paperclip-mdxeditor-content h3 {
+.dealdesk-mdxeditor-content h3 {
   margin: 1.2em 0 0.8em;
   font-size: 1.15em;
   font-weight: 600;
   line-height: 1.35;
 }
 
-.paperclip-mdxeditor-content img {
+.dealdesk-mdxeditor-content img {
   max-height: 18rem;
   border-radius: calc(var(--radius) - 2px);
 }
 
-.paperclip-mdxeditor-content blockquote {
+.dealdesk-mdxeditor-content blockquote {
   margin: 1.2em 0;
   padding-left: 1em;
   border-left: 3px solid var(--border);
@@ -591,12 +591,12 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content code {
+.dealdesk-mdxeditor-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 1em;
 }
 
-.paperclip-mdxeditor-content pre {
+.dealdesk-mdxeditor-content pre {
   margin: 0.4rem 0;
   padding: 0;
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
@@ -608,50 +608,50 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 /* Dark theme for CodeMirror code blocks inside the MDXEditor.
    Overrides the default cm6-theme-basic-light that MDXEditor bundles. */
-.paperclip-mdxeditor .cm-editor {
+.dealdesk-mdxeditor .cm-editor {
   background-color: #1e1e2e !important;
   color: #cdd6f4 !important;
   font-size: 1em;
 }
 
-.paperclip-mdxeditor .cm-gutters {
+.dealdesk-mdxeditor .cm-gutters {
   background-color: #181825 !important;
   color: #585b70 !important;
   border-right: 1px solid #313244 !important;
 }
 
-.paperclip-mdxeditor .cm-activeLineGutter {
+.dealdesk-mdxeditor .cm-activeLineGutter {
   background-color: #1e1e2e !important;
 }
 
-.paperclip-mdxeditor .cm-activeLine {
+.dealdesk-mdxeditor .cm-activeLine {
   background-color: color-mix(in oklab, #cdd6f4 5%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-cursor,
-.paperclip-mdxeditor .cm-dropCursor {
+.dealdesk-mdxeditor .cm-cursor,
+.dealdesk-mdxeditor .cm-dropCursor {
   border-left-color: #cdd6f4 !important;
 }
 
-.paperclip-mdxeditor .cm-selectionBackground {
+.dealdesk-mdxeditor .cm-selectionBackground {
   background-color: color-mix(in oklab, #89b4fa 25%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-focused .cm-selectionBackground {
+.dealdesk-mdxeditor .cm-focused .cm-selectionBackground {
   background-color: color-mix(in oklab, #89b4fa 30%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-content {
+.dealdesk-mdxeditor .cm-content {
   caret-color: #cdd6f4;
 }
 
 /* MDXEditor code block language selector – show on hover only */
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
+.dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"] {
   position: relative;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] {
+.dealdesk-mdxeditor-content [class*="_codeMirrorToolbar_"],
+.dealdesk-mdxeditor-content [class*="_codeBlockToolbar_"] {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
@@ -660,31 +660,31 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   transition: opacity 150ms ease;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"] select,
-.paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] select {
+.dealdesk-mdxeditor-content [class*="_codeMirrorToolbar_"] select,
+.dealdesk-mdxeditor-content [class*="_codeBlockToolbar_"] select {
   background-color: #313244;
   color: #cdd6f4;
   border-color: #45475a;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeBlockToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeBlockToolbar_"] {
+.dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeMirrorToolbar_"],
+.dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeBlockToolbar_"],
+.dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeMirrorToolbar_"],
+.dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeBlockToolbar_"] {
   opacity: 1;
 }
 
 /* Rendered markdown code blocks & inline code (prose/MarkdownBody context).
    Dark theme code blocks with compact sizing.
    Override prose CSS variables so prose-invert can't revert to defaults. */
-.paperclip-markdown {
+.dealdesk-markdown {
   --tw-prose-pre-bg: #1e1e2e;
   --tw-prose-pre-code: #cdd6f4;
   --tw-prose-invert-pre-bg: #1e1e2e;
   --tw-prose-invert-pre-code: #cdd6f4;
 }
 
-.paperclip-markdown pre {
+.dealdesk-markdown pre {
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent) !important;
   border-radius: calc(var(--radius) - 3px) !important;
   background-color: #1e1e2e !important;
@@ -696,23 +696,23 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   white-space: pre;
 }
 
-.paperclip-markdown code {
+.dealdesk-markdown code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 1em;
 }
 
-.paperclip-markdown pre code {
+.dealdesk-markdown pre code {
   font-size: inherit;
   color: inherit;
   background: none;
 }
 
 /* Copy-to-clipboard button on fenced code blocks */
-.paperclip-markdown-codeblock {
+.dealdesk-markdown-codeblock {
   position: relative;
 }
 
-.paperclip-markdown-codeblock-copy {
+.dealdesk-markdown-codeblock-copy {
   position: absolute;
   top: 0.4rem;
   right: 0.4rem;
@@ -731,26 +731,26 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
 }
 
-.paperclip-markdown-codeblock:hover .paperclip-markdown-codeblock-copy,
-.paperclip-markdown-codeblock-copy:focus-visible,
-.paperclip-markdown-codeblock-copy[data-copied] {
+.dealdesk-markdown-codeblock:hover .dealdesk-markdown-codeblock-copy,
+.dealdesk-markdown-codeblock-copy:focus-visible,
+.dealdesk-markdown-codeblock-copy[data-copied] {
   opacity: 1;
 }
 
-.paperclip-markdown-codeblock-copy:hover {
+.dealdesk-markdown-codeblock-copy:hover {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
 
-.paperclip-markdown-codeblock-copy[data-copied] {
+.dealdesk-markdown-codeblock-copy[data-copied] {
   color: var(--primary);
 }
 
-.paperclip-markdown-codeblock-copy[data-failed] {
+.dealdesk-markdown-codeblock-copy[data-failed] {
   color: var(--destructive);
 }
 
-.paperclip-markdown-codeblock-copy-label {
+.dealdesk-markdown-codeblock-copy-label {
   font-weight: 500;
 }
 
@@ -772,55 +772,55 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   background-color: #ffffff0f;
 }
 
-.paperclip-markdown {
+.dealdesk-markdown {
   color: var(--foreground);
   font-size: 0.9375rem;
   line-height: 1.6;
 }
 
-.paperclip-markdown > :first-child {
+.dealdesk-markdown > :first-child {
   margin-top: 0;
 }
 
-.paperclip-markdown > :last-child {
+.dealdesk-markdown > :last-child {
   margin-bottom: 0;
 }
 
-.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
+.dealdesk-markdown :where(p, ul, ol, blockquote, pre, .dealdesk-markdown-table-scroll) {
   margin-top: 0.7rem;
   margin-bottom: 0.7rem;
 }
 
-.paperclip-markdown :where(ul, ol) {
+.dealdesk-markdown :where(ul, ol) {
   padding-left: 1.15rem;
 }
 
-.paperclip-markdown ul {
+.dealdesk-markdown ul {
   list-style-type: disc;
 }
 
-.paperclip-markdown ol {
+.dealdesk-markdown ol {
   list-style-type: decimal;
 }
 
-.paperclip-markdown li {
+.dealdesk-markdown li {
   margin: 0.14rem 0;
   padding-left: 0.2rem;
 }
 
-.paperclip-markdown li > :where(p, ul, ol) {
+.dealdesk-markdown li > :where(p, ul, ol) {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.paperclip-markdown li::marker {
+.dealdesk-markdown li::marker {
   color: var(--muted-foreground);
 }
 
-.paperclip-markdown h1,
-.paperclip-markdown h2,
-.paperclip-markdown h3,
-.paperclip-markdown h4 {
+.dealdesk-markdown h1,
+.dealdesk-markdown h2,
+.dealdesk-markdown h3,
+.dealdesk-markdown h4 {
   margin-top: 1.75rem;
   margin-bottom: 0.45rem;
   color: var(--foreground);
@@ -829,101 +829,101 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: 1.3;
 }
 
-.paperclip-markdown h1 {
+.dealdesk-markdown h1 {
   font-size: 1.5rem;
 }
 
-.paperclip-markdown h2 {
+.dealdesk-markdown h2 {
   font-size: 1.25rem;
 }
 
-.paperclip-markdown h3 {
+.dealdesk-markdown h3 {
   font-size: 1.05rem;
 }
 
-.paperclip-markdown h4 {
+.dealdesk-markdown h4 {
   font-size: 0.95rem;
 }
 
-.paperclip-markdown :where(strong, b) {
+.dealdesk-markdown :where(strong, b) {
   color: var(--foreground);
   font-weight: 600;
 }
 
-.paperclip-markdown a {
+.dealdesk-markdown a {
   color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
-.paperclip-markdown a.paperclip-mention-chip {
+.dealdesk-markdown a.dealdesk-mention-chip {
   text-decoration: none;
 }
 
-.paperclip-markdown a.paperclip-mention-chip[data-mention-kind="issue"] {
+.dealdesk-markdown a.dealdesk-mention-chip[data-mention-kind="issue"] {
   border-color: color-mix(in oklab, var(--foreground) 14%, var(--border) 86%);
   background: color-mix(in oklab, var(--accent) 42%, transparent);
 }
 
 /* Inline issue references in markdown: no pill chrome, just a status icon
    beside the link label — keeps the pair from splitting across lines. */
-.paperclip-markdown-issue-ref {
+.dealdesk-markdown-issue-ref {
   display: inline;
   white-space: nowrap;
 }
 
-.dark .paperclip-markdown a {
+.dark .dealdesk-markdown a {
   color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
 }
 
-.paperclip-markdown blockquote {
+.dealdesk-markdown blockquote {
   margin-left: 0;
   padding-left: 0.95rem;
   border-left: 0.24rem solid color-mix(in oklab, var(--border) 84%, var(--muted-foreground) 16%);
   color: var(--muted-foreground);
 }
 
-.paperclip-markdown hr {
+.dealdesk-markdown hr {
   margin: 1.25rem 0;
   border-color: var(--border);
 }
 
-.paperclip-markdown img {
+.dealdesk-markdown img {
   border-radius: calc(var(--radius) + 2px);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
-.paperclip-markdown-table-scroll {
+.dealdesk-markdown-table-scroll {
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-.paperclip-markdown-table-scroll:focus-visible {
+.dealdesk-markdown-table-scroll:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
-.paperclip-markdown-table-scroll table {
+.dealdesk-markdown-table-scroll table {
   width: max-content;
   min-width: 100%;
   margin: 0;
 }
 
-.paperclip-markdown-table-scroll :where(th, td) {
+.dealdesk-markdown-table-scroll :where(th, td) {
   min-width: 8rem;
   max-width: 18rem;
   vertical-align: top;
 }
 
-.paperclip-markdown th {
+.dealdesk-markdown th {
   font-weight: 600;
   text-align: left;
 }
 
-.paperclip-mermaid {
+.dealdesk-mermaid {
   margin: 0.5rem 0;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
@@ -932,7 +932,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   overflow-x: auto;
 }
 
-.paperclip-mermaid svg {
+.dealdesk-mermaid svg {
   display: block;
   width: max-content;
   max-width: none;
@@ -940,17 +940,17 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   height: auto;
 }
 
-.paperclip-mermaid-status {
+.dealdesk-mermaid-status {
   margin: 0 0 0.45rem;
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
 
-.paperclip-mermaid-status-error {
+.dealdesk-mermaid-status-error {
   color: var(--destructive);
 }
 
-.paperclip-mermaid-source {
+.dealdesk-mermaid-source {
   margin: 0;
   padding: 0;
   border: 0;
@@ -958,10 +958,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* Mention chips rendered inline in prose (MarkdownBody or inline anchors) */
-a.paperclip-mention-chip,
-a.paperclip-project-mention-chip,
-span.paperclip-mention-chip,
-span.paperclip-project-mention-chip {
+a.dealdesk-mention-chip,
+a.dealdesk-project-mention-chip,
+span.dealdesk-mention-chip,
+span.dealdesk-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -984,10 +984,10 @@ span.paperclip-project-mention-chip {
 
 /* When the identifier inside a chip is backtick-wrapped in markdown, strip the
    inline-code monospace/gray styling so the pill label reads cleanly. */
-.paperclip-markdown a.paperclip-mention-chip code,
-.paperclip-markdown a.paperclip-project-mention-chip code,
-.paperclip-markdown span.paperclip-mention-chip code,
-.paperclip-markdown span.paperclip-project-mention-chip code {
+.dealdesk-markdown a.dealdesk-mention-chip code,
+.dealdesk-markdown a.dealdesk-project-mention-chip code,
+.dealdesk-markdown span.dealdesk-mention-chip code,
+.dealdesk-markdown span.dealdesk-project-mention-chip code {
   font-family: inherit;
   background: none;
   color: inherit;
@@ -1012,4 +1012,205 @@ span.paperclip-project-mention-chip {
 [class*="_toolbarButtonDropdownContainer_"],
 [class*="_toolbarNodeKindSelectContainer_"] {
   z-index: 81 !important;
+}
+
+/* DEAL DESK: Onboarding design system — dark financial terminal aesthetic.
+   Loaded only for the onboarding wizard; scoped via .dd-onboarding root. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+.dd-onboarding {
+  --dd-font-display: 'DM Serif Display', Georgia, serif;
+  --dd-font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --dd-font-body: 'DM Sans', system-ui, sans-serif;
+
+  --dd-bg:           #000000;
+  --dd-surface:      #0a0a0a;
+  --dd-surface-2:    #111111;
+  --dd-surface-3:    #1a1a1a;
+  --dd-border:       #222222;
+  --dd-border-light: #2a2a2a;
+
+  --dd-text-primary:   #f0ede8;
+  --dd-text-secondary: #888880;
+  --dd-text-tertiary:  #444440;
+
+  --dd-accent:         #F5A623;
+  --dd-accent-dim:     rgba(245, 166, 35, 0.12);
+  --dd-accent-border:  rgba(245, 166, 35, 0.3);
+
+  --dd-success:        #22c55e;
+  --dd-success-dim:    rgba(34, 197, 94, 0.1);
+  --dd-error:          #ef4444;
+  --dd-error-dim:      rgba(239, 68, 68, 0.1);
+
+  --dd-radius-none:  0px;
+  --dd-radius-sm:    2px;
+  --dd-radius-md:    4px;
+
+  background: var(--dd-bg);
+  color: var(--dd-text-primary);
+  font-family: var(--dd-font-body);
+}
+
+.dd-onboarding * { box-sizing: border-box; }
+
+.dd-step-rail {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 39px,
+    rgba(255, 255, 255, 0.03) 39px,
+    rgba(255, 255, 255, 0.03) 40px
+  );
+}
+
+.dd-input {
+  background: var(--dd-surface-2);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-none);
+  color: var(--dd-text-primary);
+  font-family: var(--dd-font-body);
+  font-size: 14px;
+  padding: 10px 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.dd-input:focus {
+  border-color: var(--dd-accent);
+  box-shadow: 0 0 0 1px var(--dd-accent-border);
+}
+.dd-input::placeholder { color: var(--dd-text-tertiary); }
+
+.dd-label {
+  font-family: var(--dd-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dd-text-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.dd-btn-primary {
+  background: var(--dd-accent);
+  color: #000;
+  font-family: var(--dd-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--dd-radius-none);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dd-btn-primary:hover:not(:disabled) { opacity: 0.88; }
+.dd-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.dd-btn-ghost {
+  background: transparent;
+  color: var(--dd-text-secondary);
+  font-family: var(--dd-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-none);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dd-btn-ghost:hover:not(:disabled) {
+  border-color: var(--dd-text-secondary);
+  color: var(--dd-text-primary);
+}
+.dd-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@keyframes ddStepEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.dd-step-content {
+  animation: ddStepEnter 0.25s ease forwards;
+}
+
+@keyframes ddLineIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dd-runtime-card {
+  background: var(--dd-surface-2);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+.dd-runtime-card:hover:not([data-disabled="true"]) {
+  border-color: var(--dd-border-light);
+}
+.dd-runtime-card[data-selected="true"] {
+  border-color: var(--dd-accent);
+  background: var(--dd-accent-dim);
+}
+.dd-runtime-card[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dd-runtime-card .dd-selected-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dd-accent);
+}
+
+.dd-tag-detected {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--dd-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-success);
+  background: var(--dd-success-dim);
+  padding: 2px 6px;
+  border-radius: var(--dd-radius-sm);
+  width: fit-content;
+}
+.dd-tag-missing {
+  font-family: var(--dd-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-text-tertiary);
+}
+
+@media (max-width: 900px) {
+  .dd-rail { display: none; }
+  .dd-progress-mobile { display: flex; }
+  .dd-content-pad { padding: 32px 24px; }
+}
+@media (min-width: 901px) {
+  .dd-progress-mobile { display: none; }
 }

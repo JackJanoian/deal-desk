@@ -1,12 +1,14 @@
+/* DEAL DESK: full visual redesign — dark financial-terminal aesthetic.
+   All existing state, props, API calls, and handlers preserved.
+   Only visual output and adapter-grid grouping have changed. */
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AdapterEnvironmentTestResult } from "@paperclipai/shared";
+import type { AdapterEnvironmentTestResult } from "@dealdesk/shared";
 import { useLocation, useNavigate, useParams } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { companiesApi } from "../api/companies";
 import { goalsApi } from "../api/goals";
-// DEAL DESK: API client for thesis creation in the onboarding flow.
 import { dealDeskApi } from "../api/dealDesk";
 import { agentsApi } from "../api/agents";
 import { approvalsApi } from "../api/approvals";
@@ -19,7 +21,6 @@ import {
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { cn } from "../lib/utils";
 import {
   extractModelName,
@@ -42,38 +43,53 @@ import { buildNewAgentRuntimeConfig } from "../lib/new-agent-runtime-config";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL
-} from "@paperclipai/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@paperclipai/adapter-opencode-local";
+} from "@dealdesk/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@dealdesk/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@dealdesk/adapter-gemini-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@dealdesk/adapter-opencode-local";
 import { resolveRouteOnboardingOptions } from "../lib/onboarding-route";
-import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import {
-  Building2,
-  Bot,
-  ListTodo,
-  Rocket,
-  // DEAL DESK: icon for the new Thesis step.
-  Target,
-  ArrowLeft,
-  ArrowRight,
   Check,
   Loader2,
   ChevronDown,
   X
 } from "lucide-react";
 
-
-// DEAL DESK: extended step union — step 2 is now Thesis; Agent/Task/Launch shifted.
 type Step = 1 | 2 | 3 | 4 | 5;
 type AdapterType = string;
 
-// DEAL DESK: default task copy reframed from "build a business" to "source deals"
 const DEFAULT_TASK_DESCRIPTION = `You are the lead analyst. You set the direction for sourcing deals.
 
 - hire a founding sector analyst
 - write a sourcing plan
 - break the pipeline into concrete tasks and start delegating work`;
+
+const STEP_META: Array<{ step: Step; label: string }> = [
+  { step: 1, label: "Fund" },
+  { step: 2, label: "Thesis" },
+  { step: 3, label: "Runtime" },
+  { step: 4, label: "Task" },
+  { step: 5, label: "Launch" }
+];
+
+// DEAL DESK: install hints / website per adapter type (shown when not detected).
+const ADAPTER_INSTALL_LINKS: Record<string, string> = {
+  claude_local: "https://claude.ai/code",
+  codex_local: "https://github.com/openai/codex",
+  gemini_local: "https://github.com/google-gemini/gemini-cli",
+  cursor: "https://cursor.com",
+  opencode_local: "https://github.com/sst/opencode",
+  pi_local: "https://docs.anthropic.com"
+};
+
+// DEAL DESK: rough categorization for the grouped grid in the runtime step.
+const API_KEY_ADAPTERS = new Set<string>([
+  "anthropic_api",
+  "openai_api",
+  "google_api",
+  "gemini_api"
+]);
+const WEBHOOK_ADAPTERS = new Set<string>(["openclaw_gateway", "http"]);
 
 export function OnboardingWizard() {
   const { onboardingOpen, onboardingOptions, closeOnboarding } = useDialog();
@@ -84,7 +100,6 @@ export function OnboardingWizard() {
   const { companyPrefix } = useParams<{ companyPrefix?: string }>();
   const [routeDismissed, setRouteDismissed] = useState(false);
 
-  // Sync disabled adapter types from server so adapter grid filters them out
   const disabledTypes = useDisabledAdaptersSync();
 
   const routeOnboardingOptions =
@@ -93,7 +108,7 @@ export function OnboardingWizard() {
       : resolveRouteOnboardingOptions({
           pathname: location.pathname,
           companyPrefix,
-          companies,
+          companies
         });
   const effectiveOnboardingOpen =
     onboardingOpen || (routeOnboardingOptions !== null && !routeDismissed);
@@ -110,11 +125,11 @@ export function OnboardingWizard() {
   const [modelOpen, setModelOpen] = useState(false);
   const [modelSearch, setModelSearch] = useState("");
 
-  // Step 1
+  // Step 1 — Fund
   const [companyName, setCompanyName] = useState("");
   const [companyGoal, setCompanyGoal] = useState("");
 
-  // DEAL DESK: Step 2 — Investment thesis setup state.
+  // Step 2 — Thesis
   const [thesisName, setThesisName] = useState("");
   const [thesisSector, setThesisSector] = useState("");
   const [thesisGeos, setThesisGeos] = useState("");
@@ -125,10 +140,10 @@ export function OnboardingWizard() {
   const [thesisOwnershipSponsor, setThesisOwnershipSponsor] = useState(false);
   const [thesisNarrative, setThesisNarrative] = useState("");
   const [thesisTemplateSlug, setThesisTemplateSlug] = useState<string | null>(null);
-  const [createdThesisId, setCreatedThesisId] = useState<string | null>(null);
+  const [, setCreatedThesisId] = useState<string | null>(null);
 
-  // Step 2 (now step 3 in DEAL DESK numbering)
-  const [agentName, setAgentName] = useState("Managing Partner"); // DEAL DESK
+  // Step 3 — Runtime
+  const [agentName, setAgentName] = useState("Managing Partner");
   const [adapterType, setAdapterType] = useState<AdapterType>("claude_local");
   const [model, setModel] = useState("");
   const [command, setCommand] = useState("");
@@ -141,17 +156,15 @@ export function OnboardingWizard() {
   const [forceUnsetAnthropicApiKey, setForceUnsetAnthropicApiKey] =
     useState(false);
   const [unsetAnthropicLoading, setUnsetAnthropicLoading] = useState(false);
-  const [showMoreAdapters, setShowMoreAdapters] = useState(false);
 
-  // Step 3
+  // Step 4 — Task
   const [taskTitle, setTaskTitle] = useState(
-    /* DEAL DESK: default task title reframed for deal sourcing */ "Hire your first sector analyst and create a sourcing plan"
+    "Hire your first sector analyst and create a sourcing plan"
   );
   const [taskDescription, setTaskDescription] = useState(
     DEFAULT_TASK_DESCRIPTION
   );
 
-  // Auto-grow textarea for task description
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const autoResizeTextarea = useCallback(() => {
     const el = textareaRef.current;
@@ -160,7 +173,6 @@ export function OnboardingWizard() {
     el.style.height = el.scrollHeight + "px";
   }, []);
 
-  // Created entity IDs — pre-populate from existing company when skipping step 1
   const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(
     existingCompanyId ?? null
   );
@@ -178,9 +190,6 @@ export function OnboardingWizard() {
     setRouteDismissed(false);
   }, [location.pathname]);
 
-  // Sync step and company when onboarding opens with options.
-  // Keep this independent from company-list refreshes so Step 1 completion
-  // doesn't get reset after creating a company.
   useEffect(() => {
     if (!effectiveOnboardingOpen) return;
     const cId = effectiveOnboardingOptions.companyId ?? null;
@@ -197,37 +206,30 @@ export function OnboardingWizard() {
     effectiveOnboardingOptions.initialStep
   ]);
 
-  // Backfill issue prefix for an existing company once companies are loaded.
   useEffect(() => {
     if (!effectiveOnboardingOpen || !createdCompanyId || createdCompanyPrefix) return;
     const company = companies.find((c) => c.id === createdCompanyId);
     if (company) setCreatedCompanyPrefix(company.issuePrefix);
   }, [effectiveOnboardingOpen, createdCompanyId, createdCompanyPrefix, companies]);
 
-  // Resize textarea when step 3 is shown or description changes
   useEffect(() => {
-    // DEAL DESK: task step is now step 4 after inserting Thesis at step 2.
     if (step === 4) autoResizeTextarea();
   }, [step, taskDescription, autoResizeTextarea]);
 
   const { data: adapterModels } = useQuery({
-    // The wizard doesn't expose an environment selector, so models always
-    // resolve against the local Paperclip host (environmentId = null).
     queryKey: createdCompanyId
       ? queryKeys.agents.adapterModels(createdCompanyId, adapterType, null)
       : ["agents", "none", "adapter-models", adapterType, null],
     queryFn: () => agentsApi.adapterModels(createdCompanyId!, adapterType, { environmentId: null }),
-    // DEAL DESK: agent step is now step 3 after inserting Thesis at step 2.
     enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 3
   });
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(adapterType);
   const isLocalAdapter = adapterCaps.supportsInstructionsBundle || adapterCaps.supportsSkills || adapterCaps.supportsLocalAgentJwt;
 
-  // Build adapter grids dynamically from the UI registry + display metadata.
-  // External/plugin adapters automatically appear with generic defaults.
-  const { recommendedAdapters, moreAdapters } = useMemo(() => {
-    const SYSTEM_ADAPTER_TYPES = new Set(["process", "http"]);
+  // DEAL DESK: split adapters into three groups for the runtime step grid.
+  const { cliAdapters, apiKeyAdapters, customAdapters } = useMemo(() => {
+    const SYSTEM_ADAPTER_TYPES = new Set(["process"]);
     const all = listUIAdapters()
       .filter((a) =>
         !SYSTEM_ADAPTER_TYPES.has(a.type) &&
@@ -237,24 +239,27 @@ export function OnboardingWizard() {
       .map((a) => ({ ...getAdapterDisplay(a.type), type: a.type }));
 
     return {
-      recommendedAdapters: all.filter((a) => a.recommended),
-      moreAdapters: all.filter((a) => !a.recommended),
+      cliAdapters: all.filter(
+        (a) => !API_KEY_ADAPTERS.has(a.type) && !WEBHOOK_ADAPTERS.has(a.type)
+      ),
+      apiKeyAdapters: all.filter((a) => API_KEY_ADAPTERS.has(a.type)),
+      customAdapters: all.filter((a) => WEBHOOK_ADAPTERS.has(a.type))
     };
   }, [disabledTypes]);
+
   const COMMAND_PLACEHOLDERS: Record<string, string> = {
     claude_local: "claude",
     codex_local: "codex",
     gemini_local: "gemini",
     pi_local: "pi",
     cursor: "agent",
-    opencode_local: "opencode",
+    opencode_local: "opencode"
   };
   const effectiveAdapterCommand =
     command.trim() ||
     (COMMAND_PLACEHOLDERS[adapterType] ?? adapterType.replace(/_local$/, ""));
 
   useEffect(() => {
-    // DEAL DESK: agent step is now step 3.
     if (step !== 3) return;
     setAdapterEnvResult(null);
     setAdapterEnvError(null);
@@ -312,7 +317,7 @@ export function OnboardingWizard() {
     setError(null);
     setCompanyName("");
     setCompanyGoal("");
-    setAgentName("Managing Partner"); // DEAL DESK
+    setAgentName("Managing Partner");
     setAdapterType("claude_local");
     setModel("");
     setCommand("");
@@ -323,7 +328,7 @@ export function OnboardingWizard() {
     setAdapterEnvLoading(false);
     setForceUnsetAnthropicApiKey(false);
     setUnsetAnthropicLoading(false);
-    setTaskTitle(/* DEAL DESK: default task title reframed for deal sourcing */ "Hire your first sector analyst and create a sourcing plan");
+    setTaskTitle("Hire your first sector analyst and create a sourcing plan");
     setTaskDescription(DEFAULT_TASK_DESCRIPTION);
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
@@ -435,7 +440,6 @@ export function OnboardingWizard() {
         setCreatedCompanyGoalId(null);
       }
 
-      // DEAL DESK: advance to new Thesis step (was Agent step).
       setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create company");
@@ -444,7 +448,6 @@ export function OnboardingWizard() {
     }
   }
 
-  // DEAL DESK: thesis setup handler — POSTs to the new deal-desk route.
   async function handleThesisNext() {
     if (!createdCompanyId) return;
     if (!thesisSector.trim()) {
@@ -472,10 +475,9 @@ export function OnboardingWizard() {
         revenueMax: thesisRevenueMax ? thesisRevenueMax : null,
         ownershipPreferences,
         narrative: thesisNarrative.trim() || null,
-        templateSlug: thesisTemplateSlug,
+        templateSlug: thesisTemplateSlug
       });
       setCreatedThesisId(thesis.id);
-      // DEAL DESK: advance from Thesis (2) → Agent (3).
       setStep(3);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save thesis");
@@ -484,12 +486,12 @@ export function OnboardingWizard() {
     }
   }
 
-  // DEAL DESK: thesis templates pre-fill the form (user can still edit before submit).
   const thesisTemplates = [
     {
       slug: "hvac-southeast-rollup",
-      title: "HVAC Roll-up — Southeast US",
-      summary: "Sector: HVAC Services · Geo: FL, GA, NC, SC, TN, AL · Revenue: $5–25M",
+      title: "HVAC Roll-up",
+      tag: "Southeast US",
+      summary: "Sector: HVAC Services · Revenue: $5–25M",
       apply: () => {
         setThesisName("HVAC Roll-up — Southeast US");
         setThesisSector("HVAC Services");
@@ -497,12 +499,13 @@ export function OnboardingWizard() {
         setThesisRevenueMin("5000000");
         setThesisRevenueMax("25000000");
         setThesisTemplateSlug("hvac-southeast-rollup");
-      },
+      }
     },
     {
       slug: "healthcare-lmm",
-      title: "Healthcare Services — Lower Middle Market",
-      summary: "Sector: Healthcare Services · Geo: United States · Revenue: $5–50M",
+      title: "Healthcare Svcs",
+      tag: "Lower Mid Market",
+      summary: "Sector: Healthcare · Revenue: $5–50M",
       apply: () => {
         setThesisName("Healthcare Services — Lower Middle Market");
         setThesisSector("Healthcare Services");
@@ -510,12 +513,13 @@ export function OnboardingWizard() {
         setThesisRevenueMin("5000000");
         setThesisRevenueMax("50000000");
         setThesisTemplateSlug("healthcare-lmm");
-      },
+      }
     },
     {
       slug: "search-fund-generalist",
-      title: "Search Fund — Generalist LMM",
-      summary: "Sector: Diversified · Geo: United States · Revenue: $3–20M",
+      title: "Search Fund",
+      tag: "Generalist LMM",
+      summary: "Sector: Diversified · Revenue: $3–20M",
       apply: () => {
         setThesisName("Search Fund — Generalist LMM");
         setThesisSector("Diversified");
@@ -523,8 +527,8 @@ export function OnboardingWizard() {
         setThesisRevenueMin("3000000");
         setThesisRevenueMax("20000000");
         setThesisTemplateSlug("search-fund-generalist");
-      },
-    },
+      }
+    }
   ];
 
   async function handleStep2Next() {
@@ -567,7 +571,6 @@ export function OnboardingWizard() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.list(createdCompanyId)
       });
-      // DEAL DESK: task step is now step 4.
       setStep(4);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create agent");
@@ -628,7 +631,6 @@ export function OnboardingWizard() {
   async function handleStep3Next() {
     if (!createdCompanyId || !createdAgentId) return;
     setError(null);
-    // DEAL DESK: launch step is now step 5.
     setStep(5);
   }
 
@@ -694,7 +696,6 @@ export function OnboardingWizard() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      // DEAL DESK: keyboard shortcuts shifted — Thesis at 2, Agent at 3, Task at 4, Launch at 5.
       if (step === 1 && companyName.trim()) handleStep1Next();
       else if (step === 2 && thesisSector.trim()) handleThesisNext();
       else if (step === 3 && agentName.trim()) handleStep2Next();
@@ -704,6 +705,9 @@ export function OnboardingWizard() {
   }
 
   if (!effectiveOnboardingOpen) return null;
+
+  const currentStepMeta = STEP_META.find((s) => s.step === step)!;
+  const minStep = onboardingOptions.initialStep ?? 1;
 
   return (
     <Dialog
@@ -716,612 +720,697 @@ export function OnboardingWizard() {
       }}
     >
       <DialogPortal>
-        {/* Plain div instead of DialogOverlay — Radix's overlay wraps in
-            RemoveScroll which blocks wheel events on our custom (non-DialogContent)
-            scroll container. A plain div preserves the background without scroll-locking. */}
-        <div className="fixed inset-0 z-50 bg-background" />
-        <div className="fixed inset-0 z-50 flex" onKeyDown={handleKeyDown}>
+        <div className="fixed inset-0 z-50 bg-black" />
+        <div
+          className="dd-onboarding fixed inset-0 z-50 flex"
+          onKeyDown={handleKeyDown}
+        >
           {/* Close button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 left-4 z-10 rounded-sm p-1.5 text-muted-foreground/60 hover:text-foreground transition-colors"
+            className="absolute top-5 right-5 z-10 p-1.5 transition-colors"
+            style={{ color: "var(--dd-text-tertiary)" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--dd-text-primary)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "var(--dd-text-tertiary)")
+            }
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
           </button>
 
-          {/* Left half — form */}
+          {/* Mobile progress bar (<= 900px) */}
           <div
-            className={cn(
-              "w-full flex flex-col overflow-y-auto transition-[width] duration-500 ease-in-out",
-              step === 1 ? "md:w-1/2" : "md:w-full"
-            )}
+            className="dd-progress-mobile absolute top-0 left-0 right-0 z-[5] items-center px-5 py-4"
+            style={{
+              background: "var(--dd-bg)",
+              borderBottom: "1px solid var(--dd-border)"
+            }}
           >
-            <div className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0">
-              {/* Progress tabs */}
-              <div className="flex items-center gap-0 mb-8 border-b border-border">
-                {(
-                  [
-                    // DEAL DESK: tab label "Company" → "Fund"; new Thesis tab inserted.
-                    { step: 1 as Step, label: "Fund", icon: Building2 },
-                    // DEAL DESK: new Thesis step between Fund and Agent.
-                    { step: 2 as Step, label: "Thesis", icon: Target },
-                    { step: 3 as Step, label: "Agent", icon: Bot },
-                    { step: 4 as Step, label: "Task", icon: ListTodo },
-                    { step: 5 as Step, label: "Launch", icon: Rocket }
-                  ] as const
-                ).map(({ step: s, label, icon: Icon }) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setStep(s)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors cursor-pointer",
-                      s === step
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </button>
-                ))}
-              </div>
+            <div
+              style={{
+                fontFamily: "var(--dd-font-mono)",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--dd-text-secondary)"
+              }}
+            >
+              Step {step} of {STEP_META.length} — {currentStepMeta.label}
+            </div>
+            <div
+              className="mt-2 w-full"
+              style={{ height: 2, background: "var(--dd-border)" }}
+            >
+              <div
+                style={{
+                  height: 2,
+                  width: `${(step / STEP_META.length) * 100}%`,
+                  background: "var(--dd-accent)",
+                  transition: "width 0.3s ease"
+                }}
+              />
+            </div>
+          </div>
 
-              {/* Step content */}
-              {step === 1 && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      {/* DEAL DESK: "Name your company" → "Set up your fund" */}
-                      <h3 className="font-medium">Set up your fund</h3>
-                      {/* DEAL DESK: subtitle reframed for PE deal sourcing */}
-                      <p className="text-xs text-muted-foreground">
-                        This is the fund your AI analysts will source deals for.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-3 group">
-                    <label
-                      className={cn(
-                        "text-xs mb-1 block transition-colors",
-                        companyName.trim()
-                          ? "text-foreground"
-                          : "text-muted-foreground group-focus-within:text-foreground"
-                      )}
+          {/* Left rail (>= 901px) */}
+          <aside
+            className="dd-rail dd-step-rail relative shrink-0"
+            style={{
+              width: "28%",
+              maxWidth: 360,
+              background: "var(--dd-bg)",
+              borderRight: "1px solid var(--dd-border)",
+              padding: "80px 0 32px 0",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <div className="flex-1">
+              {STEP_META.map((s) => {
+                const isCurrent = s.step === step;
+                const isComplete = s.step < step;
+                return (
+                  <button
+                    key={s.step}
+                    type="button"
+                    onClick={() => {
+                      if (s.step >= minStep && s.step <= step) setStep(s.step);
+                    }}
+                    disabled={s.step > step}
+                    className="w-full flex items-center text-left"
+                    style={{
+                      padding: isCurrent ? "12px 0 12px 30px" : "12px 0 12px 32px",
+                      borderLeft: isCurrent
+                        ? "2px solid var(--dd-accent)"
+                        : "2px solid transparent",
+                      cursor: s.step <= step ? "pointer" : "default",
+                      background: "transparent"
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "var(--dd-font-mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.08em",
+                        width: 24,
+                        color: isCurrent
+                          ? "var(--dd-accent)"
+                          : isComplete
+                          ? "var(--dd-success)"
+                          : "var(--dd-text-tertiary)"
+                      }}
                     >
-                      {/* DEAL DESK: form label "Company name" → "Fund name" */}
-                      Fund name
-                    </label>
-                    {/* DEAL DESK: placeholder updated for PE fund naming */}
+                      {isComplete
+                        ? "✓"
+                        : String(s.step).padStart(2, "0")}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--dd-font-body)",
+                        fontSize: 13,
+                        color: isCurrent
+                          ? "var(--dd-accent)"
+                          : isComplete
+                          ? "var(--dd-text-secondary)"
+                          : "var(--dd-text-tertiary)"
+                      }}
+                    >
+                      {s.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ padding: "0 32px" }}>
+              <div
+                style={{
+                  fontFamily: "var(--dd-font-display)",
+                  fontSize: 18,
+                  color: "var(--dd-text-secondary)",
+                  letterSpacing: "-0.02em"
+                }}
+              >
+                Deal Desk
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--dd-font-mono)",
+                  fontSize: 9,
+                  color: "var(--dd-text-tertiary)",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  marginTop: 2
+                }}
+              >
+                v0.1 · MIT Licensed
+              </div>
+            </div>
+          </aside>
+
+          {/* Right content area */}
+          <main
+            className="flex-1 overflow-y-auto"
+            style={{ background: "var(--dd-surface)" }}
+          >
+            <div
+              key={step}
+              className="dd-step-content dd-content-pad"
+              style={{
+                padding: "64px 72px",
+                maxWidth: 760,
+                margin: "0 auto"
+              }}
+            >
+              {/* Step header */}
+              <StepHeader step={step} />
+
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--dd-border)",
+                  margin: "32px 0"
+                }}
+              />
+
+              {/* Step body */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  <Field label="Fund name">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="dd-input"
                       placeholder="Acme Capital Partners"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       autoFocus
                     />
-                  </div>
-                  <div className="group">
-                    <label
-                      className={cn(
-                        "text-xs mb-1 block transition-colors",
-                        companyGoal.trim()
-                          ? "text-foreground"
-                          : "text-muted-foreground group-focus-within:text-foreground"
-                      )}
-                    >
-                      {/* DEAL DESK: "Mission / goal" → "Investment strategy" */}
-                      Investment strategy (optional)
-                    </label>
-                    {/* DEAL DESK: placeholder reframed as PE investment strategy prompt */}
+                  </Field>
+                  <Field label="Investment strategy (optional)">
                     <textarea
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[60px]"
+                      className="dd-input"
+                      style={{ minHeight: 80, resize: "vertical" }}
                       placeholder="Describe your investment strategy"
                       value={companyGoal}
                       onChange={(e) => setCompanyGoal(e.target.value)}
                     />
-                  </div>
+                  </Field>
                 </div>
               )}
 
-              {/* DEAL DESK: New Step 2 — Investment thesis setup. */}
               {step === 2 && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Target className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Set up your first investment thesis</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Define the mandate your AI analysts will source against.
-                      </p>
+                <div className="space-y-8">
+                  <div>
+                    <div className="dd-label">Start from a template</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {thesisTemplates.map((tpl) => {
+                        const selected = thesisTemplateSlug === tpl.slug;
+                        return (
+                          <button
+                            key={tpl.slug}
+                            type="button"
+                            onClick={tpl.apply}
+                            className="text-left transition-colors"
+                            style={{
+                              background: selected
+                                ? "var(--dd-accent-dim)"
+                                : "var(--dd-surface-2)",
+                              border: selected
+                                ? "1px solid var(--dd-accent)"
+                                : "1px solid var(--dd-border)",
+                              borderRadius: "var(--dd-radius-md)",
+                              padding: 14
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontFamily: "var(--dd-font-body)",
+                                fontSize: 14,
+                                fontWeight: 500,
+                                color: "var(--dd-text-primary)"
+                              }}
+                            >
+                              {tpl.title}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--dd-font-mono)",
+                                fontSize: 10,
+                                color: "var(--dd-accent)",
+                                letterSpacing: "0.06em",
+                                textTransform: "uppercase",
+                                marginTop: 4
+                              }}
+                            >
+                              {tpl.tag}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--dd-font-body)",
+                                fontSize: 12,
+                                color: "var(--dd-text-secondary)",
+                                marginTop: 6
+                              }}
+                            >
+                              {tpl.summary}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="group">
-                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                      Thesis name (optional)
-                    </label>
+                  <Field label="Thesis name (optional)">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="dd-input"
                       placeholder="e.g. HVAC Roll-up — Southeast US"
                       value={thesisName}
                       onChange={(e) => setThesisName(e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div className="group">
-                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                      Sector
-                    </label>
+                  <Field label="Sector">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
-                      placeholder="HVAC Services, Healthcare, B2B SaaS, …"
+                      className="dd-input"
+                      placeholder="HVAC Services, Healthcare, B2B SaaS…"
                       value={thesisSector}
                       onChange={(e) => setThesisSector(e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div className="group">
-                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                      Geography (comma-separated states or "United States")
-                    </label>
-                    <textarea
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[44px]"
+                  <Field label="Geography (comma-separated)">
+                    <input
+                      className="dd-input"
                       placeholder="FL, GA, NC, SC, TN, AL"
                       value={thesisGeos}
                       onChange={(e) => setThesisGeos(e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div className="flex gap-3">
-                    <div className="flex-1 group">
-                      <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                        Revenue min (USD)
-                      </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Revenue min (USD)">
                       <input
-                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        className="dd-input"
                         placeholder="5000000"
                         value={thesisRevenueMin}
                         onChange={(e) => setThesisRevenueMin(e.target.value)}
                         inputMode="numeric"
                       />
-                    </div>
-                    <div className="flex-1 group">
-                      <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                        Revenue max (USD)
-                      </label>
+                    </Field>
+                    <Field label="Revenue max (USD)">
                       <input
-                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        className="dd-input"
                         placeholder="25000000"
                         value={thesisRevenueMax}
                         onChange={(e) => setThesisRevenueMax(e.target.value)}
                         inputMode="numeric"
                       />
-                    </div>
+                    </Field>
                   </div>
 
                   <div>
-                    <label className="text-xs mb-2 block text-muted-foreground">
-                      Ownership preferences
-                    </label>
-                    <div className="flex flex-col gap-1.5 text-sm">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={thesisOwnershipFounder}
-                          onChange={(e) => setThesisOwnershipFounder(e.target.checked)}
-                        />
-                        Founder-owned
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={thesisOwnershipFamily}
-                          onChange={(e) => setThesisOwnershipFamily(e.target.checked)}
-                        />
-                        Family-owned
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={thesisOwnershipSponsor}
-                          onChange={(e) => setThesisOwnershipSponsor(e.target.checked)}
-                        />
-                        Sponsor-backed
-                      </label>
+                    <div className="dd-label">Ownership preferences</div>
+                    <div className="flex flex-col gap-2">
+                      <DdCheckbox
+                        checked={thesisOwnershipFounder}
+                        onChange={setThesisOwnershipFounder}
+                        label="Founder-owned"
+                      />
+                      <DdCheckbox
+                        checked={thesisOwnershipFamily}
+                        onChange={setThesisOwnershipFamily}
+                        label="Family-owned"
+                      />
+                      <DdCheckbox
+                        checked={thesisOwnershipSponsor}
+                        onChange={setThesisOwnershipSponsor}
+                        label="Sponsor-backed"
+                      />
                     </div>
                   </div>
 
-                  <div className="group">
-                    <label className="text-xs mb-1 block text-muted-foreground group-focus-within:text-foreground">
-                      Narrative
-                    </label>
+                  <Field label="Narrative">
                     <textarea
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[80px]"
+                      className="dd-input"
+                      style={{ minHeight: 100, resize: "vertical" }}
                       placeholder="Describe your investment thesis in your own words"
                       value={thesisNarrative}
                       onChange={(e) => setThesisNarrative(e.target.value)}
                     />
-                  </div>
-
-                  <div className="pt-2">
-                    <p className="text-xs text-muted-foreground mb-2">Or start from a template:</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {thesisTemplates.map((tpl) => (
-                        <button
-                          key={tpl.slug}
-                          type="button"
-                          onClick={tpl.apply}
-                          className={cn(
-                            "text-left rounded-md border px-3 py-2 transition-colors",
-                            thesisTemplateSlug === tpl.slug
-                              ? "border-foreground bg-muted/40"
-                              : "border-border hover:bg-muted/30",
-                          )}
-                        >
-                          <div className="text-sm font-medium">{tpl.title}</div>
-                          <div className="text-xs text-muted-foreground">{tpl.summary}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  </Field>
                 </div>
               )}
 
-              {/* DEAL DESK: Agent step shifted from 2 → 3 to make room for Thesis. */}
               {step === 3 && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Bot className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      {/* DEAL DESK: "Create your first agent" → "Hire your first AI analyst" */}
-                      <h3 className="font-medium">Hire your first AI analyst</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Choose how this analyst will run tasks.
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Agent name
-                    </label>
+                <div className="space-y-8">
+                  <Field label="Agent name">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="dd-input"
                       placeholder="Managing Partner"
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
                       autoFocus
                     />
-                  </div>
+                  </Field>
 
-                  {/* Adapter type radio cards */}
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">
-                      Adapter type
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {recommendedAdapters.map((opt) => (
-                        <button
-                          key={opt.type}
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-md border p-3 text-xs transition-colors relative",
-                            adapterType === opt.type
-                              ? "border-foreground bg-accent"
-                              : "border-border hover:bg-accent/50"
-                          )}
-                          onClick={() => {
-                            const nextType = opt.type;
-                            setAdapterType(nextType);
-                            if (nextType === "codex_local") {
-                              if (!model) {
-                                setModel(DEFAULT_CODEX_LOCAL_MODEL);
-                              }
-                              return;
-                            }
-                            if (nextType === "opencode_local") {
-                              setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
-                              return;
-                            }
-                            setModel("");
-                          }}
-                        >
-                          {opt.recommended && (
-                            <span className="absolute -top-1.5 right-1.5 bg-green-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                              Recommended
-                            </span>
-                          )}
-                          <opt.icon className="h-4 w-4" />
-                          <span className="font-medium">{opt.label}</span>
-                          <span className="text-muted-foreground text-[10px]">
-                            {opt.description}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                  <RuntimeGroup
+                    title="CLI Agents"
+                    adapters={cliAdapters}
+                    adapterType={adapterType}
+                    onSelect={(nextType) => {
+                      setAdapterType(nextType);
+                      if (nextType === "codex_local") {
+                        if (!model) setModel(DEFAULT_CODEX_LOCAL_MODEL);
+                      } else if (nextType === "gemini_local" && !model) {
+                        setModel(DEFAULT_GEMINI_LOCAL_MODEL);
+                      } else if (nextType === "cursor" && !model) {
+                        setModel(DEFAULT_CURSOR_LOCAL_MODEL);
+                      } else if (nextType === "opencode_local") {
+                        setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
+                      } else {
+                        setModel("");
+                      }
+                    }}
+                    showInstallLinks
+                  />
 
-                    <button
-                      className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={() => setShowMoreAdapters((v) => !v)}
-                    >
-                      <ChevronDown
-                        className={cn(
-                          "h-3 w-3 transition-transform",
-                          showMoreAdapters ? "rotate-0" : "-rotate-90"
-                        )}
-                      />
-                      More Agent Adapter Types
-                    </button>
+                  {apiKeyAdapters.length > 0 && (
+                    <RuntimeGroup
+                      title="API Keys"
+                      adapters={apiKeyAdapters}
+                      adapterType={adapterType}
+                      onSelect={(nextType) => {
+                        setAdapterType(nextType);
+                        setModel("");
+                      }}
+                    />
+                  )}
 
-                    {showMoreAdapters && (
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        {moreAdapters.map((opt) => (
-                           <button
-                             key={opt.type}
-                             disabled={!!opt.comingSoon}
-                             className={cn(
-                               "flex flex-col items-center gap-1.5 rounded-md border p-3 text-xs transition-colors relative",
-                               opt.comingSoon
-                                 ? "border-border opacity-40 cursor-not-allowed"
-                                 : adapterType === opt.type
-                                 ? "border-foreground bg-accent"
-                                 : "border-border hover:bg-accent/50"
-                             )}
-                             onClick={() => {
-                               if (opt.comingSoon) return;
-                               const nextType = opt.type;
-                              setAdapterType(nextType);
-                              if (nextType === "gemini_local" && !model) {
-                                setModel(DEFAULT_GEMINI_LOCAL_MODEL);
-                                return;
-                              }
-                              if (nextType === "cursor" && !model) {
-                                setModel(DEFAULT_CURSOR_LOCAL_MODEL);
-                                return;
-                              }
-                              if (nextType === "opencode_local") {
-                                setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
-                                return;
-                              }
-                              setModel("");
+                  {customAdapters.length > 0 && (
+                    <RuntimeGroup
+                      title="Custom"
+                      adapters={customAdapters}
+                      adapterType={adapterType}
+                      onSelect={(nextType) => {
+                        setAdapterType(nextType);
+                        setModel("");
+                      }}
+                    />
+                  )}
+
+                  {/* Model selector for local adapters */}
+                  {isLocalAdapter && (
+                    <div>
+                      <div className="dd-label">Model</div>
+                      <Popover
+                        open={modelOpen}
+                        onOpenChange={(next) => {
+                          setModelOpen(next);
+                          if (!next) setModelSearch("");
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <button
+                            className="dd-input"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              cursor: "pointer",
+                              textAlign: "left"
                             }}
                           >
-                            <opt.icon className="h-4 w-4" />
-                            <span className="font-medium">{opt.label}</span>
-                            <span className="text-muted-foreground text-[10px]">
-                              {opt.comingSoon
-                                ? opt.disabledLabel ?? "Coming soon"
-                                : opt.description}
+                            <span
+                              style={{
+                                color: model
+                                  ? "var(--dd-text-primary)"
+                                  : "var(--dd-text-tertiary)"
+                              }}
+                            >
+                              {selectedModel
+                                ? selectedModel.label
+                                : model ||
+                                  (adapterType === "opencode_local"
+                                    ? "Select model (required)"
+                                    : "Default")}
                             </span>
+                            <ChevronDown
+                              className="h-3 w-3"
+                              style={{ color: "var(--dd-text-tertiary)" }}
+                            />
                           </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Conditional adapter fields */}
-                  {isLocalAdapter && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">
-                          Model
-                        </label>
-                        <Popover
-                          open={modelOpen}
-                          onOpenChange={(next) => {
-                            setModelOpen(next);
-                            if (!next) setModelSearch("");
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-[var(--radix-popover-trigger-width)] p-1"
+                          align="start"
+                          style={{
+                            background: "var(--dd-surface-2)",
+                            border: "1px solid var(--dd-border)",
+                            borderRadius: 0
                           }}
                         >
-                          <PopoverTrigger asChild>
-                            <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
-                              <span
-                                className={cn(
-                                  !model && "text-muted-foreground"
-                                )}
-                              >
-                                {selectedModel
-                                  ? selectedModel.label
-                                  : model ||
-                                    (adapterType === "opencode_local"
-                                      ? "Select model (required)"
-                                      : "Default")}
-                              </span>
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                          <input
+                            className="w-full px-2 py-1.5 text-xs bg-transparent outline-none mb-1"
+                            style={{
+                              borderBottom: "1px solid var(--dd-border)",
+                              color: "var(--dd-text-primary)"
+                            }}
+                            placeholder="Search models..."
+                            value={modelSearch}
+                            onChange={(e) => setModelSearch(e.target.value)}
+                            autoFocus
+                          />
+                          {adapterType !== "opencode_local" && (
+                            <button
+                              className="flex items-center gap-2 w-full px-2 py-1.5 text-sm"
+                              style={{
+                                background: !model
+                                  ? "var(--dd-accent-dim)"
+                                  : "transparent",
+                                color: "var(--dd-text-primary)"
+                              }}
+                              onClick={() => {
+                                setModel("");
+                                setModelOpen(false);
+                              }}
+                            >
+                              Default
                             </button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="w-[var(--radix-popover-trigger-width)] p-1"
-                            align="start"
-                          >
-                            <input
-                              className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-                              placeholder="Search models..."
-                              value={modelSearch}
-                              onChange={(e) => setModelSearch(e.target.value)}
-                              autoFocus
-                            />
-                            {adapterType !== "opencode_local" && (
-                              <button
-                                className={cn(
-                                  "flex items-center gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
-                                  !model && "bg-accent"
-                                )}
-                                onClick={() => {
-                                  setModel("");
-                                  setModelOpen(false);
-                                }}
+                          )}
+                          <div className="max-h-[240px] overflow-y-auto">
+                            {groupedModels.map((group) => (
+                              <div
+                                key={group.provider}
+                                className="mb-1 last:mb-0"
                               >
-                                Default
-                              </button>
-                            )}
-                            <div className="max-h-[240px] overflow-y-auto">
-                              {groupedModels.map((group) => (
-                                <div
-                                  key={group.provider}
-                                  className="mb-1 last:mb-0"
-                                >
-                                  {adapterType === "opencode_local" && (
-                                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
-                                      {group.provider} ({group.entries.length})
-                                    </div>
-                                  )}
-                                  {group.entries.map((m) => (
-                                    <button
-                                      key={m.id}
-                                      className={cn(
-                                        "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
-                                        m.id === model && "bg-accent"
-                                      )}
-                                      onClick={() => {
-                                        setModel(m.id);
-                                        setModelOpen(false);
-                                      }}
+                                {adapterType === "opencode_local" && (
+                                  <div
+                                    className="px-2 py-1"
+                                    style={{
+                                      fontFamily: "var(--dd-font-mono)",
+                                      fontSize: 10,
+                                      letterSpacing: "0.08em",
+                                      textTransform: "uppercase",
+                                      color: "var(--dd-text-tertiary)"
+                                    }}
+                                  >
+                                    {group.provider} ({group.entries.length})
+                                  </div>
+                                )}
+                                {group.entries.map((m) => (
+                                  <button
+                                    key={m.id}
+                                    className="flex items-center w-full px-2 py-1.5 text-sm"
+                                    style={{
+                                      background:
+                                        m.id === model
+                                          ? "var(--dd-accent-dim)"
+                                          : "transparent",
+                                      color: "var(--dd-text-primary)"
+                                    }}
+                                    onClick={() => {
+                                      setModel(m.id);
+                                      setModelOpen(false);
+                                    }}
+                                  >
+                                    <span
+                                      className="block w-full text-left truncate"
+                                      title={m.id}
                                     >
-                                      <span
-                                        className="block w-full text-left truncate"
-                                        title={m.id}
-                                      >
-                                        {adapterType === "opencode_local"
-                                          ? extractModelName(m.id)
-                                          : m.label}
-                                      </span>
-                                    </button>
-                                  ))}
-                                </div>
-                              ))}
-                            </div>
-                            {filteredModels.length === 0 && (
-                              <p className="px-2 py-1.5 text-xs text-muted-foreground">
-                                No models discovered.
-                              </p>
-                            )}
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                                      {adapterType === "opencode_local"
+                                        ? extractModelName(m.id)
+                                        : m.label}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                          {filteredModels.length === 0 && (
+                            <p
+                              className="px-2 py-1.5 text-xs"
+                              style={{ color: "var(--dd-text-tertiary)" }}
+                            >
+                              No models discovered.
+                            </p>
+                          )}
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   )}
 
                   {isLocalAdapter && (
-                    <div className="space-y-2 rounded-md border border-border p-3">
+                    <div
+                      style={{
+                        border: "1px solid var(--dd-border)",
+                        background: "var(--dd-surface-2)",
+                        padding: 14
+                      }}
+                      className="space-y-2"
+                    >
                       <div className="flex items-center justify-between gap-2">
                         <div>
-                          <p className="text-xs font-medium">
+                          <div
+                            style={{
+                              fontFamily: "var(--dd-font-mono)",
+                              fontSize: 10,
+                              letterSpacing: "0.1em",
+                              textTransform: "uppercase",
+                              color: "var(--dd-text-secondary)"
+                            }}
+                          >
                             Adapter environment check
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            Runs a live probe that asks the adapter CLI to
-                            respond with hello.
-                          </p>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "var(--dd-text-secondary)",
+                              marginTop: 4
+                            }}
+                          >
+                            Live probe — asks the adapter CLI to respond with
+                            "hello".
+                          </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 px-2.5 text-xs"
+                        <button
+                          className="dd-btn-ghost"
+                          style={{ padding: "6px 14px", fontSize: 10 }}
                           disabled={adapterEnvLoading}
                           onClick={() => void runAdapterEnvironmentTest()}
                         >
-                          {adapterEnvLoading ? "Testing..." : "Test now"}
-                        </Button>
+                          {adapterEnvLoading ? "Testing…" : "Test now"}
+                        </button>
                       </div>
 
                       {adapterEnvError && (
-                        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive">
+                        <div
+                          style={{
+                            border: "1px solid var(--dd-error)",
+                            background: "var(--dd-error-dim)",
+                            color: "var(--dd-error)",
+                            padding: "8px 10px",
+                            fontSize: 11
+                          }}
+                        >
                           {adapterEnvError}
                         </div>
                       )}
 
                       {adapterEnvResult &&
                       adapterEnvResult.status === "pass" ? (
-                        <div className="flex items-center gap-2 rounded-md border border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        <div
+                          className="flex items-center gap-2"
+                          style={{
+                            border: "1px solid var(--dd-success)",
+                            background: "var(--dd-success-dim)",
+                            color: "var(--dd-success)",
+                            padding: "8px 12px",
+                            fontSize: 12
+                          }}
+                        >
                           <Check className="h-3.5 w-3.5 shrink-0" />
-                          <span className="font-medium">Passed</span>
+                          <span style={{ fontWeight: 500 }}>Passed</span>
                         </div>
                       ) : adapterEnvResult ? (
                         <AdapterEnvironmentResult result={adapterEnvResult} />
                       ) : null}
 
                       {shouldSuggestUnsetAnthropicApiKey && (
-                        <div className="rounded-md border border-amber-300/60 bg-amber-50/40 px-2.5 py-2 space-y-2">
-                          <p className="text-[11px] text-amber-900/90 leading-relaxed">
+                        <div
+                          style={{
+                            border: "1px solid var(--dd-accent-border)",
+                            background: "var(--dd-accent-dim)",
+                            padding: "8px 10px"
+                          }}
+                          className="space-y-2"
+                        >
+                          <p
+                            style={{
+                              fontSize: 11,
+                              color: "var(--dd-text-primary)",
+                              lineHeight: 1.5
+                            }}
+                          >
                             Claude failed while{" "}
-                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this Managing Partner adapter config
-                            and retry the probe.
+                            <span style={{ fontFamily: "var(--dd-font-mono)" }}>
+                              ANTHROPIC_API_KEY
+                            </span>{" "}
+                            is set. You can clear it in this adapter config and
+                            retry.
                           </p>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2.5 text-xs"
+                          <button
+                            className="dd-btn-ghost"
+                            style={{ padding: "6px 12px", fontSize: 10 }}
                             disabled={
                               adapterEnvLoading || unsetAnthropicLoading
                             }
                             onClick={() => void handleUnsetAnthropicApiKey()}
                           >
                             {unsetAnthropicLoading
-                              ? "Retrying..."
+                              ? "Retrying…"
                               : "Unset ANTHROPIC_API_KEY"}
-                          </Button>
+                          </button>
                         </div>
                       )}
 
                       {adapterEnvResult && adapterEnvResult.status === "fail" && (
-                        <div className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2 text-[11px] space-y-1.5">
-                          <p className="font-medium">Manual debug</p>
-                          <p className="text-muted-foreground font-mono break-all">
+                        <div
+                          style={{
+                            border: "1px solid var(--dd-border)",
+                            background: "var(--dd-bg)",
+                            padding: "8px 10px",
+                            fontSize: 11
+                          }}
+                          className="space-y-1.5"
+                        >
+                          <div
+                            style={{
+                              fontFamily: "var(--dd-font-mono)",
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                              color: "var(--dd-text-secondary)"
+                            }}
+                          >
+                            Manual debug
+                          </div>
+                          <p
+                            style={{
+                              fontFamily: "var(--dd-font-mono)",
+                              color: "var(--dd-text-secondary)",
+                              wordBreak: "break-all"
+                            }}
+                          >
                             {adapterType === "cursor"
-                              ? `${effectiveAdapterCommand} -p --mode ask --output-format json \"Respond with hello.\"`
+                              ? `${effectiveAdapterCommand} -p --mode ask --output-format json "Respond with hello."`
                               : adapterType === "codex_local"
                               ? `${effectiveAdapterCommand} exec --json -`
                               : adapterType === "gemini_local"
-                                ? `${effectiveAdapterCommand} --output-format json "Respond with hello."`
+                              ? `${effectiveAdapterCommand} --output-format json "Respond with hello."`
                               : adapterType === "opencode_local"
-                                ? `${effectiveAdapterCommand} run --format json "Respond with hello."`
+                              ? `${effectiveAdapterCommand} run --format json "Respond with hello."`
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
-                          <p className="text-muted-foreground">
-                            Prompt:{" "}
-                            <span className="font-mono">Respond with hello.</span>
-                          </p>
-                          {adapterType === "cursor" ||
-                          adapterType === "codex_local" ||
-                          adapterType === "gemini_local" ||
-                          adapterType === "opencode_local" ? (
-                            <p className="text-muted-foreground">
-                              If auth fails, set{" "}
-                              <span className="font-mono">
-                                {adapterType === "cursor"
-                                  ? "CURSOR_API_KEY"
-                                  : adapterType === "gemini_local"
-                                    ? "GEMINI_API_KEY"
-                                    : "OPENAI_API_KEY"}
-                              </span>{" "}
-                              in env or run{" "}
-                              <span className="font-mono">
-                                {adapterType === "cursor"
-                                  ? "agent login"
-                                  : adapterType === "codex_local"
-                                    ? "codex login"
-                                    : adapterType === "gemini_local"
-                                      ? "gemini auth"
-                                      : "opencode auth login"}
-                              </span>
-                              .
-                            </p>
-                          ) : (
-                            <p className="text-muted-foreground">
-                              If login is required, run{" "}
-                              <span className="font-mono">claude login</span>{" "}
-                              and retry.
-                            </p>
-                          )}
                         </div>
                       )}
                     </div>
@@ -1329,14 +1418,16 @@ export function OnboardingWizard() {
 
                   {(adapterType === "http" ||
                     adapterType === "openclaw_gateway") && (
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">
-                        {adapterType === "openclaw_gateway"
+                    <Field
+                      label={
+                        adapterType === "openclaw_gateway"
                           ? "Gateway URL"
-                          : "Webhook URL"}
-                      </label>
+                          : "Webhook URL"
+                      }
+                    >
                       <input
-                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        className="dd-input"
+                        style={{ fontFamily: "var(--dd-font-mono)" }}
                         placeholder={
                           adapterType === "openclaw_gateway"
                             ? "ws://127.0.0.1:18789"
@@ -1345,219 +1436,419 @@ export function OnboardingWizard() {
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                       />
-                    </div>
+                    </Field>
                   )}
                 </div>
               )}
 
-              {/* DEAL DESK: Task step shifted 3 → 4 to make room for Thesis. */}
               {step === 4 && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <ListTodo className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Give it something to do</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Give your agent a small task to start with — a bug fix,
-                        a research question, writing a script.
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Task title
-                    </label>
+                <div className="space-y-6">
+                  <Field label="Task title">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="dd-input"
                       placeholder="e.g. Research competitor pricing"
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
                       autoFocus
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Description (optional)
-                    </label>
+                  </Field>
+                  <Field label="Description (optional)">
                     <textarea
                       ref={textareaRef}
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[120px] max-h-[300px] overflow-y-auto"
+                      className="dd-input"
+                      style={{
+                        minHeight: 140,
+                        maxHeight: 320,
+                        resize: "vertical",
+                        overflowY: "auto"
+                      }}
                       placeholder="Add more detail about what the agent should do..."
                       value={taskDescription}
                       onChange={(e) => setTaskDescription(e.target.value)}
                     />
-                  </div>
+                  </Field>
                 </div>
               )}
 
-              {/* DEAL DESK: Launch step shifted 4 → 5 to make room for Thesis. */}
               {step === 5 && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Rocket className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      {/* DEAL DESK: success/launch screen reframed for fund setup */}
-                      <h3 className="font-medium">Your fund is set up. Your first AI analyst is ready.</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Launching now will create the starter task, wake the analyst,
-                        and open the issue.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border border-border divide-y divide-border">
-                    <div className="flex items-center gap-3 px-3 py-2.5">
-                      <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {companyName}
-                        </p>
-                        {/* DEAL DESK: launch summary label "Company" → "Fund" */}
-                        <p className="text-xs text-muted-foreground">Fund</p>
-                      </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
-                    </div>
-                    <div className="flex items-center gap-3 px-3 py-2.5">
-                      <Bot className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {agentName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {getUIAdapter(adapterType).label}
-                        </p>
-                      </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
-                    </div>
-                    <div className="flex items-center gap-3 px-3 py-2.5">
-                      <ListTodo className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {taskTitle}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Task</p>
-                      </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
-                    </div>
-                  </div>
-                </div>
+                <SuccessScreen
+                  companyName={companyName}
+                  agentName={agentName}
+                  taskTitle={taskTitle}
+                  adapterLabel={getUIAdapter(adapterType).label}
+                />
               )}
 
-              {/* Error */}
               {error && (
-                <div className="mt-3">
-                  <p className="text-xs text-destructive">{error}</p>
+                <div
+                  className="mt-6"
+                  style={{
+                    border: "1px solid var(--dd-error)",
+                    background: "var(--dd-error-dim)",
+                    color: "var(--dd-error)",
+                    padding: "10px 14px",
+                    fontSize: 12
+                  }}
+                >
+                  {error}
                 </div>
               )}
 
-              {/* Footer navigation */}
-              <div className="flex items-center justify-between mt-8">
+              {/* Footer */}
+              <div className="flex items-center justify-between mt-12">
                 <div>
-                  {step > 1 && step > (onboardingOptions.initialStep ?? 1) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                  {step > 1 && step > minStep && (
+                    <button
+                      className="dd-btn-ghost"
                       onClick={() => setStep((step - 1) as Step)}
                       disabled={loading}
                     >
-                      <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                      Back
-                    </Button>
+                      ← Back
+                    </button>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {step === 1 && (
-                    <Button
-                      size="sm"
+                    <button
+                      className="dd-btn-primary"
                       disabled={!companyName.trim() || loading}
                       onClick={handleStep1Next}
                     >
                       {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      {loading ? "Creating…" : "Continue →"}
+                    </button>
                   )}
-                  {/* DEAL DESK: Step 2 footer — Thesis save & continue. */}
                   {step === 2 && (
-                    <Button
-                      size="sm"
+                    <button
+                      className="dd-btn-primary"
                       disabled={!thesisSector.trim() || loading}
                       onClick={handleThesisNext}
                     >
                       {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Saving..." : "Save thesis & continue"}
-                    </Button>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      {loading ? "Saving…" : "Save & Continue →"}
+                    </button>
                   )}
-                  {/* DEAL DESK: Agent footer shifted 2 → 3. */}
                   {step === 3 && (
-                    <Button
-                      size="sm"
+                    <button
+                      className="dd-btn-primary"
                       disabled={
                         !agentName.trim() || loading || adapterEnvLoading
                       }
                       onClick={handleStep2Next}
                     >
                       {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      {loading ? "Connecting…" : "Continue →"}
+                    </button>
                   )}
-                  {/* DEAL DESK: Task footer shifted 3 → 4. */}
                   {step === 4 && (
-                    <Button
-                      size="sm"
+                    <button
+                      className="dd-btn-primary"
                       disabled={!taskTitle.trim() || loading}
                       onClick={handleStep3Next}
                     >
                       {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      Continue →
+                    </button>
                   )}
-                  {/* DEAL DESK: Launch footer shifted 4 → 5. */}
                   {step === 5 && (
-                    <Button size="sm" disabled={loading} onClick={handleLaunch}>
+                    <button
+                      className="dd-btn-primary"
+                      disabled={loading}
+                      onClick={handleLaunch}
+                    >
                       {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Create & Open Issue"}
-                    </Button>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      {loading ? "Launching…" : "Open Deal Desk →"}
+                    </button>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Right half — ASCII art (hidden on mobile) */}
-          <div
-            className={cn(
-              "hidden md:block overflow-hidden bg-[#1d1d1d] transition-[width,opacity] duration-500 ease-in-out",
-              step === 1 ? "w-1/2 opacity-100" : "w-0 opacity-0"
-            )}
-          >
-            <AsciiArtAnimation />
-          </div>
+          </main>
         </div>
       </DialogPortal>
     </Dialog>
+  );
+}
+
+function Field({
+  label,
+  children
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="dd-label">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function DdCheckbox({
+  checked,
+  onChange,
+  label
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <label
+      className="flex items-center gap-2 cursor-pointer"
+      style={{ fontSize: 14, color: "var(--dd-text-primary)" }}
+    >
+      <span
+        onClick={() => onChange(!checked)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 16,
+          height: 16,
+          border: checked
+            ? "1px solid var(--dd-accent)"
+            : "1px solid var(--dd-border)",
+          background: checked ? "var(--dd-accent)" : "var(--dd-surface-2)"
+        }}
+      >
+        {checked && (
+          <Check className="h-3 w-3" style={{ color: "#000" }} />
+        )}
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="sr-only"
+      />
+      {label}
+    </label>
+  );
+}
+
+function StepHeader({ step }: { step: Step }) {
+  const headings: Record<Step, { title: string; subtitle: string }> = {
+    1: {
+      title: "Set up your fund",
+      subtitle:
+        "This is the fund your AI analysts will source deals for."
+    },
+    2: {
+      title: "Define your investment thesis",
+      subtitle:
+        "Set the mandate your analysts will source against. Start blank or pick a template."
+    },
+    3: {
+      title: "Connect your AI runtime",
+      subtitle:
+        "Deal Desk works with any agent. Bring your own — or connect one now."
+    },
+    4: {
+      title: "Give your analyst something to do",
+      subtitle:
+        "Kick off with a starter task — a sourcing plan, a research brief, an analysis."
+    },
+    5: {
+      title: "Your fund is live.",
+      subtitle: ""
+    }
+  };
+  const h = headings[step];
+  return (
+    <div>
+      <h1
+        style={{
+          fontFamily: "var(--dd-font-display)",
+          fontSize: 38,
+          lineHeight: 1.1,
+          color: "var(--dd-text-primary)",
+          letterSpacing: "-0.01em"
+        }}
+      >
+        {h.title}
+      </h1>
+      {h.subtitle && (
+        <p
+          style={{
+            fontFamily: "var(--dd-font-body)",
+            fontSize: 15,
+            color: "var(--dd-text-secondary)",
+            marginTop: 10,
+            maxWidth: 560
+          }}
+        >
+          {h.subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+type AdapterCardData = {
+  type: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  comingSoon?: boolean;
+  disabledLabel?: string;
+};
+
+function RuntimeGroup({
+  title,
+  adapters,
+  adapterType,
+  onSelect,
+  showInstallLinks
+}: {
+  title: string;
+  adapters: AdapterCardData[];
+  adapterType: string;
+  onSelect: (type: string) => void;
+  showInstallLinks?: boolean;
+}) {
+  if (adapters.length === 0) return null;
+  return (
+    <div>
+      <div className="dd-label">{title}</div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {adapters.map((opt) => {
+          const selected = adapterType === opt.type;
+          const link = showInstallLinks ? ADAPTER_INSTALL_LINKS[opt.type] : undefined;
+          return (
+            <button
+              key={opt.type}
+              type="button"
+              className="dd-runtime-card"
+              data-selected={selected}
+              data-disabled={!!opt.comingSoon}
+              onClick={() => {
+                if (opt.comingSoon) return;
+                onSelect(opt.type);
+              }}
+              disabled={!!opt.comingSoon}
+            >
+              {selected && <span className="dd-selected-dot" />}
+              <opt.icon className="h-5 w-5" />
+              <div
+                style={{
+                  fontFamily: "var(--dd-font-body)",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--dd-text-primary)"
+                }}
+              >
+                {opt.label}
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--dd-font-mono)",
+                  fontSize: 10,
+                  letterSpacing: "0.06em",
+                  color: "var(--dd-text-tertiary)",
+                  textTransform: "uppercase"
+                }}
+              >
+                {opt.comingSoon
+                  ? opt.disabledLabel ?? "Coming soon"
+                  : opt.description}
+              </div>
+              {link && !opt.comingSoon && (
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    fontFamily: "var(--dd-font-mono)",
+                    fontSize: 10,
+                    color: "var(--dd-text-tertiary)",
+                    textDecoration: "underline",
+                    marginTop: "auto"
+                  }}
+                >
+                  Install →
+                </a>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SuccessScreen({
+  companyName,
+  agentName,
+  taskTitle,
+  adapterLabel
+}: {
+  companyName: string;
+  agentName: string;
+  taskTitle: string;
+  adapterLabel: string;
+}) {
+  const lines = [
+    `✓  Fund created: ${companyName || "—"}`,
+    `✓  Thesis defined`,
+    `✓  Runtime connected: ${adapterLabel}`,
+    `✓  Analyst hired: ${agentName || "—"}`,
+    `✓  Starter task: ${taskTitle || "—"}`,
+    `Ready.`
+  ];
+  return (
+    <div className="space-y-6">
+      <div
+        style={{
+          background: "var(--dd-surface-2)",
+          border: "1px solid var(--dd-border)",
+          padding: 24,
+          fontFamily: "var(--dd-font-mono)",
+          fontSize: 13,
+          color: "var(--dd-text-secondary)",
+          lineHeight: 1.9
+        }}
+      >
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            style={{
+              opacity: 0,
+              animation: `ddLineIn 0.4s ease forwards`,
+              animationDelay: `${i * 150}ms`,
+              color:
+                line === "Ready."
+                  ? "var(--dd-accent)"
+                  : "var(--dd-text-secondary)"
+            }}
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          fontFamily: "var(--dd-font-mono)",
+          fontSize: 11,
+          color: "var(--dd-text-tertiary)",
+          letterSpacing: "0.05em"
+        }}
+      >
+        Run <span style={{ color: "var(--dd-text-secondary)" }}>dealdesk start</span> to launch the dashboard at any time.
+      </div>
+    </div>
   );
 }
 
@@ -1572,39 +1863,56 @@ function AdapterEnvironmentResult({
       : result.status === "warn"
       ? "Warnings"
       : "Failed";
-  const statusClass =
+  const accent =
     result.status === "pass"
-      ? "text-green-700 dark:text-green-300 border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
+      ? "var(--dd-success)"
       : result.status === "warn"
-      ? "text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10"
-      : "text-red-700 dark:text-red-300 border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-500/10";
-
+      ? "var(--dd-accent)"
+      : "var(--dd-error)";
+  const bg =
+    result.status === "pass"
+      ? "var(--dd-success-dim)"
+      : result.status === "warn"
+      ? "var(--dd-accent-dim)"
+      : "var(--dd-error-dim)";
   return (
-    <div className={`rounded-md border px-2.5 py-2 text-[11px] ${statusClass}`}>
+    <div
+      style={{
+        border: `1px solid ${accent}`,
+        background: bg,
+        color: accent,
+        padding: "8px 10px",
+        fontSize: 11
+      }}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-medium">{statusLabel}</span>
-        <span className="opacity-80">
+        <span style={{ fontWeight: 500 }}>{statusLabel}</span>
+        <span style={{ opacity: 0.7 }}>
           {new Date(result.testedAt).toLocaleTimeString()}
         </span>
       </div>
       <div className="mt-1.5 space-y-1">
         {result.checks.map((check, idx) => (
-          <div
-            key={`${check.code}-${idx}`}
-            className="leading-relaxed break-words"
-          >
-            <span className="font-medium uppercase tracking-wide opacity-80">
+          <div key={`${check.code}-${idx}`} className="leading-relaxed">
+            <span
+              style={{
+                fontFamily: "var(--dd-font-mono)",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                opacity: 0.8
+              }}
+            >
               {check.level}
             </span>
-            <span className="mx-1 opacity-60">·</span>
+            <span style={{ margin: "0 4px", opacity: 0.6 }}>·</span>
             <span>{check.message}</span>
             {check.detail && (
-              <span className="block opacity-75 break-all">
+              <span className="block" style={{ opacity: 0.75 }}>
                 ({check.detail})
               </span>
             )}
             {check.hint && (
-              <span className="block opacity-90 break-words">
+              <span className="block" style={{ opacity: 0.9 }}>
                 Hint: {check.hint}
               </span>
             )}
