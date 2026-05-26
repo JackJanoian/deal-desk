@@ -53,7 +53,7 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
     res.cookie(STATE_COOKIE, stateValue, {
       httpOnly: true,
       sameSite: "lax",
-      secure: redirectUri.startsWith("https://"),
+      secure: process.env.NODE_ENV === "production" || redirectUri.startsWith("https://"),
       maxAge: 10 * 60_000,
     });
     const url = buildGmailAuthorizeUrl({
