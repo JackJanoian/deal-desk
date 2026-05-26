@@ -208,7 +208,7 @@ function selectSerializedSuites(routeTests, shardIndex, shardCount) {
 function runVitest(args, label) {
   console.log(`\n[test:run] ${label}`);
   invocationIndex += 1;
-  const testRoot = mkdtempSync(path.join(os.tmpdir(), `paperclip-vitest-${process.pid}-${invocationIndex}-`));
+  const testRoot = mkdtempSync(path.join(os.tmpdir(), `dealdesk-vitest-${process.pid}-${invocationIndex}-`));
   const env = {
     ...process.env,
     DEALDESK_HOME: path.join(testRoot, "home"),

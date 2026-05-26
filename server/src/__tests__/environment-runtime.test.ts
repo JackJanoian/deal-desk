@@ -290,7 +290,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         knownHosts: null,
         strictHostKeyChecking: true,
@@ -426,13 +426,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "dealdesk.fake-plugin-sandbox-provider",
       packageName: "@dealdesk/plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "dealdesk.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",

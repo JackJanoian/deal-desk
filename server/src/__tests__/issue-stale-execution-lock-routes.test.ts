@@ -36,7 +36,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-stale-execution-lock-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-stale-execution-lock-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

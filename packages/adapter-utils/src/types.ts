@@ -187,7 +187,6 @@ export type AdapterSkillState =
 export type AdapterSkillOrigin =
   | "company_managed"
   | "dealdesk_required"
-  | "dealdesk_required"
   | "user_installed"
   | "external_unknown";
 

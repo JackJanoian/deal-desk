@@ -1,0 +1,23 @@
+[Unit]
+Description=DealDesk AI Agent Orchestrator
+Requires=dealdesk-db.service
+After=dealdesk-db.service
+
+[Container]
+Image=dealdesk-local
+ContainerName=dealdesk
+Pod=dealdesk.pod
+Volume=%h/.local/share/dealdesk:/dealdesk:Z
+Environment=HOST=0.0.0.0
+Environment=DEALDESK_HOME=/dealdesk
+Environment=DEALDESK_DEPLOYMENT_MODE=authenticated
+Environment=DEALDESK_DEPLOYMENT_EXPOSURE=private
+Environment=DEALDESK_PUBLIC_URL=http://localhost:3100
+EnvironmentFile=%h/.config/containers/systemd/dealdesk.env
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

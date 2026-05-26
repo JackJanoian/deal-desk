@@ -20,12 +20,12 @@ describe("applyDataDirOverride", () => {
 
   it("sets DEALDESK_HOME and isolated default config/context paths", () => {
     const home = applyDataDirOverride({
-      dataDir: "~/paperclip-data",
+      dataDir: "~/dealdesk-data",
       config: undefined,
       context: undefined,
     }, { hasConfigOption: true, hasContextOption: true });
 
-    const expectedHome = path.resolve(os.homedir(), "paperclip-data");
+    const expectedHome = path.resolve(os.homedir(), "dealdesk-data");
     expect(home).toBe(expectedHome);
     expect(process.env.DEALDESK_HOME).toBe(expectedHome);
     expect(process.env.DEALDESK_CONFIG).toBe(
@@ -37,16 +37,16 @@ describe("applyDataDirOverride", () => {
 
   it("uses the provided instance id when deriving default config path", () => {
     const home = applyDataDirOverride({
-      dataDir: "/tmp/paperclip-alt",
+      dataDir: "/tmp/dealdesk-alt",
       instance: "dev_1",
       config: undefined,
       context: undefined,
     }, { hasConfigOption: true, hasContextOption: true });
 
-    expect(home).toBe(path.resolve("/tmp/paperclip-alt"));
+    expect(home).toBe(path.resolve("/tmp/dealdesk-alt"));
     expect(process.env.DEALDESK_INSTANCE_ID).toBe("dev_1");
     expect(process.env.DEALDESK_CONFIG).toBe(
-      path.resolve("/tmp/paperclip-alt", "instances", "dev_1", "config.json"),
+      path.resolve("/tmp/dealdesk-alt", "instances", "dev_1", "config.json"),
     );
   });
 
@@ -55,7 +55,7 @@ describe("applyDataDirOverride", () => {
     process.env.DEALDESK_CONTEXT = "/env/context.json";
 
     applyDataDirOverride({
-      dataDir: "/tmp/paperclip-alt",
+      dataDir: "/tmp/dealdesk-alt",
       config: "/flag/config.json",
       context: "/flag/context.json",
     }, { hasConfigOption: true, hasContextOption: true });
@@ -67,12 +67,12 @@ describe("applyDataDirOverride", () => {
   it("only applies defaults for options supported by the command", () => {
     applyDataDirOverride(
       {
-        dataDir: "/tmp/paperclip-alt",
+        dataDir: "/tmp/dealdesk-alt",
       },
       { hasConfigOption: false, hasContextOption: false },
     );
 
-    expect(process.env.DEALDESK_HOME).toBe(path.resolve("/tmp/paperclip-alt"));
+    expect(process.env.DEALDESK_HOME).toBe(path.resolve("/tmp/dealdesk-alt"));
     expect(process.env.DEALDESK_CONFIG).toBeUndefined();
     expect(process.env.DEALDESK_CONTEXT).toBeUndefined();
   });

@@ -49,7 +49,7 @@ const {
       },
       restoreWorkspace,
     })),
-    prepareManagedCodexHome: vi.fn(async () => "/tmp/paperclip-managed-codex-home"),
+    prepareManagedCodexHome: vi.fn(async () => "/tmp/dealdesk-managed-codex-home"),
     restoreWorkspace,
   };
 });

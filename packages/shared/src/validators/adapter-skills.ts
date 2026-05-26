@@ -12,7 +12,6 @@ export const agentSkillStateSchema = z.enum([
 export const agentSkillOriginSchema = z.enum([
   "company_managed",
   "dealdesk_required",
-  "dealdesk_required",
   "user_installed",
   "external_unknown",
 ]);

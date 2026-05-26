@@ -213,11 +213,11 @@ function Hydrated({ children }: { children: React.ReactNode }) {
 
 function SubIssuesWorkflowPanel() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner">
         <div className="mx-auto max-w-5xl space-y-5">
           <header className="space-y-1">
-            <div className="paperclip-story__label">Issue Detail · Sub-issues</div>
+            <div className="dealdesk-story__label">Issue Detail · Sub-issues</div>
             <h1 className="text-2xl font-semibold tracking-tight">
               Workflow-sorted sub-issues with checklist affordances
             </h1>

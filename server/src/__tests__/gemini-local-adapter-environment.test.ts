@@ -145,7 +145,7 @@ describe("gemini_local environment diagnostics", () => {
         kind: "remote",
         transport: "sandbox",
         providerKey: "cloudflare",
-        remoteCwd: "/workspace/paperclip",
+        remoteCwd: "/workspace/dealdesk",
         runner: {
           execute: async (input) => {
             if (input.command === "gemini") {

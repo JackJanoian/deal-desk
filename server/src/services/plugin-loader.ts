@@ -551,8 +551,7 @@ function resolveManifestPath(
   packageRoot: string,
   pkgJson: Record<string, unknown>,
 ): string | null {
-  const dealDeskPlugin =
-    pkgJson["dealDeskPlugin"] ?? pkgJson["paperclipPlugin"];
+  const dealDeskPlugin = pkgJson["dealDeskPlugin"];
   if (
     dealDeskPlugin !== null &&
     typeof dealDeskPlugin === "object" &&
@@ -1010,7 +1009,7 @@ export function pluginLoader(
     const version = typeof pkgJson["version"] === "string" ? pkgJson["version"] : "0.0.0";
 
     // Determine if this is a plugin package at all
-    const hasDealDeskPlugin = "dealDeskPlugin" in pkgJson || "paperclipPlugin" in pkgJson;
+    const hasDealDeskPlugin = "dealDeskPlugin" in pkgJson || "dealDeskPlugin" in pkgJson;
     const nameMatchesConvention = isPluginPackageName(packageName);
 
     if (!hasDealDeskPlugin && !nameMatchesConvention) {
@@ -1287,7 +1286,7 @@ export function pluginLoader(
       const pkgJson = await readPackageJson(packagePath);
       if (!pkgJson) return null;
 
-      const hasDealDeskPlugin = "dealDeskPlugin" in pkgJson || "paperclipPlugin" in pkgJson;
+      const hasDealDeskPlugin = "dealDeskPlugin" in pkgJson || "dealDeskPlugin" in pkgJson;
       const packageName = typeof pkgJson["name"] === "string" ? pkgJson["name"] : "";
       const nameMatchesConvention = isPluginPackageName(packageName);
 

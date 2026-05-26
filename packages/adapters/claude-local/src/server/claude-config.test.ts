@@ -19,7 +19,7 @@ describe("prepareClaudeConfigSeed", () => {
   function createEnv(root: string, sourceDir: string): NodeJS.ProcessEnv {
     return {
       HOME: root,
-      DEALDESK_HOME: path.join(root, "paperclip-home"),
+      DEALDESK_HOME: path.join(root, "dealdesk-home"),
       DEALDESK_INSTANCE_ID: "test-instance",
       CLAUDE_CONFIG_DIR: sourceDir,
     };

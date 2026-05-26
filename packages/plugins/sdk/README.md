@@ -728,7 +728,7 @@ target URL shape:
 
 ```tsx
 <MarkdownBlock
-  content={"See [[wiki/entities/paperclip|DealDesk]]."}
+  content={"See [[wiki/entities/dealdesk|DealDesk]]."}
   enableWikiLinks
   wikiLinkRoot="/wiki/page"
 />

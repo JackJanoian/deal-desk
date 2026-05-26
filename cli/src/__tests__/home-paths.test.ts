@@ -17,7 +17,7 @@ describe("home path resolution", () => {
   });
 
   it("defaults to ~/.dealdesk and default instance", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-home-paths-"));
     process.env.DEALDESK_HOME = home;
     delete process.env.DEALDESK_INSTANCE_ID;
 
@@ -28,10 +28,10 @@ describe("home path resolution", () => {
   });
 
   it("supports DEALDESK_HOME and explicit instance ids", () => {
-    process.env.DEALDESK_HOME = "~/paperclip-home";
+    process.env.DEALDESK_HOME = "~/dealdesk-home";
 
     const home = resolveDealDeskHomeDir();
-    expect(home).toBe(path.resolve(os.homedir(), "paperclip-home"));
+    expect(home).toBe(path.resolve(os.homedir(), "dealdesk-home"));
     expect(resolveDealDeskInstanceId("dev_1")).toBe("dev_1");
   });
 

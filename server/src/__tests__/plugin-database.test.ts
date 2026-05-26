@@ -29,7 +29,7 @@ import { pluginLoader } from "../services/plugin-loader.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const multiMigrationPluginKey = "paperclip.dbfixture";
+const multiMigrationPluginKey = "dealdesk.dbfixture";
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -95,7 +95,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   }, 20_000);
 
   afterEach(async () => {
-    for (const pluginKey of ["paperclip.dbtest", "paperclip.escape", "paperclip.refresh", multiMigrationPluginKey]) {
+    for (const pluginKey of ["dealdesk.dbtest", "dealdesk.escape", "dealdesk.refresh", multiMigrationPluginKey]) {
       const namespace = derivePluginDatabaseNamespace(pluginKey);
       await db.execute(sql.raw(`DROP SCHEMA IF EXISTS "${namespace}" CASCADE`));
     }
@@ -163,7 +163,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return pluginId;
   }
 
-  function manifest(pluginKey = "paperclip.dbtest"): DealDeskPluginManifestV1 {
+  function manifest(pluginKey = "dealdesk.dbtest"): DealDeskPluginManifestV1 {
     return {
       id: pluginKey,
       apiVersion: 1,
@@ -280,7 +280,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("records a failed migration when SQL escapes the plugin namespace", async () => {
-    const pluginManifest = manifest("paperclip.escape");
+    const pluginManifest = manifest("dealdesk.escape");
     const packageRoot = await createPluginPackage(
       pluginManifest,
       "CREATE TABLE public.plugin_escape (id uuid PRIMARY KEY);",
@@ -299,7 +299,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("rolls back plugin install when migration validation fails", async () => {
-    const pluginManifest = manifest("paperclip.escape");
+    const pluginManifest = manifest("dealdesk.escape");
     const namespace = derivePluginDatabaseNamespace(pluginManifest.id);
     const packageRoot = await createInstallablePluginPackage(
       pluginManifest,
@@ -338,7 +338,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("refreshes persisted manifests from disk before activation", async () => {
-    const staleManifest = manifest("paperclip.refresh");
+    const staleManifest = manifest("dealdesk.refresh");
     const refreshedManifest: DealDeskPluginManifestV1 = {
       ...staleManifest,
       database: {

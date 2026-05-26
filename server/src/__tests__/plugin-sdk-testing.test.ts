@@ -5,7 +5,7 @@ import { createTestHarness } from "@dealdesk/plugin-sdk/testing";
 describe("plugin SDK test harness", () => {
   it("requires skills.managed capability before resetting a missing declaration", async () => {
     const manifest: DealDeskPluginManifestV1 = {
-      id: "paperclip.test-missing-managed-skill-capability",
+      id: "dealdesk.test-missing-managed-skill-capability",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Missing Managed Skill Capability",

@@ -102,7 +102,7 @@ Notes:
 - Runs are executed with: agent -p --output-format stream-json ...
 - Prompts are piped to Cursor via stdin.
 - Sessions are resumed with --resume when stored session cwd matches current cwd.
-- DealDesk auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$paperclip" and related skills on local runs.
+- DealDesk auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$dealdesk" and related skills on local runs.
 - DealDesk auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
 - Remote sandbox runs prepend "~/.cursor/bin" and "~/.local/bin" to PATH and prefer the installed absolute entrypoint from one of those directories when the default Cursor command is requested, so installer-managed sandbox leases do not need hardcoded command paths.
 `;

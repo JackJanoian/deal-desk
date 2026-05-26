@@ -136,13 +136,13 @@ describe("gemini remote execution", () => {
           {
             workspaceId: "workspace-1",
             cwd: workspaceDir,
-            repoUrl: "https://github.com/dealdesk/paperclip.git",
+            repoUrl: "https://github.com/dealdesk/dealdesk.git",
             repoRef: "main",
           },
           {
             workspaceId: "workspace-2",
             cwd: alternateWorkspaceDir,
-            repoUrl: "https://github.com/dealdesk/paperclip.git",
+            repoUrl: "https://github.com/dealdesk/dealdesk.git",
             repoRef: "feature/other",
           },
         ],
@@ -192,12 +192,12 @@ describe("gemini remote execution", () => {
       {
         workspaceId: "workspace-1",
         cwd: managedRemoteWorkspace,
-        repoUrl: "https://github.com/dealdesk/paperclip.git",
+        repoUrl: "https://github.com/dealdesk/dealdesk.git",
         repoRef: "main",
       },
       {
         workspaceId: "workspace-2",
-        repoUrl: "https://github.com/dealdesk/paperclip.git",
+        repoUrl: "https://github.com/dealdesk/dealdesk.git",
         repoRef: "feature/other",
       },
     ]);

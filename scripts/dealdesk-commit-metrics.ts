@@ -7,7 +7,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-const DEFAULT_QUERY = "\"Co-Authored-By: DealDesk <noreply@paperclip.ing>\"";
+const DEFAULT_QUERY = "\"Co-Authored-By: DealDesk <noreply@dealdesk.ing>\"";
 const DEFAULT_CACHE_FILE = path.resolve("data/dealdesk-commit-metrics-cache.json");
 const DEFAULT_SEARCH_START = "2008-01-01T00:00:00Z";
 const SEARCH_WINDOW_LIMIT = 900;
@@ -15,7 +15,7 @@ const MIN_WINDOW_MS = 60_000;
 const DEFAULT_STATS_FETCH_LIMIT = 250;
 const DEFAULT_STATS_CONCURRENCY = 4;
 const DEFAULT_SEARCH_FIELD = "committer-date";
-const DEALDESK_EMAIL = "noreply@paperclip.ing";
+const DEALDESK_EMAIL = "noreply@dealdesk.ing";
 const DEALDESK_NAME = "dealdesk";
 
 interface CliOptions {

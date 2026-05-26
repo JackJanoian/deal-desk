@@ -1,5 +1,5 @@
 services:
-  paperclip:
+  dealdesk:
     build:
       context: ..
       dockerfile: Dockerfile
@@ -15,4 +15,4 @@ services:
       DEALDESK_PUBLIC_URL: "${DEALDESK_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - "${DEALDESK_DATA_DIR:-../data/docker-paperclip}:/paperclip"
+      - "${DEALDESK_DATA_DIR:-../data/docker-dealdesk}:/dealdesk"

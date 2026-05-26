@@ -31,7 +31,7 @@ import {
 
 const COMPANY_ID = "company-storybook";
 const SELECTED_COMPANY_STORAGE_KEY = "dealdesk.selectedCompanyId";
-const ISSUE_DRAFT_STORAGE_KEY = "paperclip:issue-draft";
+const ISSUE_DRAFT_STORAGE_KEY = "dealdesk:issue-draft";
 
 const documentRevisions: DocumentRevision[] = [
   {
@@ -142,8 +142,8 @@ const closeReadinessReady: ExecutionWorkspaceCloseReadiness = {
   isSharedWorkspace: false,
   isProjectPrimaryWorkspace: false,
   git: {
-    repoRoot: "/Users/dotta/paperclip",
-    workspacePath: "/Users/dotta/paperclip/.dealdesk/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
+    repoRoot: "/Users/dotta/dealdesk",
+    workspacePath: "/Users/dotta/dealdesk/.dealdesk/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
     branchName: "PAP-1641-create-super-detailed-storybooks-for-our-project",
     baseRef: "master",
     hasDirtyTrackedFiles: true,
@@ -222,9 +222,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="dealdesk-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="dealdesk-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
@@ -241,8 +241,8 @@ function Section({
 
 function StoryShell({ children }: { children: ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -548,8 +548,8 @@ function ProjectDialogOpener({ populated }: { populated?: boolean }) {
     if (!populated) return undefined;
     const timer = window.setTimeout(() => {
       fillFirstField("input[placeholder='Project name']", "Storybook review workspace");
-      fillFirstField("input[placeholder='https://github.com/org/repo']", "https://github.com/dealdesk/paperclip");
-      fillFirstField("input[placeholder='/absolute/path/to/workspace']", "/Users/dotta/paperclip/ui");
+      fillFirstField("input[placeholder='https://github.com/org/repo']", "https://github.com/dealdesk/dealdesk");
+      fillFirstField("input[placeholder='/absolute/path/to/workspace']", "/Users/dotta/dealdesk/ui");
       fillFirstField("input[type='date']", "2026-04-30");
     }, 250);
     return () => window.clearTimeout(timer);

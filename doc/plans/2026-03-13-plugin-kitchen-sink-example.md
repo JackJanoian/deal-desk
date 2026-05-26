@@ -136,7 +136,7 @@ The plugin should be named:
 
 - display name: `Kitchen Sink (Example)`
 - package: `@dealdesk/plugin-kitchen-sink-example`
-- plugin id: `paperclip.kitchen-sink-example` or `dealdesk-kitchen-sink-example`
+- plugin id: `dealdesk.kitchen-sink-example` or `dealdesk-kitchen-sink-example`
 
 Recommendation: use `dealdesk-kitchen-sink-example` to match current in-repo example naming style.
 

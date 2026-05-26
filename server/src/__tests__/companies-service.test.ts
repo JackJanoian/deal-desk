@@ -21,7 +21,7 @@ describeEmbeddedPostgres("companyService issue prefix allocation", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-companies-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-companies-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -126,6 +126,6 @@ DEALDESK_HOME=/custom/home DEALDESK_INSTANCE_ID=dev pnpm dealdesk run
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm dealdesk run --data-dir ./tmp/paperclip-dev
-pnpm dealdesk doctor --data-dir ./tmp/paperclip-dev
+pnpm dealdesk run --data-dir ./tmp/dealdesk-dev
+pnpm dealdesk doctor --data-dir ./tmp/dealdesk-dev
 ```

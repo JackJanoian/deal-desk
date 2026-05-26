@@ -182,10 +182,15 @@ describe("FailedRunInboxRow", () => {
       );
     });
 
-    const link = container.querySelector("a");
-    expect(link).not.toBeNull();
-    expect(link?.className).toContain("hover:bg-transparent");
-    expect(link?.className).not.toContain("hover:bg-accent/50");
+    // The selection chrome lives on the wrapping row; the link no longer carries
+    // hover styling. The row itself should expose the inset primary selection bar
+    // and avoid the generic accent hover.
+    const row = container.firstElementChild as HTMLElement | null;
+    expect(row).not.toBeNull();
+    expect(row?.className).toMatch(/bg-primary\/(?:8|10)\b/);
+    expect(row?.className).toMatch(/shadow-\[inset_2px_0_0/);
+    expect(row?.className).not.toContain("hover:bg-accent/30");
+    expect(row?.className).not.toContain("hover:bg-accent/50");
 
     act(() => {
       root.unmount();

@@ -43,7 +43,7 @@ function issuePrefix(id: string) {
 
 function manifest(): DealDeskPluginManifestV1 {
   return {
-    id: "paperclip.managed-agents-test",
+    id: "dealdesk.managed-agents-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Agents Test",
@@ -244,8 +244,8 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   it("materializes declared managed agent instructions with local folder paths", async () => {
     const previousHome = process.env.DEALDESK_HOME;
     const previousInstance = process.env.DEALDESK_INSTANCE_ID;
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-home-"));
-    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-wiki-")));
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-managed-agent-home-"));
+    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-managed-agent-wiki-")));
     process.env.DEALDESK_HOME = tempHome;
     process.env.DEALDESK_INSTANCE_ID = "test";
     try {
@@ -358,7 +358,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
     expect(approval?.payload).toMatchObject({
       agentId: created.agentId,
-      sourcePluginKey: "paperclip.managed-agents-test",
+      sourcePluginKey: "dealdesk.managed-agents-test",
       managedResourceKey: "wiki-maintainer",
     });
   });

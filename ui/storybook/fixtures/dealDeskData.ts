@@ -24,7 +24,7 @@ import type { LiveRunForIssue } from "@/api/heartbeats";
 
 const now = new Date("2026-04-20T12:00:00.000Z");
 const recent = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000);
-const storybookRepoRoot = "~/paperclip";
+const storybookRepoRoot = "~/dealdesk";
 const storybookWorkspaceRoot = `${storybookRepoRoot}/.dealdesk/workspaces`;
 const storybookWorktreeRoot = `${storybookRepoRoot}/.dealdesk/worktrees`;
 
@@ -369,7 +369,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Board UI",
     sourceType: "local_path" as const,
     cwd: `${storybookRepoRoot}/ui`,
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     repoRef: "master",
     defaultRef: "master",
     visibility: "default" as const,
@@ -396,7 +396,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Docs preview sandbox",
     sourceType: "remote_managed",
     cwd: null,
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     repoRef: "preview/docs-workspaces",
     defaultRef: "master",
     visibility: "advanced",
@@ -438,7 +438,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
         command: "pnpm docs:dev",
         cwd: null,
         port: 4173,
-        url: "https://paperclip-docs-preview.vercel.app",
+        url: "https://dealdesk-docs-preview.vercel.app",
         healthStatus: "unknown",
         lastUsedAt: recent(48),
         startedAt: recent(72),
@@ -457,7 +457,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Release smoke local checkout",
     sourceType: "local_path",
     cwd: `${storybookWorkspaceRoot}/release-smoke`,
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     repoRef: "release/smoke-2026-04-20",
     defaultRef: "master",
     visibility: "advanced",
@@ -501,7 +501,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     name: "PAP-1641 storybook worktree",
     status: "active",
     cwd: `${storybookWorktreeRoot}/PAP-1641-create-super-detailed-storybooks-for-our-project`,
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     baseRef: "master",
     branchName: "PAP-1641-create-super-detailed-storybooks-for-our-project",
     providerType: "git_worktree",
@@ -529,7 +529,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     name: "PAP-1608 release smoke cleanup",
     status: "cleanup_failed",
     cwd: `${storybookWorktreeRoot}/PAP-1608-release-smoke-cleanup`,
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     baseRef: "master",
     branchName: "PAP-1608-release-smoke-cleanup",
     providerType: "git_worktree",
@@ -612,7 +612,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
     },
     codebase: {
       workspaceId: "workspace-board-ui",
-      repoUrl: "https://github.com/dealdesk/paperclip",
+      repoUrl: "https://github.com/dealdesk/dealdesk",
       repoRef: "master",
       defaultRef: "master",
       repoName: "dealdesk",
@@ -1345,7 +1345,7 @@ export const storybookSecrets: CompanySecret[] = [
     provider: "aws_secrets_manager",
     status: "active",
     managedMode: "external_reference",
-    externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/aws-deploy-AbCdEf",
+    externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:dealdesk/prod/aws-deploy-AbCdEf",
     providerConfigId: null,
     providerMetadata: null,
     latestVersion: 2,

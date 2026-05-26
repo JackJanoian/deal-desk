@@ -37,7 +37,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
   let agentId!: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-user-profile-route-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-user-profile-route-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

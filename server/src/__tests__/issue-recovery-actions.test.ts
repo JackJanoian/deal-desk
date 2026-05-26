@@ -123,7 +123,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-recovery-actions-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-recovery-actions-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

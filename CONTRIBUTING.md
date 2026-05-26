@@ -4,6 +4,50 @@ Thanks for wanting to contribute!
 
 We really appreciate both small fixes and thoughtful larger changes.
 
+## Local Development Setup
+
+Deal Desk is a pnpm monorepo. Everything runs locally — the database is a
+bundled embedded PostgreSQL, so there is no external database to provision.
+
+**Prerequisites**
+
+- Node.js >= 20
+- pnpm 9.15.4 (`corepack enable` will pin the right version)
+
+**Steps**
+
+```bash
+# 1. Clone and install
+git clone https://github.com/<your-fork>/deal-desk.git
+cd deal-desk
+pnpm install
+
+# 2. Configure environment
+cp .env.example .env
+# Set BETTER_AUTH_SECRET (a local dev value is fine for development).
+# Leave DATABASE_URL unset/commented to use the bundled embedded PostgreSQL.
+# Only set DATABASE_URL if you want to point at your own Postgres instance.
+
+# 3. Apply database migrations (embedded Postgres starts automatically)
+pnpm db:migrate
+
+# 4. Run the app
+pnpm dev
+```
+
+Then open http://localhost:3100.
+
+**Common commands**
+
+- `pnpm test` — run the test suite
+- `pnpm typecheck` — type-check all packages
+- `pnpm build` — build all packages
+- `pnpm dev:ui` / `pnpm dev:server` — run UI or server alone
+
+Telemetry is **off by default** and stays off in CI. See the
+[Privacy & telemetry](README.md#privacy--telemetry) section if you opt in
+locally and want to disable it.
+
 ## Two Paths to Get Your Pull Request Accepted
 
 ### Path 1: Small, Focused Changes (Fastest way to get merged)

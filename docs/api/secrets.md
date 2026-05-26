@@ -33,7 +33,7 @@ an external-reference secret:
   "name": "prod-stripe-key",
   "provider": "aws_secrets_manager",
   "managedMode": "external_reference",
-  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/stripe",
+  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:dealdesk/prod/stripe",
   "providerVersionRef": "version-id-or-label"
 }
 ```
@@ -211,7 +211,7 @@ POST /api/companies/{companyId}/secrets
   "provider": "aws_secrets_manager",
   "providerConfigId": "<vault-uuid>",
   "managedMode": "external_reference",
-  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/stripe"
+  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:dealdesk/prod/stripe"
 }
 ```
 
@@ -346,7 +346,7 @@ The import response is row-level:
       "key": "stripe-production-key",
       "status": "imported",
       "reason": null,
-      "secretId": "<paperclip-secret-id>",
+      "secretId": "<dealdesk-secret-id>",
       "conflicts": []
     }
   ]

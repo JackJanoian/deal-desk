@@ -154,7 +154,7 @@ V1 config fields:
 - `pollIntervalSec` (optional, default `10`)
 - `timeoutSec` (optional, default `0`)
 - `graceSec` (optional, default `20`)
-- `paperclipPublicUrl` (optional override; else `DEALDESK_PUBLIC_URL` env)
+- `dealdeskPublicUrl` (optional override; else `DEALDESK_PUBLIC_URL` env)
 - `enableWebhooks` (optional, default `true`)
 - `env.CURSOR_API_KEY` (required, secret_ref preferred)
 - `env.CURSOR_WEBHOOK_SECRET` (required if `enableWebhooks=true`, min 32)
@@ -172,7 +172,7 @@ Cursor agents run remotely, so we cannot inject local env like `DEALDESK_API_KEY
 
 The adapter must resolve a callback base URL in this order:
 
-1. `adapterConfig.paperclipPublicUrl`
+1. `adapterConfig.dealdeskPublicUrl`
 2. `process.env.DEALDESK_PUBLIC_URL`
 
 If empty, fail `testEnvironment` and runtime execution with a clear error.
@@ -189,7 +189,7 @@ Flow:
    - `runId`
    - short TTL (for example 10 minutes)
 2. Adapter includes only:
-   - `paperclipPublicUrl`
+   - `dealdeskPublicUrl`
    - exchange endpoint path
    - bootstrap token
 3. Cursor agent calls:
@@ -228,7 +228,7 @@ Benefits:
 
 - parse adapter config via `asString/asBoolean/asNumber/parseObject`
 - resolve `env.CURSOR_API_KEY`
-- resolve `paperclipPublicUrl`
+- resolve `dealdeskPublicUrl`
 - validate webhook secret when webhooks enabled
 
 ### Step 2: Session Resolution
@@ -251,7 +251,7 @@ Render template as usual, then append a compact callback block:
 - on resume: `POST /followup`
 - else: `POST /agents`
 - include webhook object when enabled:
-  - `url: <paperclipPublicUrl>/api/adapters/cursor-cloud/webhooks`
+  - `url: <dealdeskPublicUrl>/api/adapters/cursor-cloud/webhooks`
   - `secret: CURSOR_WEBHOOK_SECRET`
 
 ### Step 5: Progress + Completion
@@ -313,7 +313,7 @@ Checks:
 2. key validity via `GET /v0/me`
 3. repository configured and URL shape valid
 4. model exists (if set) via `/v0/models`
-5. `paperclipPublicUrl` present and reachable shape-valid
+5. `dealdeskPublicUrl` present and reachable shape-valid
 6. webhook secret present/length-valid when webhooks enabled
 
 Repository-access verification via `/v0/repositories` should be optional due strict rate limits.

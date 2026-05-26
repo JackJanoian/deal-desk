@@ -162,7 +162,7 @@ function rowIsManagedAgent(
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return false;
   const marker =
     (metadata as Record<string, unknown>).dealdeskManagedResource
-    ?? (metadata as Record<string, unknown>).paperclipManagedResource;
+    ?? (metadata as Record<string, unknown>).dealdeskManagedResource;
   if (!marker || typeof marker !== "object" || Array.isArray(marker)) return false;
   const record = marker as Record<string, unknown>;
   return (

@@ -53,7 +53,7 @@ import {
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const WRAPPER_CLEANUP_RETENTION_MS = 15 * 60 * 1000;
-const DEALDESK_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
+const DEALDESK_MANAGED_CODEX_SKILLS_MANIFEST = ".dealdesk-managed-skills.json";
 
 type AcpxRuntimeFactory = (options: AcpRuntimeOptions) => AcpRuntime;
 
@@ -783,7 +783,7 @@ async function buildRuntime(input: {
     skillPromptInstructions,
   });
   const taskKey = asString(input.ctx.runtime.taskKey, "") || wakeTaskId || workspaceId || "default";
-  const sessionKey = `paperclip:${agent.companyId}:${agent.id}:${taskKey}:${fingerprint}`;
+  const sessionKey = `dealdesk:${agent.companyId}:${agent.id}:${taskKey}:${fingerprint}`;
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
   const loggedEnv = buildInvocationEnvForLogs(env, {
     runtimeEnv,
@@ -1047,7 +1047,7 @@ async function cleanupIdleHandles(input: {
       handles: input.handles,
       key,
       entry,
-      reason: "paperclip idle cleanup",
+      reason: "dealdesk idle cleanup",
     });
   }
 }
@@ -1100,7 +1100,7 @@ function scheduleIdleHandleCleanup(input: {
         handles: input.handles,
         key: input.key,
         entry: input.entry,
-        reason: "paperclip idle cleanup",
+        reason: "dealdesk idle cleanup",
       });
     })();
   }, delayMs);
@@ -1221,7 +1221,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
       await emitAcpxLog(ctx, { type: "acpx.error", message, ...classified.errorMeta });
       await runtime.close({
         handle: sessionHandle,
-        reason: "paperclip config cleanup",
+        reason: "dealdesk config cleanup",
         discardPersistentState: false,
       }).catch(() => {});
       const existing = warmHandles.get(prepared.sessionKey);
@@ -1325,13 +1325,13 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
             handles: warmHandles,
             key: prepared.sessionKey,
             entry: existing,
-            reason: timedOut ? "paperclip timeout cleanup" : `paperclip turn ${terminal.status}`,
+            reason: timedOut ? "dealdesk timeout cleanup" : `dealdesk turn ${terminal.status}`,
             discardPersistentState: terminal.status === "cancelled" || timedOut,
           });
         } else {
           await runtime.close({
             handle: sessionHandle,
-            reason: timedOut ? "paperclip timeout cleanup" : `paperclip turn ${terminal.status}`,
+            reason: timedOut ? "dealdesk timeout cleanup" : `dealdesk turn ${terminal.status}`,
             discardPersistentState: terminal.status === "cancelled" || timedOut,
           }).catch(() => {});
         }
@@ -1340,7 +1340,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
         if (existing && !warmHandleMatches(existing, runtime, sessionHandle)) {
           await runtime.close({
             handle: sessionHandle,
-            reason: "paperclip duplicate warm handle cleanup",
+            reason: "dealdesk duplicate warm handle cleanup",
             discardPersistentState: false,
           }).catch(() => {});
         } else {
@@ -1366,12 +1366,12 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
             handles: warmHandles,
             key: prepared.sessionKey,
             entry: existing,
-            reason: "paperclip completed turn cleanup",
+            reason: "dealdesk completed turn cleanup",
           });
         } else {
           await runtime.close({
             handle: sessionHandle,
-            reason: "paperclip completed turn cleanup",
+            reason: "dealdesk completed turn cleanup",
             discardPersistentState: false,
           }).catch(() => {});
         }
@@ -1420,7 +1420,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
       if (cancel) await cancel(message).catch(() => {});
       await runtime.close({
         handle: sessionHandle,
-        reason: timedOut ? "paperclip timeout cleanup" : "paperclip error cleanup",
+        reason: timedOut ? "dealdesk timeout cleanup" : "dealdesk error cleanup",
         discardPersistentState: timedOut,
       }).catch(() => {});
       const existing = warmHandles.get(prepared.sessionKey);

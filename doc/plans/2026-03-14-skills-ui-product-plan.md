@@ -180,7 +180,7 @@ Suggested source states:
 Suggested compatibility states:
 
 - compatible
-- paperclip-extension
+- dealdesk-extension
 - unknown
 - invalid
 
@@ -471,14 +471,14 @@ Import behavior:
 
 - importing a company package with `SKILL.md` content should create or update company skills
 - agent attachments should primarily come from `AGENTS.md` shortname associations
-- `.paperclip.yaml` may add DealDesk-specific fidelity, but should not replace the base shortname association model
+- `.dealdesk.yaml` may add DealDesk-specific fidelity, but should not replace the base shortname association model
 - referenced third-party skills should keep provenance visible
 
 Export behavior:
 
 - exporting a company should include company-managed skills when selected
 - `AGENTS.md` should emit skill associations by shortname or slug
-- `.paperclip.yaml` may add DealDesk-specific skill fidelity later if needed, but should not be required for ordinary agent-to-skill association
+- `.dealdesk.yaml` may add DealDesk-specific skill fidelity later if needed, but should not be required for ordinary agent-to-skill association
 - adapter-only external skills should not be silently exported as managed company skills
 
 ## 9.1 Import workflows

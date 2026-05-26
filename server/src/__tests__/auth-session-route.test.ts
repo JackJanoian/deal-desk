@@ -107,13 +107,13 @@ describe("actorMiddleware authenticated session profile", () => {
 
     const res = await request(app)
       .get("/actor")
-      .set("x-paperclip-cloud-tenant-token", "tenant-token")
-      .set("x-paperclip-cloud-user-id", "global-user-1")
-      .set("x-paperclip-cloud-user-email", "owner@example.com")
-      .set("x-paperclip-cloud-user-name", "Stack Owner")
-      .set("x-paperclip-cloud-stack-id", "stack-alpha")
-      .set("x-paperclip-cloud-dealdesk-company-id", "paperclip-stack-alpha")
-      .set("x-paperclip-cloud-stack-role", "owner");
+      .set("x-dealdesk-cloud-tenant-token", "tenant-token")
+      .set("x-dealdesk-cloud-user-id", "global-user-1")
+      .set("x-dealdesk-cloud-user-email", "owner@example.com")
+      .set("x-dealdesk-cloud-user-name", "Stack Owner")
+      .set("x-dealdesk-cloud-stack-id", "stack-alpha")
+      .set("x-dealdesk-cloud-dealdesk-company-id", "dealdesk-stack-alpha")
+      .set("x-dealdesk-cloud-stack-role", "owner");
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({

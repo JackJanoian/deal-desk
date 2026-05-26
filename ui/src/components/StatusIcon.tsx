@@ -1,7 +1,13 @@
 import { useState } from "react";
+import { Check, Minus } from "lucide-react";
 import type { IssueBlockerAttention } from "@dealdesk/shared";
 import { cn } from "../lib/utils";
-import { issueStatusIcon, issueStatusIconDefault } from "../lib/status-colors";
+import {
+  issueStatusIcon,
+  issueStatusIconDefault,
+  issueStatusIconFill,
+  issueStatusIconFillMuted,
+} from "../lib/status-colors";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +15,10 @@ const allStatuses = ["backlog", "todo", "in_progress", "in_review", "done", "can
 
 function statusLabel(status: string): string {
   return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function isMutedSelection(className?: string) {
+  return className?.includes("!border-muted-foreground") ?? false;
 }
 
 interface StatusIconProps {
@@ -67,12 +77,14 @@ export function StatusIcon({ status, blockerAttention, onChange, className, show
   const isStalledBlocked = status === "blocked" && blockerAttention?.state === "stalled";
   const isAttentionBlocked = status === "blocked" && blockerAttention?.state === "needs_attention";
   const hasCoveredBlockedWork = isAttentionBlocked && (blockerAttention?.coveredBlockerCount ?? 0) > 0;
-  const colorClass = isCoveredBlocked
+  const isPlainBlocked = status === "blocked" && !isCoveredBlocked && !isStalledBlocked;
+  const isDone = status === "done";
+  const muted = isMutedSelection(className);
+  const ringColorClass = isCoveredBlocked
     ? "text-cyan-600 border-cyan-600 dark:text-cyan-400 dark:border-cyan-400"
     : isStalledBlocked
       ? "text-amber-600 border-amber-600 dark:text-amber-400 dark:border-amber-400"
       : issueStatusIcon[status] ?? issueStatusIconDefault;
-  const isDone = status === "done";
   const ariaLabel = status === "blocked" ? blockedAttentionLabel(blockerAttention) : statusLabel(status);
   const blockerAttentionState = isCoveredBlocked
     ? "covered"
@@ -82,30 +94,57 @@ export function StatusIcon({ status, blockerAttention, onChange, className, show
         ? "needs_attention"
         : undefined;
 
-  const circle = (
+  const sharedProps = {
+    "data-blocker-attention-state": blockerAttentionState,
+    "aria-label": ariaLabel,
+    title: ariaLabel,
+  };
+
+  const interactiveClass = onChange && !showLabel ? "cursor-pointer" : undefined;
+
+  const circle = isDone ? (
     <span
+      {...sharedProps}
       className={cn(
-        "relative inline-flex h-4 w-4 rounded-full border-2 shrink-0",
-        colorClass,
-        onChange && !showLabel && "cursor-pointer",
-        className
+        "relative inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
+        muted ? issueStatusIconFillMuted : cn(issueStatusIconFill.done, "text-white"),
+        interactiveClass,
+        className,
       )}
-      data-blocker-attention-state={blockerAttentionState}
-      aria-label={ariaLabel}
-      title={ariaLabel}
     >
-      {isDone && (
-        <span className="absolute inset-0 m-auto h-2 w-2 rounded-full bg-current" />
+      <Check className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
+    </span>
+  ) : isPlainBlocked ? (
+    <span
+      {...sharedProps}
+      className={cn(
+        "relative inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
+        muted ? issueStatusIconFillMuted : cn(issueStatusIconFill.blocked, "text-white"),
+        interactiveClass,
+        className,
       )}
-      {isCoveredBlocked && (
+    >
+      <Minus className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
+      {hasCoveredBlockedWork && !muted ? (
+        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-background bg-cyan-500 dark:bg-cyan-400" />
+      ) : null}
+    </span>
+  ) : (
+    <span
+      {...sharedProps}
+      className={cn(
+        "relative inline-flex h-4 w-4 shrink-0 rounded-full border-2",
+        ringColorClass,
+        interactiveClass,
+        className,
+      )}
+    >
+      {isCoveredBlocked ? (
         <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-background bg-current" />
-      )}
-      {hasCoveredBlockedWork && (
-        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-background bg-cyan-600 dark:bg-cyan-400" />
-      )}
-      {isStalledBlocked && (
+      ) : null}
+      {isStalledBlocked ? (
         <span className="absolute inset-0 m-auto h-1.5 w-1.5 rounded-full bg-current" />
-      )}
+      ) : null}
     </span>
   );
 

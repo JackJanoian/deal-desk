@@ -57,7 +57,7 @@ describe("plugin init", () => {
         displayName: "Linear Bridge",
         description: "Syncs Linear issues",
         author: "Acme",
-        sdkPath: "../paperclip/packages/plugins/sdk",
+        sdkPath: "../dealdesk/packages/plugins/sdk",
       },
       cwd,
     );
@@ -70,7 +70,7 @@ describe("plugin init", () => {
       displayName: "Linear Bridge",
       description: "Syncs Linear issues",
       author: "Acme",
-      sdkPath: "../paperclip/packages/plugins/sdk",
+      sdkPath: "../dealdesk/packages/plugins/sdk",
     });
   });
 
@@ -95,7 +95,7 @@ describe("plugin init", () => {
         "init",
         "demo-plugin",
         "--output",
-        "/tmp/paperclip-init-output",
+        "/tmp/dealdesk-init-output",
         "--template",
         "workspace",
         "--category",
@@ -115,7 +115,7 @@ describe("plugin init", () => {
     expect(mocks.scaffoldPluginProject).toHaveBeenCalledTimes(1);
     expect(mocks.scaffoldPluginProject).toHaveBeenCalledWith({
       pluginName: "demo-plugin",
-      outputDir: path.resolve("/tmp/paperclip-init-output", "demo-plugin"),
+      outputDir: path.resolve("/tmp/dealdesk-init-output", "demo-plugin"),
       template: "workspace",
       category: "workspace",
       displayName: "Demo Plugin",

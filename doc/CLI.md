@@ -68,8 +68,8 @@ Company-scoped commands also support `--company-id <id>`.
 Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.dealdesk`:
 
 ```sh
-pnpm dealdesk run --data-dir ./tmp/paperclip-dev
-pnpm dealdesk issue list --data-dir ./tmp/paperclip-dev
+pnpm dealdesk run --data-dir ./tmp/dealdesk-dev
+pnpm dealdesk issue list --data-dir ./tmp/dealdesk-dev
 ```
 
 ## Context Profiles

@@ -40,7 +40,7 @@ vi.mock("../services/live-events.js", () => ({
 
 function manifest(apiRoutes: NonNullable<DealDeskPluginManifestV1["apiRoutes"]>): DealDeskPluginManifestV1 {
   return {
-    id: "paperclip.scoped-api-test",
+    id: "dealdesk.scoped-api-test",
     apiVersion: 1,
     version: "1.0.0",
     displayName: "Scoped API Test",

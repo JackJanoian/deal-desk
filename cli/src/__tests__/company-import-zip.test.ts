@@ -22,7 +22,7 @@ describe("resolveInlineSourceFromPath", () => {
     const archive = createStoredZipArchive(
       {
         "COMPANY.md": "# Company\n",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".dealdesk.yaml": "schema: dealdesk/v1\n",
         "agents/ceo/AGENT.md": "# CEO\n",
         "notes/todo.txt": "ignore me\n",
       },
@@ -36,7 +36,7 @@ describe("resolveInlineSourceFromPath", () => {
       rootPath: "dealdesk-demo",
       files: {
         "COMPANY.md": "# Company\n",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".dealdesk.yaml": "schema: dealdesk/v1\n",
         "agents/ceo/AGENT.md": "# CEO\n",
       },
     });

@@ -45,7 +45,7 @@ describe("buildCursorCloudConfig", () => {
         bootstrapPrompt: "bootstrap",
         model: "gpt-5.4",
         adapterSchemaValues: {
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
           runtimeEnvType: "pool",
           runtimeEnvName: "trusted-workers",
           autoCreatePR: true,
@@ -58,7 +58,7 @@ describe("buildCursorCloudConfig", () => {
       promptTemplate: "hello {{agent.name}}",
       bootstrapPromptTemplate: "bootstrap",
       model: "gpt-5.4",
-      repoUrl: "https://github.com/dealdesk/paperclip.git",
+      repoUrl: "https://github.com/dealdesk/dealdesk.git",
       runtimeEnvType: "pool",
       runtimeEnvName: "trusted-workers",
       autoCreatePR: true,

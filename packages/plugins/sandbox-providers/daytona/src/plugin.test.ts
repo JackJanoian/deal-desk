@@ -29,7 +29,7 @@ function createMockSandbox(overrides: {
 } = {}) {
   return {
     id: overrides.id ?? "sandbox-123",
-    name: overrides.name ?? "paperclip-sandbox",
+    name: overrides.name ?? "dealdesk-sandbox",
     state: overrides.state ?? "started",
     recoverable: overrides.recoverable ?? false,
     target: "us",
@@ -431,15 +431,15 @@ describe("Daytona sandbox provider plugin", () => {
 
     expect(sandbox.fs.uploadFile).toHaveBeenCalledWith(
       Buffer.from("input payload", "utf8"),
-      expect.stringMatching(/^\/tmp\/paperclip-stdin-/),
+      expect.stringMatching(/^\/tmp\/dealdesk-stdin-/),
       1,
     );
     const [command] = sandbox.process.executeCommand.mock.calls[0] as [string];
     expect(command).toMatch(/\/etc\/profile/);
     expect(command).toMatch(/cd '\/workspace'/);
-    expect(command).toMatch(/&& 'cat' < '\/tmp\/paperclip-stdin-/);
+    expect(command).toMatch(/&& 'cat' < '\/tmp\/dealdesk-stdin-/);
     expect(command).not.toMatch(/(?:^|&& )exec /);
-    expect(sandbox.fs.deleteFile).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.fs.deleteFile).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/dealdesk-stdin-/));
     expect(result).toMatchObject({
       exitCode: 0,
       timedOut: false,

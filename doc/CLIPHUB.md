@@ -85,7 +85,7 @@ Two ways to use a template:
 
 **Install (fresh start):**
 ```
-paperclip install cliphub:<publisher>/<company-slug>
+dealdesk install cliphub:<publisher>/<company-slug>
 ```
 Downloads the template and creates a new company in your local DealDesk instance. You add your own API keys, set budgets, customize agents, and hit go.
 
@@ -121,8 +121,8 @@ Anyone with a GitHub account can publish to ClipHub. Authentication is via GitHu
 From within DealDesk, export your company as a template, then publish:
 
 ```
-paperclip export --template my-company
-paperclip publish cliphub my-company
+dealdesk export --template my-company
+dealdesk publish cliphub my-company
 ```
 
 Or use the web UI to upload a template export directly.
@@ -152,7 +152,7 @@ Templates use semantic versioning. Each publish creates an immutable version. Us
 For power users who maintain multiple templates:
 
 ```
-paperclip cliphub sync
+dealdesk cliphub sync
 ```
 
 Scans your local exported templates and publishes any that are new or updated. Useful for maintaining a portfolio of company templates from a single repo.

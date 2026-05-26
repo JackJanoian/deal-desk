@@ -116,8 +116,9 @@ export function contactNeedsApolloEnrichment(contact: {
   emailStatus: string;
 }): boolean {
   if (!contact.email) return true;
-  if (contact.source === "apollo" && contact.emailStatus === "unverified") return true;
-  return false;
+  // Only Apollo-sourced emails are trusted as-is; anything else gets Apollo-verified.
+  if (contact.source !== "apollo") return true;
+  return contact.emailStatus === "unverified";
 }
 
 export async function resolveContactEmail(

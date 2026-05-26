@@ -38,9 +38,9 @@ Then open http://localhost:3100
 - Not a data provider — connect your own (Apollo, Hunter, web search)
 - Not a chat interface — agents work through structured tickets
 
-## Built on Paperclip
+## Built on DealDesk
 
-Deal Desk is a fork of [Paperclip](https://github.com/paperclipai/paperclip),
+Deal Desk is a fork of [DealDesk](https://github.com/dealdesk/dealdesk),
 the open-source AI company orchestration platform. We use its heartbeat
 engine, adapter system, budget enforcement, and governance layer — and add
 PE-specific primitives on top.
@@ -49,12 +49,27 @@ PE-specific primitives on top.
 
 Claude Code · OpenClaw · Codex · Cursor · Any HTTP endpoint
 
+## Privacy & telemetry
+
+Deal Desk is local-first: your thesis, targets, contacts, and all other data
+stay in the bundled PostgreSQL database on your machine. Nothing is sent to a
+central server as part of normal operation.
+
+Anonymous usage telemetry (install/feature counts, no PII, private references
+hashed) is **opt-in and disabled by default**. To turn it on, set
+`telemetry.enabled: true` in your config or run with
+`DEALDESK_TELEMETRY_ENABLED=1`. Even when enabled, it is disabled in CI and
+honors `DO_NOT_TRACK=1` and `DEALDESK_TELEMETRY_DISABLED=1`.
+
+Outbound connections only happen for integrations you explicitly configure
+(e.g. Anthropic / your LLM provider, Apollo, Gmail OAuth).
+
 ## License
 
 MIT © 2026 DealDesk AI. See [LICENSE](LICENSE) for the full text.
 
 Portions of this software are derived from
-[Paperclip](https://github.com/paperclipai/paperclip) (MIT © 2025 Paperclip AI).
+[DealDesk](https://github.com/dealdesk/dealdesk) (MIT © 2025 DealDesk AI).
 See [NOTICE](NOTICE) for upstream attribution.
 
 Trademarks and logos are not covered by the MIT License. See [TRADEMARK.md](TRADEMARK.md).

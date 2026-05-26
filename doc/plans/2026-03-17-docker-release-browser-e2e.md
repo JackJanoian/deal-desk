@@ -106,7 +106,7 @@ Later we can add a second credentialed smoke lane for real model-backed agents.
 The current defaults in `scripts/docker-onboard-smoke.sh` should be treated as stable test fixtures:
 
 - email: `smoke-admin@dealdesk.local`
-- password: `paperclip-smoke-password`
+- password: `dealdesk-smoke-password`
 
 The browser test should log in with those exact values unless overridden by env vars.
 

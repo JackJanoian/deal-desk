@@ -3,13 +3,13 @@
   "version": "0.3.1",
   "description": "Prebuilt DealDesk board UI assets.",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/paperclip",
+  "homepage": "https://github.com/dealdesk/dealdesk",
   "bugs": {
-    "url": "https://github.com/dealdesk/paperclip/issues"
+    "url": "https://github.com/dealdesk/dealdesk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/paperclip",
+    "url": "https://github.com/dealdesk/dealdesk",
     "directory": "ui"
   },
   "type": "module",
@@ -51,7 +51,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "hermes-paperclip-adapter": "^0.2.0",
+    "hermes-dealdesk-adapter": "npm:hermes-paperclip-adapter@^0.2.0",
     "lexical": "0.35.0",
     "lucide-react": "^0.574.0",
     "mermaid": "^11.12.0",

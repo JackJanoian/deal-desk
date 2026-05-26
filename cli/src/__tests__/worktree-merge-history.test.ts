@@ -291,8 +291,8 @@ describe("worktree merge history planner", () => {
     const sourceWorkspace = makeProjectWorkspace({
       id: "source-workspace-1",
       projectId: "source-project-1",
-      cwd: "/Users/dotta/paperclip-evals",
-      repoUrl: "https://github.com/dealdesk/paperclip-evals.git",
+      cwd: "/Users/dotta/dealdesk-evals",
+      repoUrl: "https://github.com/dealdesk/dealdesk-evals.git",
     });
 
     const plan = buildWorktreeMergePlan({

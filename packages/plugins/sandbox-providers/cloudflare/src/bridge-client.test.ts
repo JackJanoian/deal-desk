@@ -9,7 +9,7 @@ const baseConfig: CloudflareDriverConfig = {
   keepAlive: false,
   sleepAfter: "10m",
   normalizeId: true,
-  requestedCwd: "/workspace/paperclip",
+  requestedCwd: "/workspace/dealdesk",
   sessionStrategy: "named",
   sessionId: "dealdesk",
   timeoutMs: 300_000,

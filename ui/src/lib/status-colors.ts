@@ -22,6 +22,14 @@ export const issueStatusIcon: Record<string, string> = {
 
 export const issueStatusIconDefault = "text-muted-foreground border-muted-foreground";
 
+/** Filled StatusIcon backgrounds for terminal / attention states (done, blocked). */
+export const issueStatusIconFill: Record<string, string> = {
+  done: "bg-green-600 dark:bg-green-500",
+  blocked: "bg-red-600 dark:bg-red-500",
+};
+
+export const issueStatusIconFillMuted = "bg-muted-foreground text-background";
+
 /** Text-only color for issue statuses (dropdowns, labels) */
 export const issueStatusText: Record<string, string> = {
   backlog: "text-muted-foreground",

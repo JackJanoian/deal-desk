@@ -45,7 +45,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("lists skills without exposing markdown content", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-heavy-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-heavy-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Heavy Skill\n", "utf8");
 

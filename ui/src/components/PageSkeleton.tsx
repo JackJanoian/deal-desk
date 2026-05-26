@@ -16,23 +16,33 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
   if (variant === "dashboard") {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-32 w-full border border-border/70" />
-
-        <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
-          ))}
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-4 w-56" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-44 w-full" />
-          ))}
+        <Skeleton className="h-[300px] w-full rounded-lg border border-border/70" />
+
+        <Skeleton className="h-14 w-full rounded-lg border border-border/70" />
+
+        <div className="rounded-lg border border-border/70 overflow-hidden divide-y divide-border/60">
+          <div className="grid grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-none" />
+            ))}
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-72 w-full" />
-          <Skeleton className="h-72 w-full" />
+          <Skeleton className="h-64 w-full rounded-lg border border-border/70" />
+          <Skeleton className="h-64 w-full rounded-lg border border-border/70" />
+        </div>
+
+        <Skeleton className="h-10 w-32" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-36 w-full rounded-lg border border-border/70" />
+          ))}
         </div>
       </div>
     );
@@ -74,22 +84,17 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "inbox") {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-9 w-56" />
-          <Skeleton className="h-8 w-40" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-full sm:hidden" />
+        <div className="flex h-10 items-center gap-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="hidden h-8 flex-1 sm:block" />
+          <Skeleton className="h-8 w-24" />
         </div>
 
-        <div className="space-y-5">
-          {Array.from({ length: 3 }).map((_, section) => (
-            <div key={section} className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <div className="space-y-1 rounded-lg border border-border/70 bg-card/35 p-1">
-                {Array.from({ length: 3 }).map((_, row) => (
-                  <Skeleton key={row} className="h-14 w-full rounded-none" />
-                ))}
-              </div>
-            </div>
+        <div className="rounded-lg border border-border/70 overflow-hidden divide-y divide-border/60">
+          {Array.from({ length: 8 }).map((_, row) => (
+            <Skeleton key={row} className="h-11 w-full rounded-none" />
           ))}
         </div>
       </div>

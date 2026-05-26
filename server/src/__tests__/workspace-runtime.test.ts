@@ -176,8 +176,8 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
   it("removes inherited DealDesk and pnpm auth flags before spawning runtime services", () => {
     const sanitized = sanitizeRuntimeServiceBaseEnv({
       PATH: process.env.PATH,
-      DATABASE_URL: "postgres://example.test/paperclip",
-      DEALDESK_HOME: "/tmp/paperclip-home",
+      DATABASE_URL: "postgres://example.test/dealdesk",
+      DEALDESK_HOME: "/tmp/dealdesk-home",
       DEALDESK_INSTANCE_ID: "runtime-instance",
       npm_config_tailscale_auth: "true",
       npm_config_authenticated_private: "true",
@@ -205,7 +205,7 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.mkdir(expectedPackageDir, { recursive: true });
     await fs.mkdir(stalePackageDir, { recursive: true });
     await fs.mkdir(serverNodeModulesScopeDir, { recursive: true });
-    await fs.writeFile(path.join(repoRoot, ".git"), "gitdir: /tmp/paperclip-main/.git/worktrees/runtime-links\n", "utf8");
+    await fs.writeFile(path.join(repoRoot, ".git"), "gitdir: /tmp/dealdesk-main/.git/worktrees/runtime-links\n", "utf8");
     await fs.writeFile(path.join(repoRoot, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n  - server\n", "utf8");
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
@@ -241,7 +241,7 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.mkdir(path.join(repoRoot, "server"), { recursive: true });
     await fs.mkdir(expectedPackageDir, { recursive: true });
     await fs.mkdir(serverNodeModulesScopeDir, { recursive: true });
-    await fs.writeFile(path.join(repoRoot, ".git"), "gitdir: /tmp/paperclip-main/.git/worktrees/runtime-links-current\n", "utf8");
+    await fs.writeFile(path.join(repoRoot, ".git"), "gitdir: /tmp/dealdesk-main/.git/worktrees/runtime-links-current\n", "utf8");
     await fs.writeFile(path.join(repoRoot, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n  - server\n", "utf8");
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
@@ -892,7 +892,7 @@ describe("realizeExecutionWorkspace", () => {
       ) + "\n",
       "utf8",
     );
-    await fs.writeFile(sharedEnvPath, 'DATABASE_URL="postgres://worktree:test@db.example.com:6543/paperclip"\n', "utf8");
+    await fs.writeFile(sharedEnvPath, 'DATABASE_URL="postgres://worktree:test@db.example.com:6543/dealdesk"\n', "utf8");
 
     await fs.mkdir(path.join(repoRoot, "scripts"), { recursive: true });
     await fs.copyFile(
@@ -2293,10 +2293,10 @@ describe("ensureRuntimeServicesForRun", () => {
       ),
     ].join(" ");
 
-    process.env.DEALDESK_CONFIG = "/tmp/base-paperclip-config.json";
-    process.env.DEALDESK_HOME = "/tmp/base-paperclip-home";
+    process.env.DEALDESK_CONFIG = "/tmp/base-dealdesk-config.json";
+    process.env.DEALDESK_HOME = "/tmp/base-dealdesk-home";
     process.env.DEALDESK_INSTANCE_ID = "base-instance";
-    process.env.DATABASE_URL = "postgres://shared-db.example.com/paperclip";
+    process.env.DATABASE_URL = "postgres://shared-db.example.com/dealdesk";
 
     const runId = "run-env";
     leasedRunIds.add(runId);
@@ -2950,7 +2950,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       projectId,
       name: "Primary",
       sourceType: "local_path",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/dealdesk-primary",
       isPrimary: true,
     });
     await db.insert(workspaceRuntimeServices).values({
@@ -2967,7 +2967,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       lifecycle: "shared",
       reuseKey: `project_workspace:${projectWorkspaceId}:dealdesk-dev`,
       command: "pnpm dev",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/dealdesk-primary",
       port: 49195,
       url: "http://127.0.0.1:49195",
       provider: "local_process",
@@ -2988,7 +2988,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       profileKind: "workspace-runtime",
       serviceName: "dealdesk-dev",
       command: "pnpm dev",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/dealdesk-primary",
       envFingerprint: "fingerprint",
       port: 49195,
       url: "http://127.0.0.1:49195",

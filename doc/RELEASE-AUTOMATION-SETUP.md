@@ -44,7 +44,7 @@ For each package:
 
 1. open npm as an owner of the package
 2. go to the package settings / publishing access area
-3. add a trusted publisher for the GitHub repository `dealdesk/paperclip`
+3. add a trusted publisher for the GitHub repository `dealdesk/dealdesk`
 
 ### 2.2. Add one trusted publisher entry per package
 
@@ -56,7 +56,7 @@ Configure:
 
 Repository:
 
-- `dealdesk/paperclip`
+- `dealdesk/dealdesk`
 
 Environment name:
 
@@ -82,7 +82,7 @@ Repo policy:
 Bootstrap sequence for a new package:
 
 1. publish the package once from a trusted maintainer machine using normal npm auth
-2. open that package on npm and add the `dealdesk/paperclip` trusted publisher for `.github/workflows/release.yml`
+2. open that package on npm and add the `dealdesk/dealdesk` trusted publisher for `.github/workflows/release.yml`
 3. rerun or dry-run the release flow as needed to confirm CI publishing now works
 4. only then enable `"publishFromCi": true`
 

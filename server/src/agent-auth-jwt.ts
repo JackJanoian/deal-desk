@@ -33,7 +33,7 @@ function jwtConfig() {
     secret,
     ttlSeconds: parseNumber(process.env.DEALDESK_AGENT_JWT_TTL_SECONDS, 60 * 60 * 48),
     issuer: process.env.DEALDESK_AGENT_JWT_ISSUER ?? "dealdesk",
-    audience: process.env.DEALDESK_AGENT_JWT_AUDIENCE ?? "paperclip-api",
+    audience: process.env.DEALDESK_AGENT_JWT_AUDIENCE ?? "dealdesk-api",
   };
 }
 

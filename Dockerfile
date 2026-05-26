@@ -10,7 +10,7 @@ RUN apt-get update \
 # Modify the existing node user/group to have the specified UID/GID to match host user
 RUN usermod -u $USER_UID --non-unique node \
   && groupmod -g $USER_GID --non-unique node \
-  && usermod -g $USER_GID -d /paperclip node
+  && usermod -g $USER_GID -d /dealdesk node
 
 FROM base AS deps
 WORKDIR /app
@@ -57,22 +57,22 @@ RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/cod
   && apt-get update \
   && apt-get install -y --no-install-recommends openssh-client jq \
   && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /paperclip \
-  && chown node:node /paperclip
+  && mkdir -p /dealdesk \
+  && chown node:node /dealdesk
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENV NODE_ENV=production \
-  HOME=/paperclip \
+  HOME=/dealdesk \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  DEALDESK_HOME=/paperclip \
+  DEALDESK_HOME=/dealdesk \
   DEALDESK_INSTANCE_ID=default \
   USER_UID=${USER_UID} \
   USER_GID=${USER_GID} \
-  DEALDESK_CONFIG=/paperclip/instances/default/config.json \
+  DEALDESK_CONFIG=/dealdesk/instances/default/config.json \
   DEALDESK_DEPLOYMENT_MODE=authenticated \
   DEALDESK_DEPLOYMENT_EXPOSURE=private \
   OPENCODE_ALLOW_ALL_MODELS=true

@@ -184,7 +184,7 @@ Do not add multi-thread-per-issue chat in the first pass.
 If DealDesk later needs several parallel threads on one issue, then add an explicit conversation identity and derive:
 
 - `taskKey = issue:<issueId>:conversation:<conversationId>`
-- OpenClaw `sessionKey = paperclip:conversation:<conversationId>`
+- OpenClaw `sessionKey = dealdesk:conversation:<conversationId>`
 
 Until that requirement becomes real, one issue == one durable conversation is the simpler and better rule.
 

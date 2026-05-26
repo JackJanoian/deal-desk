@@ -144,11 +144,11 @@ function buildSandboxLabels(input: {
   reuseLease: boolean;
 }): Record<string, string> {
   return {
-    "paperclip-provider": "daytona",
+    "dealdesk-provider": "daytona",
     "dealdesk-company-id": input.companyId,
     "dealdesk-environment-id": input.environmentId,
-    "paperclip-reuse-lease": input.reuseLease ? "true" : "false",
-    ...(input.runId ? { "paperclip-run-id": input.runId } : {}),
+    "dealdesk-reuse-lease": input.reuseLease ? "true" : "false",
+    ...(input.runId ? { "dealdesk-run-id": input.runId } : {}),
   };
 }
 
@@ -340,7 +340,7 @@ async function executeOneShot(
 ): Promise<PluginEnvironmentExecuteResult> {
   const timeoutMs = resolveTimeoutMs(params.timeoutMs, config);
   const timeoutSeconds = toTimeoutSeconds(timeoutMs);
-  const stdinPath = params.stdin != null ? `/tmp/paperclip-stdin-${randomUUID()}` : null;
+  const stdinPath = params.stdin != null ? `/tmp/dealdesk-stdin-${randomUUID()}` : null;
 
   try {
     if (stdinPath) {

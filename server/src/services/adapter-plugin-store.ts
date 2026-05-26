@@ -44,11 +44,11 @@ interface AdapterSettings {
 // ---------------------------------------------------------------------------
 
 function adapterPluginPaths() {
-  const paperclipDir = resolveDealDeskHomeDir();
+  const dealdeskDir = resolveDealDeskHomeDir();
   return {
-    adapterPluginsDir: path.join(paperclipDir, "adapter-plugins"),
-    adapterPluginsStorePath: path.join(paperclipDir, "adapter-plugins.json"),
-    adapterSettingsPath: path.join(paperclipDir, "adapter-settings.json"),
+    adapterPluginsDir: path.join(dealdeskDir, "adapter-plugins"),
+    adapterPluginsStorePath: path.join(dealdeskDir, "adapter-plugins.json"),
+    adapterSettingsPath: path.join(dealdeskDir, "adapter-settings.json"),
   };
 }
 

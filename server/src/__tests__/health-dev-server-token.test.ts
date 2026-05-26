@@ -10,7 +10,7 @@ import { healthRoutes } from "../routes/health.js";
 const tempDirs: string[] = [];
 
 function createDevServerStatusFile(payload: unknown) {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-health-dev-server-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "dealdesk-health-dev-server-"));
   tempDirs.push(dir);
   const filePath = path.join(dir, "dev-server-status.json");
   writeFileSync(filePath, `${JSON.stringify(payload)}\n`, "utf8");

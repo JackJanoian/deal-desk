@@ -56,7 +56,7 @@ describeEmbeddedPostgres("issueReferenceService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-refs-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-refs-");
     db = createDb(tempDb.connectionString);
     refs = issueReferenceService(db);
     await ensureIssueReferenceMentionsTable(db);

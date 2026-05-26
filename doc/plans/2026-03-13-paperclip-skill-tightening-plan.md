@@ -6,7 +6,7 @@ Deferred follow-up. Do not include in the current token-optimization PR beyond d
 
 ## Why This Is Deferred
 
-The `paperclip` skill is part of the critical control-plane safety surface. Tightening it may reduce fresh-session token use, but it also carries prompt-regression risk. We do not yet have evals that would let us safely prove behavior preservation across assignment handling, checkout rules, comment etiquette, approval workflows, and escalation paths.
+The `dealdesk` skill is part of the critical control-plane safety surface. Tightening it may reduce fresh-session token use, but it also carries prompt-regression risk. We do not yet have evals that would let us safely prove behavior preservation across assignment handling, checkout rules, comment etiquette, approval workflows, and escalation paths.
 
 The current PR should ship the lower-risk infrastructure wins first:
 
@@ -18,7 +18,7 @@ The current PR should ship the lower-risk infrastructure wins first:
 
 ## Current Problem
 
-Fresh runs still spend substantial input tokens even after the context-path fixes. The remaining large startup cost appears to come from loading the full `paperclip` skill and related instruction surface into context at run start.
+Fresh runs still spend substantial input tokens even after the context-path fixes. The remaining large startup cost appears to come from loading the full `dealdesk` skill and related instruction surface into context at run start.
 
 The skill currently mixes three kinds of content in one file:
 

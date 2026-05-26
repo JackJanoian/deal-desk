@@ -74,18 +74,18 @@ function configWithSecretsProvider(provider: DealDeskConfig["secrets"]["provider
     },
     database: {
       mode: "embedded-postgres",
-      embeddedPostgresDataDir: "/tmp/paperclip/db",
+      embeddedPostgresDataDir: "/tmp/dealdesk/db",
       embeddedPostgresPort: 55432,
       backup: {
         enabled: true,
         intervalMinutes: 60,
         retentionDays: 30,
-        dir: "/tmp/paperclip/backups",
+        dir: "/tmp/dealdesk/backups",
       },
     },
     logging: {
       mode: "file",
-      logDir: "/tmp/paperclip/logs",
+      logDir: "/tmp/dealdesk/logs",
     },
     server: {
       deploymentMode: "local_trusted",
@@ -105,7 +105,7 @@ function configWithSecretsProvider(provider: DealDeskConfig["secrets"]["provider
     storage: {
       provider: "local_disk",
       localDisk: {
-        baseDir: "/tmp/paperclip/storage",
+        baseDir: "/tmp/dealdesk/storage",
       },
       s3: {
         bucket: "dealdesk",
@@ -118,7 +118,7 @@ function configWithSecretsProvider(provider: DealDeskConfig["secrets"]["provider
       provider,
       strictMode: true,
       localEncrypted: {
-        keyFilePath: "/tmp/paperclip/secrets/master.key",
+        keyFilePath: "/tmp/dealdesk/secrets/master.key",
       },
     },
   };

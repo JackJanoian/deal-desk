@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "@/lib/router";
+import { useLocation, useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { INBOX_MINE_ISSUE_STATUS_FILTER } from "@dealdesk/shared";
 import { approvalsApi } from "../api/approvals";
@@ -39,66 +39,23 @@ import {
   hasBlockingShortcutDialog,
   isKeyboardShortcutTextInputTarget,
   resolveInboxUndoArchiveKeyAction,
-  shouldBlurPageSearchOnEnter,
-  shouldBlurPageSearchOnEscape,
 } from "../lib/keyboardShortcuts";
 import { EmptyState } from "../components/EmptyState";
-import { IssueGroupHeader } from "../components/IssueGroupHeader";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { issueTrailingColumns } from "../components/IssueColumns";
+import { approvalLabel } from "../components/ApprovalPayload";
+import { FailedRunInboxRow } from "../components/inbox/FailedRunInboxRow";
+import { InboxAlertsBanner } from "../components/inbox/InboxAlertsBanner";
+import { InboxToolbar } from "../components/inbox/InboxToolbar";
+import { InboxWorkList } from "../components/inbox/InboxWorkList";
 import {
-  InboxIssueMetaLeading,
-  InboxIssueTrailingColumns,
-  IssueColumnPicker,
-  issueActivityText,
-  issueTrailingColumns,
-} from "../components/IssueColumns";
-import { IssueFiltersPopover } from "../components/IssueFiltersPopover";
-import { IssueRow } from "../components/IssueRow";
-import { SwipeToArchive } from "../components/SwipeToArchive";
-
-import { StatusIcon } from "../components/StatusIcon";
-import { cn } from "../lib/utils";
-import { StatusBadge } from "../components/StatusBadge";
-import { approvalLabel, defaultTypeIcon, typeIcon } from "../components/ApprovalPayload";
-import { timeAgo } from "../lib/timeAgo";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { Tabs } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Inbox as InboxIcon,
-  AlertTriangle,
-  Check,
-  ChevronRight,
-  Layers,
-  Plus,
-  XCircle,
-  X,
-  RotateCcw,
-  UserPlus,
-  Search,
-  ListTree,
-} from "lucide-react";
+  readIssueIdFromRun,
+  runFailureMessage,
+} from "../components/inbox/inboxFormatters";
+import { Inbox as InboxIcon, Search } from "lucide-react";
 
 const INBOX_HEARTBEAT_RUN_LIMIT = 200;
 const INBOX_ISSUE_LIST_LIMIT = 500;
-import { Input } from "@/components/ui/input";
-import { PageTabBar } from "../components/PageTabBar";
 import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@dealdesk/shared";
 import {
   ACTIONABLE_APPROVAL_STATUSES,
@@ -164,493 +121,12 @@ type CreatorOption = {
   searchText?: string;
 };
 
-function firstNonEmptyLine(value: string | null | undefined): string | null {
-  if (!value) return null;
-  const line = value.split("\n").map((chunk) => chunk.trim()).find(Boolean);
-  return line ?? null;
-}
-
-function runFailureMessage(run: HeartbeatRun): string {
-  return firstNonEmptyLine(run.error) ?? firstNonEmptyLine(run.stderrExcerpt) ?? "Run exited with an error.";
-}
-
-function approvalStatusLabel(status: Approval["status"]): string {
-  return status.replaceAll("_", " ");
-}
-
-function readIssueIdFromRun(run: HeartbeatRun): string | null {
-  const context = run.contextSnapshot;
-  if (!context) return null;
-
-  const issueId = context["issueId"];
-  if (typeof issueId === "string" && issueId.length > 0) return issueId;
-
-  const taskId = context["taskId"];
-  if (typeof taskId === "string" && taskId.length > 0) return taskId;
-
-  return null;
-}
-
-function nonEmptyLabel(value: string | null | undefined): string | null {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
-}
-
-export function formatJoinRequestInboxLabel(
-  joinRequest: Pick<
-    JoinRequest,
-    "requestType" | "agentName" | "requestEmailSnapshot" | "requestingUserId"
-  > & {
-    requesterUser?: {
-      name: string | null;
-      email: string | null;
-    } | null;
-  },
-) {
-  if (joinRequest.requestType !== "human") {
-    return `Agent join request${joinRequest.agentName ? `: ${joinRequest.agentName}` : ""}`;
-  }
-
-  const requesterName = nonEmptyLabel(joinRequest.requesterUser?.name);
-  const requesterEmail =
-    nonEmptyLabel(joinRequest.requesterUser?.email) ??
-    nonEmptyLabel(joinRequest.requestEmailSnapshot);
-  const requesterId = nonEmptyLabel(joinRequest.requestingUserId);
-
-  if (requesterName && requesterEmail) return `${requesterName} (${requesterEmail})`;
-  if (requesterEmail) return requesterEmail;
-  if (requesterName) return requesterName;
-  if (requesterId) return requesterId;
-  return "Human join request";
-}
-
+// Re-exported so existing tests/imports against `./Inbox` keep working.
+export { formatJoinRequestInboxLabel } from "../components/inbox/inboxFormatters";
+export { FailedRunInboxRow } from "../components/inbox/FailedRunInboxRow";
 
 type NonIssueUnreadState = "visible" | "fading" | "hidden" | null;
 
-export function FailedRunInboxRow({
-  run,
-  issueById,
-  agentName: linkedAgentName,
-  issueLinkState,
-  onDismiss,
-  onRetry,
-  isRetrying,
-  unreadState = null,
-  onMarkRead,
-  onArchive,
-  archiveDisabled,
-  selected = false,
-  className,
-}: {
-  run: HeartbeatRun;
-  issueById: Map<string, Issue>;
-  agentName: string | null;
-  issueLinkState: unknown;
-  onDismiss: () => void;
-  onRetry: () => void;
-  isRetrying: boolean;
-  unreadState?: NonIssueUnreadState;
-  onMarkRead?: () => void;
-  onArchive?: () => void;
-  archiveDisabled?: boolean;
-  selected?: boolean;
-  className?: string;
-}) {
-  const issueId = readIssueIdFromRun(run);
-  const issue = issueId ? issueById.get(issueId) ?? null : null;
-  const displayError = runFailureMessage(run);
-  const showUnreadSlot = unreadState !== null;
-  const showUnreadDot = unreadState === "visible" || unreadState === "fading";
-
-  return (
-    <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
-      className,
-    )}>
-      <div className="flex items-start gap-2 sm:items-center">
-        {showUnreadSlot ? (
-          <span className="hidden sm:inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
-            {showUnreadDot ? (
-              <button
-                type="button"
-                onClick={onMarkRead}
-                className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
-                  "hover:bg-blue-500/20",
-                )}
-                aria-label="Mark as read"
-              >
-                <span className={cn(
-                  "block h-2 w-2 rounded-full transition-opacity duration-300",
-                  "bg-blue-600 dark:bg-blue-400",
-                  unreadState === "fading" ? "opacity-0" : "opacity-100",
-                )} />
-              </button>
-            ) : onArchive ? (
-              <button
-                type="button"
-                onClick={onArchive}
-                disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
-                aria-label="Dismiss from inbox"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <span className="inline-flex h-4 w-4" aria-hidden="true" />
-            )}
-          </span>
-        ) : null}
-        <Link
-          to={`/agents/${run.agentId}/runs/${run.id}`}
-          className={cn(
-            "flex min-w-0 flex-1 items-start gap-2 no-underline text-inherit transition-colors",
-            selected ? "hover:bg-transparent" : "hover:bg-accent/50",
-          )}
-        >
-          {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
-          <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
-          <span className="mt-0.5 shrink-0 rounded-md bg-red-500/20 p-1.5 sm:mt-0">
-            <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
-              {issue ? (
-                <>
-                  <span className="font-mono text-muted-foreground mr-1.5">
-                    {issue.identifier ?? issue.id.slice(0, 8)}
-                  </span>
-                  {issue.title}
-                </>
-              ) : (
-                <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
-              )}
-            </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <StatusBadge status={run.status} />
-              {linkedAgentName && issue ? <span>{linkedAgentName}</span> : null}
-              <span className="truncate max-w-[300px]">{displayError}</span>
-              <span>{timeAgo(run.createdAt)}</span>
-            </span>
-          </span>
-        </Link>
-        <div className="hidden shrink-0 items-center gap-2 sm:flex">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 shrink-0 px-2.5"
-            onClick={onRetry}
-            disabled={isRetrying}
-          >
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            {isRetrying ? "Retrying…" : "Retry"}
-          </Button>
-          {!showUnreadSlot && (
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
-              aria-label="Dismiss"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="mt-3 flex gap-2 sm:hidden">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 shrink-0 px-2.5"
-          onClick={onRetry}
-          disabled={isRetrying}
-        >
-          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-          {isRetrying ? "Retrying…" : "Retry"}
-        </Button>
-        {!showUnreadSlot && (
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ApprovalInboxRow({
-  approval,
-  requesterName,
-  onApprove,
-  onReject,
-  isPending,
-  unreadState = null,
-  onMarkRead,
-  onArchive,
-  archiveDisabled,
-  selected = false,
-  className,
-}: {
-  approval: Approval;
-  requesterName: string | null;
-  onApprove: () => void;
-  onReject: () => void;
-  isPending: boolean;
-  unreadState?: NonIssueUnreadState;
-  onMarkRead?: () => void;
-  onArchive?: () => void;
-  archiveDisabled?: boolean;
-  selected?: boolean;
-  className?: string;
-}) {
-  const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
-  const label = approvalLabel(approval.type, approval.payload as Record<string, unknown> | null);
-  const showResolutionButtons =
-    approval.type !== "budget_override_required" &&
-    ACTIONABLE_APPROVAL_STATUSES.has(approval.status);
-  const showUnreadSlot = unreadState !== null;
-  const showUnreadDot = unreadState === "visible" || unreadState === "fading";
-
-  return (
-    <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
-      className,
-    )}>
-      <div className="flex items-start gap-2 sm:items-center">
-        {showUnreadSlot ? (
-          <span className="hidden sm:inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
-            {showUnreadDot ? (
-              <button
-                type="button"
-                onClick={onMarkRead}
-                className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
-                  "hover:bg-blue-500/20",
-                )}
-                aria-label="Mark as read"
-              >
-                <span className={cn(
-                  "block h-2 w-2 rounded-full transition-opacity duration-300",
-                  "bg-blue-600 dark:bg-blue-400",
-                  unreadState === "fading" ? "opacity-0" : "opacity-100",
-                )} />
-              </button>
-            ) : onArchive ? (
-              <button
-                type="button"
-                onClick={onArchive}
-                disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
-                aria-label="Dismiss from inbox"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <span className="inline-flex h-4 w-4" aria-hidden="true" />
-            )}
-          </span>
-        ) : null}
-        <Link
-          to={`/approvals/${approval.id}`}
-          className={cn(
-            "flex min-w-0 flex-1 items-start gap-2 no-underline text-inherit transition-colors",
-            selected ? "hover:bg-transparent" : "hover:bg-accent/50",
-          )}
-        >
-          {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
-          <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
-          <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <Icon className="h-4 w-4 text-muted-foreground" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
-              {label}
-            </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span className="capitalize">{approvalStatusLabel(approval.status)}</span>
-              {requesterName ? <span>requested by {requesterName}</span> : null}
-              <span>updated {timeAgo(approval.updatedAt)}</span>
-            </span>
-          </span>
-        </Link>
-        {showResolutionButtons ? (
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <Button
-              size="sm"
-              className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
-              onClick={onApprove}
-              disabled={isPending}
-            >
-              Approve
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 px-3"
-              onClick={onReject}
-              disabled={isPending}
-            >
-              Reject
-            </Button>
-          </div>
-        ) : null}
-      </div>
-      {showResolutionButtons ? (
-        <div className="mt-3 flex gap-2 sm:hidden">
-          <Button
-            size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
-            onClick={onApprove}
-            disabled={isPending}
-          >
-            Approve
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="h-8 px-3"
-            onClick={onReject}
-            disabled={isPending}
-          >
-            Reject
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function JoinRequestInboxRow({
-  joinRequest,
-  onApprove,
-  onReject,
-  isPending,
-  unreadState = null,
-  onMarkRead,
-  onArchive,
-  archiveDisabled,
-  selected = false,
-  className,
-}: {
-  joinRequest: JoinRequest;
-  onApprove: () => void;
-  onReject: () => void;
-  isPending: boolean;
-  unreadState?: NonIssueUnreadState;
-  onMarkRead?: () => void;
-  onArchive?: () => void;
-  archiveDisabled?: boolean;
-  selected?: boolean;
-  className?: string;
-}) {
-  const label = formatJoinRequestInboxLabel(joinRequest);
-  const showUnreadSlot = unreadState !== null;
-  const showUnreadDot = unreadState === "visible" || unreadState === "fading";
-
-  return (
-    <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
-      className,
-    )}>
-      <div className="flex items-start gap-2 sm:items-center">
-        {showUnreadSlot ? (
-          <span className="hidden sm:inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
-            {showUnreadDot ? (
-              <button
-                type="button"
-                onClick={onMarkRead}
-                className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
-                  "hover:bg-blue-500/20",
-                )}
-                aria-label="Mark as read"
-              >
-                <span className={cn(
-                  "block h-2 w-2 rounded-full transition-opacity duration-300",
-                  "bg-blue-600 dark:bg-blue-400",
-                  unreadState === "fading" ? "opacity-0" : "opacity-100",
-                )} />
-              </button>
-            ) : onArchive ? (
-              <button
-                type="button"
-                onClick={onArchive}
-                disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
-                aria-label="Dismiss from inbox"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <span className="inline-flex h-4 w-4" aria-hidden="true" />
-            )}
-          </span>
-        ) : null}
-        <div className="flex min-w-0 flex-1 items-start gap-2">
-          {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
-          <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
-          <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
-              {label}
-            </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
-              {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
-            </span>
-          </span>
-        </div>
-        <div className="hidden shrink-0 items-center gap-2 sm:flex">
-          <Button
-            size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
-            onClick={onApprove}
-            disabled={isPending}
-          >
-            Approve
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="h-8 px-3"
-            onClick={onReject}
-            disabled={isPending}
-          >
-            Reject
-          </Button>
-        </div>
-      </div>
-      <div className="mt-3 flex gap-2 sm:hidden">
-        <Button
-          size="sm"
-          className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
-          onClick={onApprove}
-          disabled={isPending}
-        >
-          Approve
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="h-8 px-3"
-          onClick={onReject}
-          disabled={isPending}
-        >
-          Reject
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export function Inbox() {
   const { selectedCompanyId } = useCompany();
@@ -1895,238 +1371,68 @@ export function Inbox() {
     !isTouchedIssuesLoading &&
     !isRunsLoading;
 
-  const showSeparatorBefore = (key: SectionKey) => visibleSections.indexOf(key) > 0;
   const markAllReadIssues = (tab === "mine" ? visibleMineIssues : unreadTouchedIssues)
     .filter((issue) => issue.isUnreadForMe && !fadingOutIssues.has(issue.id) && !archivingIssueIds.has(issue.id));
   const unreadIssueIds = markAllReadIssues
     .map((issue) => issue.id);
   const canMarkAllRead = unreadIssueIds.length > 0;
   const activeIssueFilterCount = countActiveIssueFilters(issueFilters, true);
+
+  const tabCountByValue: Record<InboxTab, number | null> = {
+    mine: visibleMineIssues.length || null,
+    recent: visibleTouchedIssues.length || null,
+    unread: unreadTouchedIssues.length || null,
+    all: null,
+  };
+
+  const inboxAlertsBanner = showAlertsSection ? (
+    <InboxAlertsBanner
+      dashboard={dashboard!}
+      showAgentError={showAggregateAgentError}
+      showBudgetAlert={showBudgetAlert}
+      onDismissAgentError={() => dismissAlert("alert:agent-errors")}
+      onDismissBudgetAlert={() => dismissAlert("alert:budget")}
+    />
+  ) : null;
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        {/* Search — full-width row on mobile, inline on desktop */}
-        <div className="relative sm:hidden">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search inbox…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (shouldBlurPageSearchOnEnter({
-                key: e.key,
-                isComposing: e.nativeEvent.isComposing,
-              })) {
-                e.currentTarget.blur();
-                return;
-              }
-
-              if (shouldBlurPageSearchOnEscape({
-                key: e.key,
-                isComposing: e.nativeEvent.isComposing,
-                currentValue: e.currentTarget.value,
-              })) {
-                e.currentTarget.blur();
-              }
-            }}
-            className="h-8 w-full pl-8 text-xs"
-            data-page-search-target="true"
-          />
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={tab} onValueChange={(value) => navigate(`/inbox/${value}`)}>
-          <PageTabBar
-            items={[
-              {
-                value: "mine",
-                label: "Mine",
-              },
-              {
-                value: "recent",
-                label: "Recent",
-              },
-              { value: "unread", label: "Unread" },
-              { value: "all", label: "All" },
-            ]}
-          />
-        </Tabs>
-
-        <div className="flex items-center gap-2">
-          <div className="relative hidden sm:block">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search inbox…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (shouldBlurPageSearchOnEnter({
-                  key: e.key,
-                  isComposing: e.nativeEvent.isComposing,
-                })) {
-                  e.currentTarget.blur();
-                  return;
-                }
-
-                if (shouldBlurPageSearchOnEscape({
-                  key: e.key,
-                  isComposing: e.nativeEvent.isComposing,
-                  currentValue: e.currentTarget.value,
-                })) {
-                  e.currentTarget.blur();
-                }
-              }}
-              className="h-8 w-[220px] pl-8 text-xs"
-              data-page-search-target="true"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", nestingEnabled && "bg-accent")}
-            onClick={toggleNesting}
-            title={nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
-          >
-            <ListTree className="h-3.5 w-3.5" />
-          </Button>
-          <IssueFiltersPopover
-            state={issueFilters}
-            onChange={updateIssueFilters}
-            activeFilterCount={activeIssueFilterCount}
-            agents={agents}
-            creators={creatorOptions}
-            projects={projects?.map((project) => ({ id: project.id, name: project.name }))}
-            labels={labels?.map((label) => ({ id: label.id, name: label.name, color: label.color }))}
-            currentUserId={currentUserId}
-            enableRoutineVisibilityFilter
-            buttonVariant="outline"
-            iconOnly
-            workspaces={isolatedWorkspacesEnabled ? executionWorkspaces.filter((w) => w.mode === "isolated_workspace").map((w) => ({ id: w.id, name: w.name })) : undefined}
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-                title="Group"
-              >
-                <Layers className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-40 p-2">
-              <div className="space-y-0.5">
-                {([
-                  ["none", "None"],
-                  ["type", "Type"],
-                  ["assignee", "Assignee"],
-                  ["project", "Project"],
-                  ...(isolatedWorkspacesEnabled ? ([["workspace", "Workspace"]] as const) : []),
-                ] as const).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
-                    )}
-                    onClick={() => updateGroupBy(value)}
-                  >
-                    <span>{label}</span>
-                    {groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <IssueColumnPicker
-            availableColumns={availableIssueColumns}
-            visibleColumnSet={visibleIssueColumnSet}
-            onToggleColumn={toggleIssueColumn}
-            onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-            title="Choose which inbox columns stay visible"
-            iconOnly
-          />
-          {canMarkAllRead && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8 shrink-0"
-                onClick={() => setShowMarkAllReadConfirm(true)}
-                disabled={markAllReadMutation.isPending}
-              >
-                {markAllReadMutation.isPending ? "Marking…" : "Mark all as read"}
-              </Button>
-              <Dialog open={showMarkAllReadConfirm} onOpenChange={setShowMarkAllReadConfirm}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Mark all as read?</DialogTitle>
-                    <DialogDescription>
-                      This will mark {unreadIssueIds.length} unread {unreadIssueIds.length === 1 ? "item" : "items"} as read.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setShowMarkAllReadConfirm(false);
-                        markAllReadMutation.mutate(unreadIssueIds);
-                      }}
-                    >
-                      Mark all as read
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </>
-          )}
-        </div>
-        </div>
-      </div>
-
-      {tab === "all" && (
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={allCategoryFilter}
-            onValueChange={(value) => updateAllCategoryFilter(value as InboxCategoryFilter)}
-          >
-            <SelectTrigger className="h-8 w-[170px] text-xs">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="everything">All categories</SelectItem>
-              <SelectItem value="issues_i_touched">My recent issues</SelectItem>
-              <SelectItem value="join_requests">Join requests</SelectItem>
-              <SelectItem value="approvals">Approvals</SelectItem>
-              <SelectItem value="failed_runs">Failed runs</SelectItem>
-              <SelectItem value="alerts">Alerts</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {showApprovalsCategory && (
-            <Select
-              value={allApprovalFilter}
-              onValueChange={(value) => updateAllApprovalFilter(value as InboxApprovalFilter)}
-            >
-              <SelectTrigger className="h-8 w-[170px] text-xs">
-                <SelectValue placeholder="Approval status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All approval statuses</SelectItem>
-                <SelectItem value="actionable">Needs action</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      )}
+    <div className="space-y-4">
+      <InboxToolbar
+        tab={tab}
+        tabCountByValue={tabCountByValue}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        nestingEnabled={nestingEnabled}
+        onToggleNesting={toggleNesting}
+        issueFilters={issueFilters}
+        onIssueFiltersChange={updateIssueFilters}
+        activeIssueFilterCount={activeIssueFilterCount}
+        agents={agents}
+        creators={creatorOptions}
+        projects={projects}
+        labels={labels}
+        currentUserId={currentUserId}
+        isolatedWorkspacesEnabled={isolatedWorkspacesEnabled}
+        executionWorkspaces={executionWorkspaces}
+        groupBy={groupBy}
+        onGroupByChange={updateGroupBy}
+        availableIssueColumns={availableIssueColumns}
+        visibleIssueColumnSet={visibleIssueColumnSet}
+        onToggleIssueColumn={toggleIssueColumn}
+        onResetIssueColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
+        canMarkAllRead={canMarkAllRead}
+        unreadIssueCount={unreadIssueIds.length}
+        showMarkAllReadConfirm={showMarkAllReadConfirm}
+        onShowMarkAllReadConfirmChange={setShowMarkAllReadConfirm}
+        markAllReadMutation={markAllReadMutation}
+        onConfirmMarkAllRead={() => markAllReadMutation.mutate(unreadIssueIds)}
+        allCategoryFilter={allCategoryFilter}
+        onAllCategoryFilterChange={updateAllCategoryFilter}
+        allApprovalFilter={allApprovalFilter}
+        onAllApprovalFilterChange={updateAllApprovalFilter}
+        showApprovalsCategory={showApprovalsCategory}
+      />
+      {inboxAlertsBanner}
 
       {approvalsError && <p className="text-sm text-destructive">{approvalsError.message}</p>}
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
@@ -2153,481 +1459,53 @@ export function Inbox() {
       )}
 
       {showWorkItemsSection && (
-        <>
-          {showSeparatorBefore("work_items") && <Separator />}
-          <div>
-            <div ref={listRef} className="overflow-hidden rounded-xl">
-              {(() => {
-                const renderInboxIssue = ({
-                  issue,
-                  depth,
-                  selected,
-                  hasChildren = false,
-                  isExpanded = false,
-                  childCount = 0,
-                  collapseParentId = null,
-                  allowArchive = canArchiveFromTab,
-                }: {
-                  issue: Issue;
-                  depth: number;
-                  selected: boolean;
-                  hasChildren?: boolean;
-                  isExpanded?: boolean;
-                  childCount?: number;
-                  collapseParentId?: string | null;
-                  allowArchive?: boolean;
-                }) => {
-                  const isUnread = issue.isUnreadForMe && !fadingOutIssues.has(issue.id);
-                  const isFading = fadingOutIssues.has(issue.id);
-                  const isArchiving = archivingIssueIds.has(issue.id);
-                  const project = issue.projectId ? projectById.get(issue.projectId) ?? null : null;
-                  const assigneeUserProfile = issue.assigneeUserId
-                    ? companyUserProfileMap.get(issue.assigneeUserId) ?? null
-                    : null;
-                  return (
-                    <IssueRow
-                      key={`issue:${issue.id}`}
-                      issue={issue}
-                      issueLinkState={issueLinkState}
-                      selected={selected}
-                      className={
-                        isArchiving
-                          ? "pointer-events-none -translate-x-4 scale-[0.98] opacity-0 transition-all duration-200 ease-out"
-                          : "transition-all duration-200 ease-out"
-                      }
-                      desktopMetaLeading={
-                        <>
-                          {nestingEnabled ? (
-                            depth === 0 && hasChildren && collapseParentId ? (
-                              <button
-                                type="button"
-                                className="hidden w-4 shrink-0 items-center justify-center sm:inline-flex"
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  toggleInboxParentCollapse(collapseParentId);
-                                }}
-                              >
-                                <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
-                              </button>
-                            ) : (
-                              <span className="hidden w-4 shrink-0 sm:block" />
-                            )
-                          ) : null}
-                          {depth > 0 ? <span className="hidden w-4 shrink-0 sm:block" /> : null}
-                          <InboxIssueMetaLeading
-                            issue={issue}
-                            isLive={liveIssueIds.has(issue.id)}
-                            showStatus={visibleIssueColumnSet.has("status") && availableIssueColumnSet.has("status")}
-                            showIdentifier={visibleIssueColumnSet.has("id") && availableIssueColumnSet.has("id")}
-                          />
-                        </>
-                      }
-                      titleSuffix={hasChildren && !isExpanded && depth === 0 ? (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
-                          ({childCount} sub-task{childCount !== 1 ? "s" : ""})
-                        </span>
-                      ) : undefined}
-                      mobileMeta={issueActivityText(issue).toLowerCase()}
-                      mobileLeading={
-                        depth === 0 && hasChildren && collapseParentId ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              toggleInboxParentCollapse(collapseParentId);
-                            }}
-                          >
-                            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
-                          </button>
-                        ) : undefined
-                      }
-                      unreadState={isUnread ? "visible" : isFading ? "fading" : "hidden"}
-                      onMarkRead={() => markReadMutation.mutate(issue.id)}
-                      onArchive={allowArchive ? () => archiveIssueMutation.mutate(issue.id) : undefined}
-                      archiveDisabled={isArchiving || archiveIssueMutation.isPending}
-                      desktopTrailing={
-                        visibleTrailingIssueColumns.length > 0 ? (
-                          <InboxIssueTrailingColumns
-                            issue={issue}
-                            columns={visibleTrailingIssueColumns}
-                            projectName={project?.name ?? null}
-                            projectColor={project?.color ?? null}
-                            workspaceName={resolveIssueWorkspaceName(issue, {
-                              executionWorkspaceById,
-                              projectWorkspaceById,
-                              defaultProjectWorkspaceIdByProjectId,
-                            })}
-                            assigneeName={agentName(issue.assigneeAgentId)}
-                            assigneeUserName={
-                              formatAssigneeUserLabel(issue.assigneeUserId, currentUserId, companyUserLabelMap)
-                              ?? assigneeUserProfile?.label
-                              ?? null
-                            }
-                            assigneeUserAvatarUrl={assigneeUserProfile?.image ?? null}
-                            currentUserId={currentUserId}
-                            parentIdentifier={issue.parentId ? (issueById.get(issue.parentId)?.identifier ?? null) : null}
-                            parentTitle={issue.parentId ? (issueById.get(issue.parentId)?.title ?? null) : null}
-                          />
-                        ) : undefined
-                      }
-                    />
-                  );
-                };
-
-                let previousTimestamp = Number.POSITIVE_INFINITY;
-                return groupedSections.flatMap((group, groupIndex) => {
-                  const elements: ReactNode[] = [];
-                  const isGroupCollapsed = collapsedGroupKeys.has(group.key);
-                  if (
-                    group.searchSection !== "none"
-                    && group.searchSection !== groupedSections[groupIndex - 1]?.searchSection
-                  ) {
-                    elements.push(
-                      <div
-                        key={`${group.searchSection}-search-divider`}
-                        className="flex items-center gap-3 border-y border-border/70 bg-muted/30 px-4 py-2"
-                      >
-                        <div className="h-px flex-1 bg-border/80" />
-                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {group.searchSection === "archived" ? "Archived" : "Other results"}
-                        </span>
-                        <div className="h-px flex-1 bg-border/80" />
-                      </div>,
-                    );
-                  }
-                  if (group.label) {
-                    const groupNavIdx = groupFlatIndex.get(group.key) ?? -1;
-                    const isGroupSelected = groupNavIdx >= 0 && selectedIndex === groupNavIdx;
-                    const canCreateIssueInGroup = group.displayItems.some((item) => item.kind === "issue");
-                    elements.push(
-                      <div
-                        key={`group-${group.key}`}
-                        data-inbox-item
-                        className={cn(
-                          "px-3 sm:px-4",
-                          groupIndex > 0 && "pt-2",
-                          isGroupSelected && "bg-accent/50",
-                        )}
-                        onClick={() => {
-                          if (groupNavIdx >= 0) setSelectedIndex(groupNavIdx);
-                        }}
-                      >
-                        <IssueGroupHeader
-                          label={group.label}
-                          collapsible
-                          collapsed={isGroupCollapsed}
-                          onToggle={() => toggleGroupCollapse(group.key)}
-                          trailing={canCreateIssueInGroup ? (
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              className="-mr-2 text-muted-foreground"
-                              title={`New issue in ${group.label}`}
-                              aria-label={`New issue in ${group.label}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                openCreateIssueForGroup(group);
-                              }}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          ) : null}
-                        />
-                      </div>,
-                    );
-                  }
-                  if (isGroupCollapsed) return elements;
-
-                  for (let index = 0; index < group.displayItems.length; index += 1) {
-                    const item = group.displayItems[index]!;
-                    const navIdx = topFlatIndex.get(`${group.key}:${getInboxWorkItemKey(item)}`) ?? 0;
-                    const wrapItem = (key: string, isSelected: boolean, child: ReactNode) => (
-                      <div
-                        key={`sel-${key}`}
-                        data-inbox-item
-                        className="relative"
-                        onClick={() => setSelectedIndex(navIdx)}
-                      >
-                        {child}
-                      </div>
-                    );
-                    const todayCutoff = Date.now() - 24 * 60 * 60 * 1000;
-                    const showTodayDivider =
-                      groupBy === "none" &&
-                      item.timestamp > 0 &&
-                      item.timestamp < todayCutoff &&
-                      previousTimestamp >= todayCutoff;
-                    previousTimestamp = item.timestamp > 0 ? item.timestamp : previousTimestamp;
-                    if (showTodayDivider) {
-                      elements.push(
-                        <div key={`today-divider-${group.key}-${index}`} className="my-2 flex items-center gap-3 px-4">
-                          <div className="flex-1 border-t border-zinc-600" />
-                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-zinc-500">
-                            Earlier
-                          </span>
-                        </div>,
-                      );
-                    }
-                    const isSelected = selectedIndex === navIdx;
-
-                    if (item.kind === "approval") {
-                      const approvalKey = `approval:${item.approval.id}`;
-                      const isArchiving = archivingNonIssueIds.has(approvalKey);
-                      const row = (
-                        <ApprovalInboxRow
-                          key={approvalKey}
-                          approval={item.approval}
-                          selected={isSelected}
-                          requesterName={agentName(item.approval.requestedByAgentId)}
-                          onApprove={() => approveMutation.mutate(item.approval.id)}
-                          onReject={() => rejectMutation.mutate(item.approval.id)}
-                          isPending={approveMutation.isPending || rejectMutation.isPending}
-                          unreadState={nonIssueUnreadState(approvalKey)}
-                          onMarkRead={() => handleMarkNonIssueRead(approvalKey)}
-                          onArchive={canArchiveFromTab ? () => handleArchiveNonIssue(approvalKey) : undefined}
-                          archiveDisabled={isArchiving}
-                          className={
-                            isArchiving
-                              ? "pointer-events-none -translate-x-4 scale-[0.98] opacity-0 transition-all duration-200 ease-out"
-                              : "transition-all duration-200 ease-out"
-                          }
-                        />
-                      );
-                      elements.push(wrapItem(approvalKey, isSelected, canArchiveFromTab ? (
-                        <SwipeToArchive
-                          key={approvalKey}
-                          selected={isSelected}
-                          disabled={isArchiving}
-                          onArchive={() => handleArchiveNonIssue(approvalKey)}
-                        >
-                          {row}
-                        </SwipeToArchive>
-                      ) : row));
-                      continue;
-                    }
-
-                    if (item.kind === "failed_run") {
-                      const runKey = `run:${item.run.id}`;
-                      const isArchiving = archivingNonIssueIds.has(runKey);
-                      const row = (
-                        <FailedRunInboxRow
-                          key={runKey}
-                          run={item.run}
-                          selected={isSelected}
-                          issueById={issueById}
-                          agentName={agentName(item.run.agentId)}
-                          issueLinkState={issueLinkState}
-                          onDismiss={() => dismissInboxItem(runKey)}
-                          onRetry={() => retryRunMutation.mutate(item.run)}
-                          isRetrying={retryingRunIds.has(item.run.id)}
-                          unreadState={nonIssueUnreadState(runKey)}
-                          onMarkRead={() => handleMarkNonIssueRead(runKey)}
-                          onArchive={canArchiveFromTab ? () => handleArchiveNonIssue(runKey) : undefined}
-                          archiveDisabled={isArchiving}
-                          className={
-                            isArchiving
-                              ? "pointer-events-none -translate-x-4 scale-[0.98] opacity-0 transition-all duration-200 ease-out"
-                              : "transition-all duration-200 ease-out"
-                          }
-                        />
-                      );
-                      elements.push(wrapItem(runKey, isSelected, canArchiveFromTab ? (
-                        <SwipeToArchive
-                          key={runKey}
-                          selected={isSelected}
-                          disabled={isArchiving}
-                          onArchive={() => handleArchiveNonIssue(runKey)}
-                        >
-                          {row}
-                        </SwipeToArchive>
-                      ) : row));
-                      continue;
-                    }
-
-                    if (item.kind === "join_request") {
-                      const joinKey = `join:${item.joinRequest.id}`;
-                      const isArchiving = archivingNonIssueIds.has(joinKey);
-                      const row = (
-                        <JoinRequestInboxRow
-                          key={joinKey}
-                          joinRequest={item.joinRequest}
-                          selected={isSelected}
-                          onApprove={() => approveJoinMutation.mutate(item.joinRequest)}
-                          onReject={() => rejectJoinMutation.mutate(item.joinRequest)}
-                          isPending={approveJoinMutation.isPending || rejectJoinMutation.isPending}
-                          unreadState={nonIssueUnreadState(joinKey)}
-                          onMarkRead={() => handleMarkNonIssueRead(joinKey)}
-                          onArchive={canArchiveFromTab ? () => handleArchiveNonIssue(joinKey) : undefined}
-                          archiveDisabled={isArchiving}
-                          className={
-                            isArchiving
-                              ? "pointer-events-none -translate-x-4 scale-[0.98] opacity-0 transition-all duration-200 ease-out"
-                              : "transition-all duration-200 ease-out"
-                          }
-                        />
-                      );
-                      elements.push(wrapItem(joinKey, isSelected, canArchiveFromTab ? (
-                        <SwipeToArchive
-                          key={joinKey}
-                          selected={isSelected}
-                          disabled={isArchiving}
-                          onArchive={() => handleArchiveNonIssue(joinKey)}
-                        >
-                          {row}
-                        </SwipeToArchive>
-                      ) : row));
-                      continue;
-                    }
-
-                    const issue = item.issue;
-                    const childIssues = group.childrenByIssueId.get(issue.id) ?? [];
-                    const hasChildren = childIssues.length > 0;
-                    const isExpanded = hasChildren && !collapsedInboxParents.has(issue.id);
-                    const canArchiveIssue = canArchiveFromTab && group.searchSection === "none";
-                    const renderChildIssueRows = (
-                      children: Issue[],
-                      depth: number,
-                      seen: ReadonlySet<string>,
-                    ): ReactNode[] =>
-                      children.flatMap((child) => {
-                        if (seen.has(child.id)) return [];
-                        const nextSeen = new Set(seen);
-                        nextSeen.add(child.id);
-                        const childNavIdx = childFlatIndex.get(child.id) ?? -1;
-                        const isChildSelected = selectedIndex === childNavIdx;
-                        const grandchildIssues = group.childrenByIssueId.get(child.id) ?? [];
-                        const childHasChildren = grandchildIssues.length > 0;
-                        const childIsExpanded = childHasChildren && !collapsedInboxParents.has(child.id);
-                        const childRow = renderInboxIssue({
-                          issue: child,
-                          depth,
-                          selected: isChildSelected,
-                          hasChildren: childHasChildren,
-                          isExpanded: childIsExpanded,
-                          childCount: grandchildIssues.length,
-                          collapseParentId: child.id,
-                          allowArchive: canArchiveIssue,
-                        });
-                        const isChildArchiving = archivingIssueIds.has(child.id);
-                        const row = (
-                          <div
-                            key={`sel-issue:${child.id}`}
-                            data-inbox-item
-                            className="relative"
-                            onClick={() => setSelectedIndex(childNavIdx)}
-                          >
-                            {canArchiveIssue ? (
-                              <SwipeToArchive
-                                key={`issue:${child.id}`}
-                                selected={isChildSelected}
-                                disabled={isChildArchiving || archiveIssueMutation.isPending}
-                                onArchive={() => archiveIssueMutation.mutate(child.id)}
-                              >
-                                {childRow}
-                              </SwipeToArchive>
-                            ) : childRow}
-                          </div>
-                        );
-
-                        return childIsExpanded
-                          ? [row, ...renderChildIssueRows(grandchildIssues, depth + 1, nextSeen)]
-                          : [row];
-                      });
-                    const parentRow = renderInboxIssue({
-                      issue,
-                      depth: 0,
-                      selected: isSelected,
-                      hasChildren,
-                      isExpanded,
-                      childCount: childIssues.length,
-                      collapseParentId: issue.id,
-                      allowArchive: canArchiveIssue,
-                    });
-
-                    elements.push(wrapItem(`issue:${issue.id}`, isSelected, canArchiveIssue ? (
-                      <SwipeToArchive
-                        key={`issue:${issue.id}`}
-                        selected={isSelected}
-                        disabled={archivingIssueIds.has(issue.id) || archiveIssueMutation.isPending}
-                        onArchive={() => archiveIssueMutation.mutate(issue.id)}
-                      >
-                        {parentRow}
-                      </SwipeToArchive>
-                    ) : parentRow));
-
-                    if (isExpanded) {
-                      elements.push(...renderChildIssueRows(childIssues, 1, new Set([issue.id])));
-                    }
-                  }
-
-                  return elements;
-                });
-              })()}
-            </div>
-          </div>
-        </>
+        <InboxWorkList
+          listRef={listRef}
+          groupedSections={groupedSections}
+          groupBy={groupBy}
+          nestingEnabled={nestingEnabled}
+          collapsedGroupKeys={collapsedGroupKeys}
+          collapsedInboxParents={collapsedInboxParents}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={setSelectedIndex}
+          canArchiveFromTab={canArchiveFromTab}
+          groupFlatIndex={groupFlatIndex}
+          topFlatIndex={topFlatIndex}
+          childFlatIndex={childFlatIndex}
+          fadingOutIssues={fadingOutIssues}
+          archivingIssueIds={archivingIssueIds}
+          archivingNonIssueIds={archivingNonIssueIds}
+          projectById={projectById}
+          companyUserProfileMap={companyUserProfileMap}
+          liveIssueIds={liveIssueIds}
+          issueLinkState={issueLinkState}
+          visibleIssueColumnSet={visibleIssueColumnSet}
+          availableIssueColumnSet={availableIssueColumnSet}
+          visibleTrailingIssueColumns={visibleTrailingIssueColumns}
+          issueById={issueById}
+          agentName={agentName}
+          currentUserId={currentUserId}
+          companyUserLabelMap={companyUserLabelMap}
+          executionWorkspaceById={executionWorkspaceById}
+          projectWorkspaceById={projectWorkspaceById}
+          defaultProjectWorkspaceIdByProjectId={defaultProjectWorkspaceIdByProjectId}
+          markReadMutation={markReadMutation}
+          archiveIssueMutation={archiveIssueMutation}
+          approveMutation={approveMutation}
+          rejectMutation={rejectMutation}
+          retryRunMutation={retryRunMutation}
+          retryingRunIds={retryingRunIds}
+          approveJoinMutation={approveJoinMutation}
+          rejectJoinMutation={rejectJoinMutation}
+          dismissInboxItem={dismissInboxItem}
+          nonIssueUnreadState={nonIssueUnreadState}
+          handleMarkNonIssueRead={handleMarkNonIssueRead}
+          handleArchiveNonIssue={handleArchiveNonIssue}
+          openCreateIssueForGroup={openCreateIssueForGroup}
+          toggleGroupCollapse={toggleGroupCollapse}
+          toggleInboxParentCollapse={toggleInboxParentCollapse}
+        />
       )}
-
-      {showAlertsSection && (
-        <>
-          {showSeparatorBefore("alerts") && <Separator />}
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Alerts
-            </h3>
-            <div className="divide-y divide-border border border-border">
-              {showAggregateAgentError && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
-                  <Link
-                    to="/agents"
-                    className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
-                  >
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-                    <span className="text-sm">
-                      <span className="font-medium">{dashboard!.agents.error}</span>{" "}
-                      {dashboard!.agents.error === 1 ? "agent has" : "agents have"} errors
-                    </span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => dismissAlert("alert:agent-errors")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-              {showBudgetAlert && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
-                  <Link
-                    to="/costs"
-                    className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
-                  >
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
-                    <span className="text-sm">
-                      Budget at{" "}
-                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
-                      utilization this month
-                    </span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => dismissAlert("alert:budget")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
     </div>
   );
 }

@@ -34,9 +34,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="dealdesk-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="dealdesk-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
@@ -78,8 +78,8 @@ function StatePanel({
 
 function StoryShell({ children }: { children: ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -103,7 +103,7 @@ Tooling: lean on [/react-perf-optimizer](skill://skill-react-perf?s=react-perf-o
 const shouldRun = issue.status === "in_progress" && issue.companyId === company.id;
 \`\`\`
 
-See [the implementation notes](https://github.com/dealdesk/paperclip).`;
+See [the implementation notes](https://github.com/dealdesk/dealdesk).`;
 
 const editorMentions: MentionOption[] = [
   { id: "agent-codex", name: "CodexCoder", kind: "agent", agentId: "agent-codex", agentIcon: "code" },
@@ -253,7 +253,7 @@ const routineVariables: RoutineVariable[] = [
     name: "repo",
     label: "Repository",
     type: "text",
-    defaultValue: "dealdesk/paperclip",
+    defaultValue: "dealdesk/dealdesk",
     required: true,
     options: [],
   },
@@ -302,13 +302,13 @@ const storybookProject: Project = {
   executionWorkspacePolicy: null,
   codebase: {
     workspaceId: "workspace-board-ui",
-    repoUrl: "https://github.com/dealdesk/paperclip",
+    repoUrl: "https://github.com/dealdesk/dealdesk",
     repoRef: "master",
     defaultRef: "master",
     repoName: "dealdesk",
-    localFolder: "/Users/dotta/paperclip",
+    localFolder: "/Users/dotta/dealdesk",
     managedFolder: "dealdesk",
-    effectiveLocalFolder: "/Users/dotta/paperclip",
+    effectiveLocalFolder: "/Users/dotta/dealdesk",
     origin: "local_folder",
   },
   workspaces: [],
@@ -631,10 +631,10 @@ function PickerGallery() {
 function FormsEditorsShowcase() {
   return (
     <StoryShell>
-      <section className="paperclip-story__frame p-6">
+      <section className="dealdesk-story__frame p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <div className="paperclip-story__label">Forms and editors</div>
+            <div className="dealdesk-story__label">Forms and editors</div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">DealDesk form controls under realistic state</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Dense control-plane forms need to hold empty, filled, validation, and disabled states without losing scan

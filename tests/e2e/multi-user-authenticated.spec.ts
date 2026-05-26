@@ -7,8 +7,8 @@ const BASE = process.env.DEALDESK_E2E_BASE_URL ?? "http://127.0.0.1:3105";
 const DATA_DIR = process.env.DEALDESK_E2E_DATA_DIR ?? process.env.DEALDESK_HOME;
 const CONFIG_PATH = process.env.DEALDESK_E2E_CONFIG_PATH ?? path.resolve(process.cwd(), ".dealdesk/config.json");
 const BOOTSTRAP_SCRIPT_PATH = path.resolve(process.cwd(), "packages/db/scripts/create-auth-bootstrap-invite.ts");
-const OWNER_PASSWORD = "paperclip-owner-password";
-const INVITED_PASSWORD = "paperclip-invited-password";
+const OWNER_PASSWORD = "dealdesk-owner-password";
+const INVITED_PASSWORD = "dealdesk-invited-password";
 
 type HumanUser = {
   name: string;

@@ -19,8 +19,8 @@
 - New config/env settings:
   - `DEALDESK_AGENT_JWT_SECRET`
   - `DEALDESK_AGENT_JWT_TTL_SECONDS` (default: `172800`)
-  - `DEALDESK_AGENT_JWT_ISSUER` (default: `paperclip`)
-  - `DEALDESK_AGENT_JWT_AUDIENCE` (default: `paperclip-api`)
+  - `DEALDESK_AGENT_JWT_ISSUER` (default: `dealdesk`)
+  - `DEALDESK_AGENT_JWT_AUDIENCE` (default: `dealdesk-api`)
 
 ## 2) Dual authentication path in `actorMiddleware`
 

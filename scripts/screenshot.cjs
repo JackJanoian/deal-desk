@@ -30,7 +30,7 @@ const height = flag("height", 800);
 const waitMs = flag("wait", 2000);
 
 const rawUrl = args[0];
-const outPath = args[1] || "/tmp/paperclip-screenshot.png";
+const outPath = args[1] || "/tmp/dealdesk-screenshot.png";
 
 if (!rawUrl) {
   console.error("Usage: node scripts/screenshot.cjs <url-or-path> [output.png]");

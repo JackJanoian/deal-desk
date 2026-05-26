@@ -7,7 +7,7 @@ All commands below assume you are in the **project root** (the directory contain
 ## Building the image
 
 ```sh
-docker build -t paperclip-local .
+docker build -t dealdesk-local .
 ```
 
 The Dockerfile installs common agent tools (`git`, `gh`, `curl`, `wget`, `ripgrep`, `python3`) and the Claude, Codex, and OpenCode CLIs.
@@ -20,21 +20,21 @@ Build arguments:
 | `USER_GID` | `1000` | GID for the container `node` group |
 
 ```sh
-docker build -t paperclip-local \
+docker build -t dealdesk-local \
   --build-arg USER_UID=$(id -u) --build-arg USER_GID=$(id -g) .
 ```
 
 ## One-liner (build + run)
 
 ```sh
-docker build -t paperclip-local . && \
+docker build -t dealdesk-local . && \
 docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e DEALDESK_HOME=/paperclip \
+  -e DEALDESK_HOME=/dealdesk \
   -e BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -v "$(pwd)/data/docker-dealdesk:/dealdesk" \
+  dealdesk-local
 ```
 
 Open: `http://localhost:3100`
@@ -46,7 +46,7 @@ Data persistence:
 - local secrets key
 - local agent workspace data
 
-All persisted under your bind mount (`./data/docker-paperclip` in the example above).
+All persisted under your bind mount (`./data/docker-dealdesk` in the example above).
 
 ## Docker Compose
 
@@ -62,7 +62,7 @@ BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
 Defaults:
 
 - host port: `3100`
-- persistent data dir: `./data/docker-paperclip`
+- persistent data dir: `./data/docker-dealdesk`
 
 Optional overrides:
 
@@ -86,7 +86,7 @@ BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
   docker compose -f docker/docker-compose.yml up --build
 ```
 
-PostgreSQL data persists in a named Docker volume (`pgdata`). DealDesk data persists in `paperclip-data`.
+PostgreSQL data persists in a named Docker volume (`pgdata`). DealDesk data persists in `dealdesk-data`.
 
 ### Untrusted PR review
 
@@ -103,7 +103,7 @@ For authenticated deployments, set one canonical public URL and let DealDesk der
 
 ```yaml
 services:
-  paperclip:
+  dealdesk:
     environment:
       DEALDESK_DEPLOYMENT_MODE: authenticated
       DEALDESK_DEPLOYMENT_EXPOSURE: private
@@ -134,11 +134,11 @@ If you want local adapter runs inside the container, pass API keys when starting
 docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e DEALDESK_HOME=/paperclip \
+  -e DEALDESK_HOME=/dealdesk \
   -e OPENAI_API_KEY=... \
   -e ANTHROPIC_API_KEY=... \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -v "$(pwd)/data/docker-dealdesk:/dealdesk" \
+  dealdesk-local
 ```
 
 Notes:
@@ -152,9 +152,9 @@ The `docker/quadlet/` directory contains unit files to run DealDesk + PostgreSQL
 
 | File | Purpose |
 |------|---------|
-| `docker/quadlet/paperclip.pod` | Pod definition — groups containers into a shared network namespace |
-| `docker/quadlet/paperclip.container` | DealDesk server — joins the pod, connects to Postgres at `127.0.0.1` |
-| `docker/quadlet/paperclip-db.container` | PostgreSQL 17 — joins the pod, health-checked |
+| `docker/quadlet/dealdesk.pod` | Pod definition — groups containers into a shared network namespace |
+| `docker/quadlet/dealdesk.container` | DealDesk server — joins the pod, connects to Postgres at `127.0.0.1` |
+| `docker/quadlet/dealdesk-db.container` | PostgreSQL 17 — joins the pod, health-checked |
 
 ### Setup
 
@@ -175,12 +175,12 @@ The `docker/quadlet/` directory contains unit files to run DealDesk + PostgreSQL
 3. Create a secrets env file (keep out of version control):
 
    ```sh
-   cat > ~/.config/containers/systemd/paperclip.env <<EOL
+   cat > ~/.config/containers/systemd/dealdesk.env <<EOL
    BETTER_AUTH_SECRET=$(openssl rand -hex 32)
-   POSTGRES_USER=paperclip
-   POSTGRES_PASSWORD=paperclip
-   POSTGRES_DB=paperclip
-   DATABASE_URL=postgres://dealdesk:dealdesk@127.0.0.1:5432/paperclip
+   POSTGRES_USER=dealdesk
+   POSTGRES_PASSWORD=dealdesk
+   POSTGRES_DB=dealdesk
+   DATABASE_URL=postgres://dealdesk:dealdesk@127.0.0.1:5432/dealdesk
    # OPENAI_API_KEY=sk-...
    # ANTHROPIC_API_KEY=sk-...
    EOL
@@ -189,27 +189,27 @@ The `docker/quadlet/` directory contains unit files to run DealDesk + PostgreSQL
 4. Create the data directory and start:
 
    ```sh
-   mkdir -p ~/.local/share/paperclip
+   mkdir -p ~/.local/share/dealdesk
    systemctl --user daemon-reload
-   systemctl --user start paperclip-pod
+   systemctl --user start dealdesk-pod
    ```
 
 ### Quadlet management
 
 ```sh
 journalctl --user -u dealdesk -f        # App logs
-journalctl --user -u paperclip-db -f     # DB logs
-systemctl --user status paperclip-pod    # Pod status
-systemctl --user restart paperclip-pod   # Restart all
-systemctl --user stop paperclip-pod      # Stop all
+journalctl --user -u dealdesk-db -f     # DB logs
+systemctl --user status dealdesk-pod    # Pod status
+systemctl --user restart dealdesk-pod   # Restart all
+systemctl --user stop dealdesk-pod      # Stop all
 ```
 
 ### Quadlet notes
 
-- **First boot**: Unlike Docker Compose's `condition: service_healthy`, Quadlet's `After=` only waits for the DB unit to *start*, not for PostgreSQL to be ready. On a cold first boot you may see one or two restart attempts in `journalctl --user -u paperclip` while PostgreSQL initialises — this is expected and resolves automatically via `Restart=on-failure`.
+- **First boot**: Unlike Docker Compose's `condition: service_healthy`, Quadlet's `After=` only waits for the DB unit to *start*, not for PostgreSQL to be ready. On a cold first boot you may see one or two restart attempts in `journalctl --user -u dealdesk` while PostgreSQL initialises — this is expected and resolves automatically via `Restart=on-failure`.
 - Containers in a pod share `localhost`, so DealDesk reaches Postgres at `127.0.0.1:5432`.
-- PostgreSQL data persists in the `paperclip-pgdata` named volume.
-- DealDesk data persists at `~/.local/share/paperclip`.
+- PostgreSQL data persists in the `dealdesk-pgdata` named volume.
+- DealDesk data persists at `~/.local/share/dealdesk`.
 - For rootful quadlet deployment, remove `%h` prefixes and use absolute paths.
 
 ## Onboard Smoke Test (Ubuntu + npm only)
@@ -233,7 +233,7 @@ Useful overrides:
 ```sh
 HOST_PORT=3200 DEALDESKAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
 DEALDESK_DEPLOYMENT_MODE=authenticated DEALDESK_DEPLOYMENT_EXPOSURE=private ./scripts/docker-onboard-smoke.sh
-SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/paperclip-smoke.env DEALDESKAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/dealdesk-smoke.env DEALDESKAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 Notes:
@@ -251,4 +251,4 @@ Notes:
 ## General Notes
 
 - The `docker-entrypoint.sh` adjusts the container `node` user UID/GID at startup to match the values passed via `USER_UID`/`USER_GID`, avoiding permission issues on bind-mounted volumes.
-- DealDesk data persists via Docker volumes/bind mounts (compose) or at `~/.local/share/paperclip` (quadlet).
+- DealDesk data persists via Docker volumes/bind mounts (compose) or at `~/.local/share/dealdesk` (quadlet).

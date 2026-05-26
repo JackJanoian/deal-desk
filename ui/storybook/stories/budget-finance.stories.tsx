@@ -39,9 +39,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="dealdesk-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="dealdesk-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -550,12 +550,12 @@ const sidebarMarkers: Array<{
 
 function BudgetFinanceMatrix() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">
-        <section className="paperclip-story__frame p-6">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner space-y-6">
+        <section className="dealdesk-story__frame p-6">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <div className="paperclip-story__label">Budget and finance</div>
+              <div className="dealdesk-story__label">Budget and finance</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Spend controls, quotas, and accounting surfaces</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Fixture-backed coverage for the board's cost-control components: active incidents, sidebar budget markers,

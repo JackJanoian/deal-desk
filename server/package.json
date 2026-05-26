@@ -2,13 +2,13 @@
   "name": "@dealdesk/server",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/paperclip",
+  "homepage": "https://github.com/dealdesk/dealdesk",
   "bugs": {
-    "url": "https://github.com/dealdesk/paperclip/issues"
+    "url": "https://github.com/dealdesk/dealdesk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/paperclip",
+    "url": "https://github.com/dealdesk/dealdesk",
     "directory": "server"
   },
   "type": "module",
@@ -70,7 +70,7 @@
     "embedded-postgres": "^18.1.0-beta.16",
     "express": "^5.1.0",
     "googleapis": "^171.4.0",
-    "hermes-paperclip-adapter": "^0.2.0",
+    "hermes-dealdesk-adapter": "npm:hermes-paperclip-adapter@^0.2.0",
     "jsdom": "^28.1.0",
     "multer": "^2.1.1",
     "open": "^11.0.0",

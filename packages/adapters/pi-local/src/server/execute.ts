@@ -52,7 +52,7 @@ import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
-const DEALDESK_SESSIONS_DIR = path.join(os.homedir(), ".pi", "paperclips");
+const DEALDESK_SESSIONS_DIR = path.join(os.homedir(), ".pi", "dealdesks");
 const PI_AGENT_SKILLS_DIR = path.join(os.homedir(), ".pi", "agent", "skills");
 
 function firstNonEmptyLine(text: string): string {

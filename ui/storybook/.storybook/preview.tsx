@@ -40,12 +40,12 @@ installStorybookApiFixtures();
 function installStorybookApiFixtures() {
   if (typeof window === "undefined") return;
   const currentWindow = window as typeof window & {
-    __paperclipStorybookFetchInstalled?: boolean;
+    __dealdeskStorybookFetchInstalled?: boolean;
   };
-  if (currentWindow.__paperclipStorybookFetchInstalled) return;
+  if (currentWindow.__dealdeskStorybookFetchInstalled) return;
 
   const originalFetch = window.fetch.bind(window);
-  currentWindow.__paperclipStorybookFetchInstalled = true;
+  currentWindow.__dealdeskStorybookFetchInstalled = true;
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const rawUrl =
@@ -163,8 +163,8 @@ function installStorybookApiFixtures() {
     if (adapterSchemaMatch) {
       const [, adapterType] = adapterSchemaMatch;
       const schemas = (window as typeof window & {
-        __paperclipStorybookAdapterSchemas?: Record<string, unknown>;
-      }).__paperclipStorybookAdapterSchemas;
+        __dealdeskStorybookAdapterSchemas?: Record<string, unknown>;
+      }).__dealdeskStorybookAdapterSchemas;
       const schema = schemas?.[adapterType];
       if (schema) return Response.json(schema);
     }

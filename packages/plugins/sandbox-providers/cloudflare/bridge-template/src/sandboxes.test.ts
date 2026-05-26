@@ -22,7 +22,7 @@ describe("bridge sandbox helpers", () => {
   });
 
   it("builds the workspace sentinel path", () => {
-    expect(buildSentinelPath("/workspace/paperclip/")).toBe("/workspace/paperclip/.dealdesk-lease.json");
+    expect(buildSentinelPath("/workspace/dealdesk/")).toBe("/workspace/dealdesk/.dealdesk-lease.json");
   });
 
   it("detects timeout-shaped errors", () => {

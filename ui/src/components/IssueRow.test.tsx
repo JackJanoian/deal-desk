@@ -94,7 +94,8 @@ describe("IssueRow", () => {
 
     const link = container.querySelector("[data-inbox-issue-link]") as HTMLAnchorElement | null;
     expect(link).not.toBeNull();
-    expect(link?.className).toContain("hover:bg-primary/10");
+    // Selected rows replace the accent hover with the inset primary bar style.
+    expect(link?.className).toMatch(/hover:bg-primary\/(?:8|10)\b/);
     expect(link?.className).not.toContain("hover:bg-accent/50");
 
     act(() => {

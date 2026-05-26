@@ -23,7 +23,7 @@ describe("bridge exec", () => {
       sandbox: sandbox as never,
       command: "claude",
       args: ["--version"],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/dealdesk",
       env: { DEALDESK_TEST_FLAG: "1" },
       sessionStrategy: "named",
       sessionId: "dealdesk",
@@ -39,7 +39,7 @@ describe("bridge exec", () => {
     expect(optionsArg).not.toHaveProperty("stdin");
     expect(commandArg).toContain('. /etc/profile');
     expect(commandArg).toContain("cd ");
-    expect(commandArg).toContain("/workspace/paperclip");
+    expect(commandArg).toContain("/workspace/dealdesk");
     expect(commandArg).toContain("DEALDESK_TEST_FLAG");
     expect(commandArg).toContain("claude");
     expect(commandArg).toContain("--version");

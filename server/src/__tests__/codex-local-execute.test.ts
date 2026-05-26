@@ -16,8 +16,8 @@ const payload = {
   codexHome: process.env.CODEX_HOME || null,
   dealDeskWakePayloadJson: process.env.DEALDESK_WAKE_PAYLOAD_JSON || null,
   dealDeskApiUrl: process.env.DEALDESK_API_URL || null,
-  paperclipApiKey: process.env.DEALDESK_API_KEY || null,
-  paperclipApiBridgeMode: process.env.DEALDESK_API_BRIDGE_MODE || null,
+  dealdeskApiKey: process.env.DEALDESK_API_KEY || null,
+  dealdeskApiBridgeMode: process.env.DEALDESK_API_BRIDGE_MODE || null,
   dealDeskEnvKeys: Object.keys(process.env)
     .filter((key) => key.startsWith("DEALDESK_"))
     .sort(),
@@ -48,8 +48,8 @@ type CapturePayload = {
   codexHome: string | null;
   dealDeskWakePayloadJson: string | null;
   dealDeskApiUrl?: string | null;
-  paperclipApiKey?: string | null;
-  paperclipApiBridgeMode?: string | null;
+  dealdeskApiKey?: string | null;
+  dealdeskApiBridgeMode?: string | null;
   dealDeskEnvKeys: string[];
 };
 
@@ -107,7 +107,7 @@ describe("codex execute", () => {
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     const managedCodexHome = path.join(
       dealDeskHome,
       "instances",
@@ -389,8 +389,8 @@ describe("codex execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
       expect(capture.codexHome).toBe(path.join(remoteWorkspace, ".dealdesk-runtime", "codex", "home"));
       expect(capture.dealDeskApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
-      expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
-      expect(capture.paperclipApiBridgeMode).toBe("queue_v1");
+      expect(capture.dealdeskApiKey).not.toBe("run-jwt-token");
+      expect(capture.dealdeskApiBridgeMode).toBe("queue_v1");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -1063,7 +1063,7 @@ describe("codex execute", () => {
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     const isolatedCodexHome = path.join(
       dealDeskHome,
       "instances",
@@ -1189,7 +1189,7 @@ describe("codex execute", () => {
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const explicitCodexHome = path.join(root, "explicit-codex-home");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     await fs.mkdir(workspace, { recursive: true });
     const explicitDealdeskSkillDir = await createRuntimeSkillDir(runtimeSkillsRoot, "dealdesk");
     await fs.mkdir(sharedCodexHome, { recursive: true });

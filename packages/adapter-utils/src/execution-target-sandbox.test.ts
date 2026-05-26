@@ -377,7 +377,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("starts a localhost DealDesk bridge for sandbox targets in bridge mode", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "dealdesk-execution-target-bridge-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".dealdesk-runtime", "codex");
@@ -450,7 +450,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("uses the effective adapter timeout when starting the sandbox callback bridge", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-timeout-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "dealdesk-execution-target-bridge-timeout-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".dealdesk-runtime", "codex");
@@ -504,7 +504,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("fails oversized host responses with a 502 before returning them to the sandbox client", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-limit-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "dealdesk-execution-target-bridge-limit-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".dealdesk-runtime", "codex");

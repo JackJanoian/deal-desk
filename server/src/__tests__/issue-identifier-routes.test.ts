@@ -25,7 +25,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-identifier-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-identifier-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

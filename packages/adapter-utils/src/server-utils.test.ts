@@ -713,7 +713,7 @@ describe("applyDealDeskWorkspaceEnv", () => {
         workspaceSource: "project_primary",
         workspaceStrategy: "git_worktree",
         workspaceId: "workspace-1",
-        workspaceRepoUrl: "https://github.com/dealdesk/paperclip.git",
+        workspaceRepoUrl: "https://github.com/dealdesk/dealdesk.git",
         workspaceRepoRef: "main",
         workspaceBranch: "feature/test",
         workspaceWorktreePath: "/tmp/worktree",
@@ -726,7 +726,7 @@ describe("applyDealDeskWorkspaceEnv", () => {
       DEALDESK_WORKSPACE_SOURCE: "project_primary",
       DEALDESK_WORKSPACE_STRATEGY: "git_worktree",
       DEALDESK_WORKSPACE_ID: "workspace-1",
-      DEALDESK_WORKSPACE_REPO_URL: "https://github.com/dealdesk/paperclip.git",
+      DEALDESK_WORKSPACE_REPO_URL: "https://github.com/dealdesk/dealdesk.git",
       DEALDESK_WORKSPACE_REPO_REF: "main",
       DEALDESK_WORKSPACE_BRANCH: "feature/test",
       DEALDESK_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
@@ -757,16 +757,16 @@ describe("shapeDealDeskWorkspaceEnvForExecution", () => {
         {
           workspaceId: "workspace-1",
           cwd: "/tmp/workspace",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
         {
           workspaceId: "workspace-2",
           cwd: "/tmp/other-workspace",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
         {
           workspaceId: "workspace-3",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
       ],
       executionTargetIsRemote: true,
@@ -780,15 +780,15 @@ describe("shapeDealDeskWorkspaceEnvForExecution", () => {
         {
           workspaceId: "workspace-1",
           cwd: "/remote/workspace",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
         {
           workspaceId: "workspace-2",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
         {
           workspaceId: "workspace-3",
-          repoUrl: "https://github.com/dealdesk/paperclip.git",
+          repoUrl: "https://github.com/dealdesk/dealdesk.git",
         },
       ],
     });

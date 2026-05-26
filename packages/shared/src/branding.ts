@@ -8,7 +8,7 @@ export const TAGLINE = "AI-powered deal sourcing for private equity";
 /** All-caps wordmark shown under the terminal ASCII banner. */
 export const BANNER_WORDMARK = "DEALDESK";
 
-/** Unicode block-letter ASCII art for terminal banners (6 lines). PAPERCLIP-style font; each letter is 8 columns. */
+/** Unicode block-letter ASCII art for terminal banners (6 lines). DEALDESK-style font; each letter is 8 columns. */
 export const DEALDESK_ASCII_ART = [
   "██████╗  ███████╗  █████╗  ██╗      ██████╗  ███████╗  ██████╗ ██╗  ██╗",
   "██╔══██╗ ██╔════╝ ██╔══██╗ ██║      ██╔══██╗ ██╔════╝ ██╔════╝ ██║ ██╔╝",

@@ -818,7 +818,7 @@ Long-lived repo anchor.
 
 Examples:
 
-- `./paperclip`
+- `./dealdesk`
 - repo URL and base ref
 - primary checkout for a project
 

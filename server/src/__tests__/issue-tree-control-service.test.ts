@@ -33,7 +33,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-tree-control-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-tree-control-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

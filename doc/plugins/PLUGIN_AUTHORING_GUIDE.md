@@ -39,7 +39,7 @@ That creates `<output>/plugin-name/` with:
 
 Inside this monorepo, the scaffold uses `workspace:*` for `@dealdesk/plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@dealdesk/plugin-sdk` from the local DealDesk checkout into a `.dealdesk-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one DealDesk checkout.
+Outside this monorepo, the scaffold snapshots `@dealdesk/plugin-sdk` from the local DealDesk checkout into a `.dealdesk-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/dealdesk/packages/plugins/sdk` if you have more than one DealDesk checkout.
 
 ## Local development workflow
 

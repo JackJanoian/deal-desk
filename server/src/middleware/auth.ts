@@ -33,7 +33,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
           }
         : { type: "none", source: "none" };
 
-    const runIdHeader = req.header("x-dealdesk-run-id") ?? req.header("x-paperclip-run-id");
+    const runIdHeader = req.header("x-dealdesk-run-id") ?? req.header("x-dealdesk-run-id");
 
     const authHeader = req.header("authorization");
     if (!authHeader?.toLowerCase().startsWith("bearer ")) {
@@ -203,15 +203,15 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
   const expectedToken = process.env.DEALDESK_CLOUD_TENANT_SERVER_TOKEN?.trim();
   if (!expectedToken) return null;
 
-  const token = req.header("x-paperclip-cloud-tenant-token")?.trim();
+  const token = req.header("x-dealdesk-cloud-tenant-token")?.trim();
   if (!token || !constantTimeStringEqual(token, expectedToken)) return null;
 
-  const userId = requiredCloudHeader(req, "x-paperclip-cloud-user-id");
-  const userEmail = requiredCloudHeader(req, "x-paperclip-cloud-user-email").toLowerCase();
-  const stackId = requiredCloudHeader(req, "x-paperclip-cloud-stack-id");
-  const stackRole = stackMembershipRole(req.header("x-paperclip-cloud-stack-role"));
-  const userName = req.header("x-paperclip-cloud-user-name")?.trim() || userEmail;
-  const dealDeskCompanyId = req.header("x-paperclip-cloud-dealdesk-company-id")?.trim();
+  const userId = requiredCloudHeader(req, "x-dealdesk-cloud-user-id");
+  const userEmail = requiredCloudHeader(req, "x-dealdesk-cloud-user-email").toLowerCase();
+  const stackId = requiredCloudHeader(req, "x-dealdesk-cloud-stack-id");
+  const stackRole = stackMembershipRole(req.header("x-dealdesk-cloud-stack-role"));
+  const userName = req.header("x-dealdesk-cloud-user-name")?.trim() || userEmail;
+  const dealDeskCompanyId = req.header("x-dealdesk-cloud-dealdesk-company-id")?.trim();
   const companyId = cloudTenantCompanyId(stackId);
   const companyName = dealDeskCompanyId || `${stackId} DealDesk`;
   const now = new Date();
@@ -330,7 +330,7 @@ function constantTimeStringEqual(left: string, right: string): boolean {
 }
 
 function cloudTenantCompanyId(stackId: string): string {
-  const bytes = createHash("sha256").update(`paperclip-cloud-tenant-company:${stackId}`).digest();
+  const bytes = createHash("sha256").update(`dealdesk-cloud-tenant-company:${stackId}`).digest();
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = bytes.subarray(0, 16).toString("hex");
@@ -339,7 +339,7 @@ function cloudTenantCompanyId(stackId: string): string {
 
 function issuePrefixForCloudStack(stackId: string): string {
   const hash = createHash("sha256").update(stackId).digest("hex").slice(0, 4).toUpperCase();
-  return `PC${hash}`;
+  return `DD`;
 }
 
 export function requireBoard(req: Express.Request) {

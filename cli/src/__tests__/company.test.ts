@@ -470,7 +470,7 @@ describe("import selection catalog", () => {
       files: {
         "COMPANY.md": "# Source Co",
         "README.md": "# Readme",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".dealdesk.yaml": "schema: dealdesk/v1\n",
         "images/company-logo.png": {
           encoding: "base64",
           data: "",
@@ -506,7 +506,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".dealdesk.yaml");
     expect(selectedFiles).toContain("projects/alpha/PROJECT.md");
     expect(selectedFiles).toContain("projects/alpha/notes.md");
     expect(selectedFiles).not.toContain("projects/alpha/issues/kickoff/TASK.md");

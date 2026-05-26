@@ -1,8 +1,8 @@
 #!/bin/bash -ex
-export PC_TEST_ROOT="$(mktemp -d /tmp/paperclip-clean.XXXXXX)"
+export PC_TEST_ROOT="$(mktemp -d /tmp/dealdesk-clean.XXXXXX)"
 export PC_HOME="$PC_TEST_ROOT/home"
 export PC_CACHE="$PC_TEST_ROOT/npm-cache"
-export PC_DATA="$PC_TEST_ROOT/paperclip-data"
+export PC_DATA="$PC_TEST_ROOT/dealdesk-data"
 mkdir -p "$PC_HOME" "$PC_CACHE" "$PC_DATA"
 echo "PC_TEST_ROOT: $PC_TEST_ROOT"
 echo "PC_HOME: $PC_HOME"

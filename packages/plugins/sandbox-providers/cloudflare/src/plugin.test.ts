@@ -98,7 +98,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         providerLeaseId: "pc-run-1-abcd1234",
         metadata: {
           provider: "cloudflare",
-          remoteCwd: "/workspace/paperclip",
+          remoteCwd: "/workspace/dealdesk",
           resumedLease: false,
         },
       }),
@@ -110,7 +110,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       environmentId: "env-1",
       issueId: "issue-1",
       runId: "run-1",
-      requestedCwd: "/workspace/paperclip",
+      requestedCwd: "/workspace/dealdesk",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -121,7 +121,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       providerLeaseId: "pc-run-1-abcd1234",
       metadata: {
         provider: "cloudflare",
-        remoteCwd: "/workspace/paperclip",
+        remoteCwd: "/workspace/dealdesk",
         resumedLease: false,
       },
     });
@@ -139,7 +139,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       environmentId: "env-1",
       runId: "run-1",
       issueId: "issue-1",
-      requestedCwd: "/workspace/paperclip",
+      requestedCwd: "/workspace/dealdesk",
     });
   });
 
@@ -159,7 +159,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       companyId: "company-1",
       environmentId: "env-1",
       providerLeaseId: "pc-env-env-1",
-      leaseMetadata: { remoteCwd: "/workspace/paperclip" },
+      leaseMetadata: { remoteCwd: "/workspace/dealdesk" },
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -181,7 +181,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         exitCode: 0,
         signal: null,
         timedOut: false,
-        stdout: "/workspace/paperclip\n",
+        stdout: "/workspace/dealdesk\n",
         stderr: "",
       }),
     );
@@ -193,7 +193,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
       args: [],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/dealdesk",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -204,7 +204,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       exitCode: 0,
       signal: null,
       timedOut: false,
-      stdout: "/workspace/paperclip\n",
+      stdout: "/workspace/dealdesk\n",
       stderr: "",
     });
   });
@@ -227,7 +227,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "sh",
       args: ["-lc", "ls"],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/dealdesk",
       env: {
         DEALDESK_SANDBOX_EXEC_CHANNEL: "bridge",
         KEEP_ME: "visible",
@@ -268,7 +268,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
       args: [],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/dealdesk",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -302,7 +302,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       issueId: "issue-1",
       lease: {
         providerLeaseId: "pc-run-1-abcd1234",
-        metadata: { remoteCwd: "/workspace/paperclip" },
+        metadata: { remoteCwd: "/workspace/dealdesk" },
       },
       workspace: {
         localPath: "/tmp/project",
@@ -316,7 +316,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
       },
-    })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/paperclip: mkdir: permission denied");
+    })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/dealdesk: mkdir: permission denied");
 
     expect(requestHeadersAt().get("X-DealDesk-Issue-Id")).toBe("issue-1");
   });

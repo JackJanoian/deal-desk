@@ -1064,9 +1064,6 @@ export {
   resolveDefaultStorageDir,
   resolveDefaultBackupDir,
   resolveHomeAwarePath,
-  resolvePaperclipHomeDir,
-  resolvePaperclipInstanceId,
-  resolvePaperclipInstanceRoot,
 } from "./home-paths.js";
 
 export { API_PREFIX, API } from "./api.js";

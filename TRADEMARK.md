@@ -21,9 +21,9 @@ DealDesk AI. They are **not** licensed under MIT.
 ## Upstream marks
 
 This project is derived from
-[Paperclip](https://github.com/paperclipai/paperclip). **Paperclip** and
-related Paperclip branding are trademarks of Paperclip AI. Deal Desk does not
-grant any rights to Paperclip marks. Use Paperclip branding only in accurate,
+[DealDesk](https://github.com/dealdesk/dealdesk). **DealDesk** and
+related DealDesk branding are trademarks of DealDesk AI. Deal Desk does not
+grant any rights to DealDesk marks. Use DealDesk branding only in accurate,
 attributive references to the upstream project.
 
 ## Permitted uses

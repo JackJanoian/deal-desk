@@ -182,7 +182,7 @@ describe("acpx_local runtime skill isolation", () => {
   it.skipIf(process.platform === "win32")("replaces stale managed Codex auth files with source symlinks", async () => {
     const root = await makeTempRoot();
     const sourceCodexHome = path.join(root, "source-codex-home");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     const dealDeskInstanceId = "test-instance";
     const managedCodexHome = path.join(
       dealDeskHome,
@@ -282,7 +282,7 @@ describe("acpx_local runtime skill isolation", () => {
             source: "project_primary",
             strategy: "git_worktree",
             workspaceId: "workspace-1",
-            repoUrl: "https://github.com/dealdesk/paperclip.git",
+            repoUrl: "https://github.com/dealdesk/dealdesk.git",
             repoRef: "main",
             branchName: "feature/remote-acpx",
             worktreePath: workspaceDir,

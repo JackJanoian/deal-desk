@@ -29,7 +29,7 @@ A security vulnerability has been reported via GitHub Security Advisory:
 Pull the full advisory so you understand the vulnerability before doing anything else:
 
 ```
-gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}}
+gh api repos/dealdesk/dealdesk/security-advisories/{{ghsaId}}
 
 ```
 
@@ -51,7 +51,7 @@ This is where all fix development happens. Never push to the public repo.
 
 ```
 gh api --method POST \
-  repos/dealdesk/paperclip/security-advisories/{{ghsaId}}/forks
+  repos/dealdesk/dealdesk/security-advisories/{{ghsaId}}/forks
 
 ```
 
@@ -60,14 +60,14 @@ This returns a repository object for the private fork. Save the `full_name` and 
 Clone it and set up your workspace:
 
 ```
-# Clone the private fork somewhere outside ~/paperclip
+# Clone the private fork somewhere outside ~/dealdesk
 git clone <clone_url_from_response> ~/security-patch-{{ghsaId}}
 cd ~/security-patch-{{ghsaId}}
 git checkout -b security-fix
 
 ```
 
-**Do not edit `~/paperclip`** — the dev server is running off the `~/paperclip` master branch and we don't want to touch it. All work happens in the private fork clone.
+**Do not edit `~/dealdesk`** — the dev server is running off the `~/dealdesk` master branch and we don't want to touch it. All work happens in the private fork clone.
 
 **TIPS:**
 
@@ -115,7 +115,7 @@ This makes vulnerability scanners (npm audit, Snyk, Dependabot) warn users to up
 
 ```
 gh api --method POST \
-  repos/dealdesk/paperclip/security-advisories/{{ghsaId}}/cve
+  repos/dealdesk/dealdesk/security-advisories/{{ghsaId}}/cve
 
 ```
 
@@ -128,7 +128,7 @@ This all happens at once — do not stagger these steps. The goal is **zero wind
 ### 6a. Verify reporter credit before publishing
 
 ```
-gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}} --jq '.credits'
+gh api repos/dealdesk/dealdesk/security-advisories/{{ghsaId}} --jq '.credits'
 
 ```
 
@@ -136,7 +136,7 @@ If the reporter is not credited, add them:
 
 ```
 gh api --method PATCH \
-  repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
+  repos/dealdesk/dealdesk/security-advisories/{{ghsaId}} \
   --input - << 'EOF'
 {
   "credits": [
@@ -154,7 +154,7 @@ EOF
 
 ```
 gh api --method PATCH \
-  repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
+  repos/dealdesk/dealdesk/security-advisories/{{ghsaId}} \
   --input - << 'EOF'
 {
   "state": "published",
@@ -182,11 +182,11 @@ Publishing the advisory simultaneously:
 ### 6c. Cut a release immediately after merge
 
 ```
-cd ~/paperclip
+cd ~/dealdesk
 git pull origin master
 
 gh release create v{{patchedVersion}} \
-  --repo dealdesk/paperclip \
+  --repo dealdesk/dealdesk \
   --title "v{{patchedVersion}} — Security Release" \
   --notes "## Security Release
 
@@ -196,7 +196,7 @@ This release fixes a critical security vulnerability.
 {{briefDescription}} (e.g., Remote code execution via DNS rebinding in \`local_trusted\` mode)
 
 ### Advisory
-https://github.com/dealdesk/paperclip/security/advisories/{{ghsaId}}
+https://github.com/dealdesk/dealdesk/security/advisories/{{ghsaId}}
 
 ### Credit
 Thanks to @{{reporterHandle}} for responsibly disclosing this vulnerability.
@@ -210,11 +210,11 @@ All users running versions prior to {{patchedVersion}} should upgrade immediatel
 
 ```
 # Verify the advisory is published and CVE is assigned
-gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
+gh api repos/dealdesk/dealdesk/security-advisories/{{ghsaId}} \
   --jq '{state: .state, cve_id: .cve_id, published_at: .published_at}'
 
 # Verify the release exists
-gh release view v{{patchedVersion}} --repo dealdesk/paperclip
+gh release view v{{patchedVersion}} --repo dealdesk/dealdesk
 
 ```
 
@@ -224,7 +224,7 @@ If the CVE hasn't been assigned yet, that's normal — it can take a few hours.
 
 Tell the human operator what you did by posting a comment to this task, including:
 
-* The published advisory URL: `https://github.com/dealdesk/paperclip/security/advisories/{{ghsaId}}`
+* The published advisory URL: `https://github.com/dealdesk/dealdesk/security/advisories/{{ghsaId}}`
 * The release URL
 * Whether the CVE has been assigned yet
 * All URLs to any pull requests or branches

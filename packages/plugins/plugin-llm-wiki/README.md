@@ -31,7 +31,7 @@ DealDesk-derived text ingestion stays limited to issue titles/descriptions, issu
 - Issue work products are **metadata-only** in Phase 5.
 - The wiki must not fetch `/api/assets/:id/content`, dereference work-product `url` fields, or store those capability-bearing links in source bundles/snapshots.
 
-The accepted policy lives in [doc/plans/2026-05-06-llm-wiki-paperclip-asset-security-gate.md](../../../doc/plans/2026-05-06-llm-wiki-paperclip-asset-security-gate.md).
+The accepted policy lives in [doc/plans/2026-05-06-llm-wiki-dealdesk-asset-security-gate.md](../../../doc/plans/2026-05-06-llm-wiki-dealdesk-asset-security-gate.md).
 
 ## Development
 
@@ -87,7 +87,7 @@ Remaining alpha gaps:
 ```bash
 curl -X POST http://127.0.0.1:3100/api/plugins/install \
   -H "Content-Type: application/json" \
-  -d '{"packageName":"/Users/dotta/paperclip/.dealdesk/worktrees/PAP-3179-design-a-llm-wiki-plugin/packages/plugins/plugin-llm-wiki","isLocalPath":true}'
+  -d '{"packageName":"/Users/dotta/dealdesk/.dealdesk/worktrees/PAP-3179-design-a-llm-wiki-plugin/packages/plugins/plugin-llm-wiki","isLocalPath":true}'
 ```
 
 ## Build Options

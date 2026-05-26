@@ -119,7 +119,7 @@ describe("project workspace skill discovery", () => {
   });
 
   it("limits root SKILL.md imports to skill-related support folders", async () => {
-    const workspace = await makeTempDir("paperclip-root-skill-");
+    const workspace = await makeTempDir("dealdesk-root-skill-");
     await writeSkillDir(workspace, "Workspace Skill");
     await fs.mkdir(path.join(workspace, "references"), { recursive: true });
     await fs.mkdir(path.join(workspace, "scripts"), { recursive: true });
@@ -148,7 +148,7 @@ describe("project workspace skill discovery", () => {
   });
 
   it("parses inline object array items in skill frontmatter metadata", async () => {
-    const workspace = await makeTempDir("paperclip-inline-skill-yaml-");
+    const workspace = await makeTempDir("dealdesk-inline-skill-yaml-");
     await fs.mkdir(workspace, { recursive: true });
     await fs.writeFile(
       path.join(workspace, "SKILL.md"),
@@ -158,7 +158,7 @@ describe("project workspace skill discovery", () => {
         "metadata:",
         "  sources:",
         "    - kind: github-dir",
-        "      repo: dealdesk/paperclip",
+        "      repo: dealdesk/dealdesk",
         "      path: skills/dealdesk",
         "---",
         "",
@@ -179,7 +179,7 @@ describe("project workspace skill discovery", () => {
       sources: [
         {
           kind: "github-dir",
-          repo: "dealdesk/paperclip",
+          repo: "dealdesk/dealdesk",
           path: "skills/dealdesk",
         },
       ],
@@ -189,7 +189,7 @@ describe("project workspace skill discovery", () => {
 
 describe("missing local skill reconciliation", () => {
   it("flags local-path skills whose directory was removed", async () => {
-    const workspace = await makeTempDir("paperclip-missing-skill-dir-");
+    const workspace = await makeTempDir("dealdesk-missing-skill-dir-");
     const skillDir = path.join(workspace, "skills", "ghost");
     await writeSkillDir(skillDir, "Ghost");
     await fs.rm(skillDir, { recursive: true, force: true });
@@ -211,7 +211,7 @@ describe("missing local skill reconciliation", () => {
   });
 
   it("flags local-path skills whose SKILL.md file was removed", async () => {
-    const workspace = await makeTempDir("paperclip-missing-skill-file-");
+    const workspace = await makeTempDir("dealdesk-missing-skill-file-");
     const skillDir = path.join(workspace, "skills", "ghost");
     await writeSkillDir(skillDir, "Ghost");
     await fs.rm(path.join(skillDir, "SKILL.md"), { force: true });

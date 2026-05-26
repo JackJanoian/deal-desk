@@ -539,7 +539,7 @@ describe("environment routes", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         privateKeySecretRef: {
           type: "secret_ref",
@@ -566,7 +566,7 @@ describe("environment routes", () => {
         config: {
           host: "ssh.example.test",
           username: "ssh-user",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/dealdesk/workspace",
           privateKey: "  super-secret-key  ",
         },
       });
@@ -604,7 +604,7 @@ describe("environment routes", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         privateKeySecretRef: {
           type: "secret_ref",
@@ -630,7 +630,7 @@ describe("environment routes", () => {
         config: {
           host: "ssh.example.test",
           username: "ssh-user",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/dealdesk/workspace",
           privateKey: "super-secret-key",
         },
       });
@@ -1119,7 +1119,7 @@ describe("environment routes", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: "super-secret-key",
         knownHosts: "known-host",
         strictHostKeyChecking: true,
@@ -1220,7 +1220,7 @@ describe("environment routes", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         knownHosts: null,
         strictHostKeyChecking: true,

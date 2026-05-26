@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "description": "Daytona sandbox provider plugin for DealDesk environments",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/paperclip",
+  "homepage": "https://github.com/dealdesk/dealdesk",
   "bugs": {
-    "url": "https://github.com/dealdesk/paperclip/issues"
+    "url": "https://github.com/dealdesk/dealdesk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/paperclip",
+    "url": "https://github.com/dealdesk/dealdesk",
     "directory": "packages/plugins/sandbox-providers/daytona"
   },
   "type": "module",

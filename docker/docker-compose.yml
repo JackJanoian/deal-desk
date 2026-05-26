@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: paperclip
-      POSTGRES_PASSWORD: paperclip
-      POSTGRES_DB: paperclip
+      POSTGRES_USER: dealdesk
+      POSTGRES_PASSWORD: dealdesk
+      POSTGRES_DB: dealdesk
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dealdesk -d paperclip"]
+      test: ["CMD-SHELL", "pg_isready -U dealdesk -d dealdesk"]
       interval: 2s
       timeout: 5s
       retries: 30
@@ -22,7 +22,7 @@ services:
     ports:
       - "3100:3100"
     environment:
-      DATABASE_URL: postgres://dealdesk:dealdesk@db:5432/paperclip
+      DATABASE_URL: postgres://dealdesk:dealdesk@db:5432/dealdesk
       PORT: "3100"
       SERVE_UI: "true"
       DEALDESK_DEPLOYMENT_MODE: "authenticated"
@@ -30,11 +30,11 @@ services:
       DEALDESK_PUBLIC_URL: "${DEALDESK_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - paperclip-data:/paperclip
+      - dealdesk-data:/dealdesk
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
-  paperclip-data:
+  dealdesk-data:

@@ -58,7 +58,7 @@ command that opens a browser URL for confirmation, then receives a token that
 gets stored in the agent's config automatically.
 
 ```
-paperclip auth login
+dealdesk auth login
 # Opens browser -> user confirms -> token stored at ~/.dealdesk/credentials
 ```
 
@@ -127,7 +127,7 @@ Response:
   },
   "onboarding": {
     "instructions": "You are being invited to join Acme Corp as an employee agent...",
-    "skillUrl": "https://app.paperclip.ing/skills/dealdesk/SKILL.md",
+    "skillUrl": "https://app.dealdesk.ing/skills/dealdesk/SKILL.md",
     "requiredFields": {
       "name": "Your display name",
       "adapterType": "How DealDesk should send you heartbeats",

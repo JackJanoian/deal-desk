@@ -39,7 +39,7 @@ describeEmbeddedPostgres("issue scheduled retry routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-scheduled-retry-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-scheduled-retry-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CI gate: fail if legacy "paperclip" branding appears outside allowlisted paths.
+ * CI gate: fail if legacy "Paperclip" branding appears outside allowlisted paths.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -9,7 +9,13 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "data", "releases", ".agents"]);
 const ALLOWLIST = [
+  /hermes-dealdesk-adapter/,
+  // Real upstream npm packages we depend on (aliased locally as hermes-dealdesk-adapter).
+  // Their published names cannot be renamed; pnpm-lock.yaml must record them as-is.
   /hermes-paperclip-adapter/,
+  /@paperclipai\//,
+  // Boundary normalizer that rewrites the upstream adapter's legacy origin/label.
+  /legacy-branding-normalizer/,
   /PAPERCLIP_HOME/,
   /PAPERCLIP_INSTANCE_ID/,
   /dealdesk_required/,
@@ -17,7 +23,7 @@ const ALLOWLIST = [
   /upstream-paperclip/,
   /rebrand-codemod/,
   /rebrand-pass2/,
-  /check-paperclip-rebrand/,
+  /check-legacy-branding/,
   /DEALDESK_MIGRATION_SHIM/,
   /paperclip\.theme/,
   /legacy-home-migration/,
@@ -28,8 +34,8 @@ const ALLOWLIST = [
   /schema: paperclip/,
   /agentcompanies/,
   /Agent Companies/,
-  /github\.com\/dealdesk\/paperclip/,
-  /github\.com\/paperclipai/,
+  /github\.com\/dealdesk\/dealdesk/,
+  /github\.com\/dealdesk\/dealdesk/,
   /FORK\.md/,
   /FORK_REPORT\.md/,
   /docs\/superpowers\/plans/,

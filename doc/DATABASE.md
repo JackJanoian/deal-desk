@@ -13,7 +13,7 @@ pnpm dev
 That's it. On first start the server:
 
 1. Creates a `~/.dealdesk/instances/default/db/` directory for storage
-2. Ensures the `paperclip` database exists
+2. Ensures the `dealdesk` database exists
 3. Runs migrations automatically for empty databases
 4. Starts serving requests
 
@@ -41,7 +41,7 @@ Future issue, comment, and document writes sync references automatically without
 
 This mode is ideal for local development and one-command installs.
 
-Docker note: the Docker quickstart image also uses embedded PostgreSQL by default. Persist `/paperclip` to keep DB state across container restarts (see `doc/DOCKER.md`).
+Docker note: the Docker quickstart image also uses embedded PostgreSQL by default. Persist `/dealdesk` to keep DB state across container restarts (see `doc/DOCKER.md`).
 
 ## 2. Local PostgreSQL (Docker)
 
@@ -56,13 +56,13 @@ This starts PostgreSQL 17 on `localhost:5432`. Then set the connection string:
 ```sh
 cp .env.example .env
 # .env already contains:
-# DATABASE_URL=postgres://dealdesk:dealdesk@localhost:5432/paperclip
+# DATABASE_URL=postgres://dealdesk:dealdesk@localhost:5432/dealdesk
 ```
 
 Run migrations:
 
 ```sh
-DATABASE_URL=postgres://dealdesk:dealdesk@localhost:5432/paperclip \
+DATABASE_URL=postgres://dealdesk:dealdesk@localhost:5432/dealdesk \
   pnpm db:migrate
 ```
 

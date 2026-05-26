@@ -151,8 +151,8 @@ describe("ssh env-lab fixture", () => {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/dealdesk/workspace",
+          remoteWorkspacePath: "/srv/dealdesk/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -173,7 +173,7 @@ describe("ssh env-lab fixture", () => {
     const localDir = path.join(rootDir, "local-overlay");
 
     await mkdir(localDir, { recursive: true });
-    await writeFile(path.join(localDir, "message.txt"), "hello from paperclip\n", "utf8");
+    await writeFile(path.join(localDir, "message.txt"), "hello from dealdesk\n", "utf8");
     await writeFile(path.join(localDir, "._message.txt"), "should never sync\n", "utf8");
 
     const started = await startSshEnvLabFixtureOrSkip(statePath, "SSH env-lab fixture test");
@@ -195,7 +195,7 @@ describe("ssh env-lab fixture", () => {
       `cat ${JSON.stringify(path.posix.join(remoteDir, "message.txt"))} && if [ -e ${JSON.stringify(path.posix.join(remoteDir, "._message.txt"))} ]; then echo appledouble-present; fi`,
     );
 
-    expect(result.stdout).toContain("hello from paperclip");
+    expect(result.stdout).toContain("hello from dealdesk");
     expect(result.stdout).not.toContain("appledouble-present");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);
 
@@ -245,7 +245,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "DealDesk Test"]);
-    await git(localRepo, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localRepo, ["config", "user.email", "test@dealdesk.dev"]);
     await writeFile(path.join(localRepo, "tracked.txt"), "base\n", "utf8");
     await writeFile(path.join(localRepo, "._tracked.txt"), "should stay local only\n", "utf8");
     await git(localRepo, ["add", "tracked.txt"]);
@@ -278,7 +278,7 @@ describe("ssh env-lab fixture", () => {
 
     await runSshCommand(
       config,
-      `cd ${JSON.stringify(started.workspaceDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@paperclip.dev" && git add tracked.txt untracked.txt && git commit -m "remote update" >/dev/null && printf "remote dirty\\n" > tracked.txt && printf "remote extra\\n" > remote-only.txt`,
+      `cd ${JSON.stringify(started.workspaceDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@dealdesk.dev" && git add tracked.txt untracked.txt && git commit -m "remote update" >/dev/null && printf "remote dirty\\n" > tracked.txt && printf "remote extra\\n" > remote-only.txt`,
       { timeoutMs: 30_000, maxBuffer: 256 * 1024 },
     );
 
@@ -305,7 +305,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "DealDesk Test"]);
-    await git(localRepo, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localRepo, ["config", "user.email", "test@dealdesk.dev"]);
     await writeFile(path.join(localRepo, "tracked.txt"), "base\n", "utf8");
     await git(localRepo, ["add", "tracked.txt"]);
     await git(localRepo, ["commit", "-m", "initial"]);
@@ -363,7 +363,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "DealDesk Test"]);
-    await git(localRepo, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localRepo, ["config", "user.email", "test@dealdesk.dev"]);
     await writeFile(path.join(localRepo, "tracked.txt"), "base\n", "utf8");
     await git(localRepo, ["add", "tracked.txt"]);
     await git(localRepo, ["commit", "-m", "initial"]);
@@ -419,7 +419,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "DealDesk Test"]);
-    await git(localRepo, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localRepo, ["config", "user.email", "test@dealdesk.dev"]);
     await writeFile(path.join(localRepo, "tracked.txt"), "base\n", "utf8");
     await git(localRepo, ["add", "tracked.txt"]);
     await git(localRepo, ["commit", "-m", "initial"]);
@@ -441,7 +441,7 @@ describe("ssh env-lab fixture", () => {
 
     await runSshCommand(
       config,
-      `cd ${JSON.stringify(prepared.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@paperclip.dev" && printf "committed\\n" > tracked.txt && git add tracked.txt && git commit -m "remote update" >/dev/null && printf "dirty remote\\n" > tracked.txt`,
+      `cd ${JSON.stringify(prepared.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@dealdesk.dev" && printf "committed\\n" > tracked.txt && git add tracked.txt && git commit -m "remote update" >/dev/null && printf "dirty remote\\n" > tracked.txt`,
       { timeoutMs: 30_000, maxBuffer: 256 * 1024 },
     );
 
@@ -461,7 +461,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "DealDesk Test"]);
-    await git(localRepo, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localRepo, ["config", "user.email", "test@dealdesk.dev"]);
     await writeFile(path.join(localRepo, "tracked.txt"), "base\n", "utf8");
     await git(localRepo, ["add", "tracked.txt"]);
     await git(localRepo, ["commit", "-m", "initial"]);
@@ -489,12 +489,12 @@ describe("ssh env-lab fixture", () => {
 
     await runSshCommand(
       config,
-      `cd ${JSON.stringify(preparedA.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@paperclip.dev" && printf "from run a\\n" > run-a.txt && git add run-a.txt && git commit -m "remote update a" >/dev/null`,
+      `cd ${JSON.stringify(preparedA.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@dealdesk.dev" && printf "from run a\\n" > run-a.txt && git add run-a.txt && git commit -m "remote update a" >/dev/null`,
       { timeoutMs: 30_000, maxBuffer: 256 * 1024 },
     );
     await runSshCommand(
       config,
-      `cd ${JSON.stringify(preparedB.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@paperclip.dev" && printf "from run b\\n" > run-b.txt && git add run-b.txt && git commit -m "remote update b" >/dev/null`,
+      `cd ${JSON.stringify(preparedB.workspaceRemoteDir)} && git config user.name "DealDesk SSH" && git config user.email "ssh@dealdesk.dev" && printf "from run b\\n" > run-b.txt && git add run-b.txt && git commit -m "remote update b" >/dev/null`,
       { timeoutMs: 30_000, maxBuffer: 256 * 1024 },
     );
 

@@ -10,20 +10,11 @@ export const DEALDESK_ENV_FILENAME = ".env";
 const PATH_SEGMENT_RE = /^[a-zA-Z0-9_-]+$/;
 
 let legacyHomeWarningShown = false;
-let legacyEnvWarningShown = false;
 
 export function expandHomePrefix(value: string): string {
   if (value === "~") return os.homedir();
   if (value.startsWith("~/")) return path.resolve(os.homedir(), value.slice(2));
   return value;
-}
-
-function warnLegacyEnv(name: string, replacement: string): void {
-  if (legacyEnvWarningShown) return;
-  legacyEnvWarningShown = true;
-  process.stderr.write(
-    `[dealdesk] Warning: ${name} is deprecated. Use ${replacement} instead.\n`,
-  );
 }
 
 function resolveConfiguredHomeDir(homeOverride?: string): string | null {
@@ -32,12 +23,6 @@ function resolveConfiguredHomeDir(homeOverride?: string): string | null {
 
   const dealDeskHome = process.env.DEALDESK_HOME?.trim();
   if (dealDeskHome) return path.resolve(expandHomePrefix(dealDeskHome));
-
-  const legacyHome = process.env.PAPERCLIP_HOME?.trim();
-  if (legacyHome) {
-    warnLegacyEnv("PAPERCLIP_HOME", "DEALDESK_HOME");
-    return path.resolve(expandHomePrefix(legacyHome));
-  }
 
   return null;
 }
@@ -79,15 +64,6 @@ export function resolveDealDeskInstanceId(instanceIdOverride?: string): string {
       throw new Error(`Invalid DEALDESK_INSTANCE_ID '${dealDeskId}'.`);
     }
     return dealDeskId;
-  }
-
-  const legacyId = process.env.PAPERCLIP_INSTANCE_ID?.trim();
-  if (legacyId) {
-    warnLegacyEnv("PAPERCLIP_INSTANCE_ID", "DEALDESK_INSTANCE_ID");
-    if (!PATH_SEGMENT_RE.test(legacyId)) {
-      throw new Error(`Invalid PAPERCLIP_INSTANCE_ID '${legacyId}'.`);
-    }
-    return legacyId;
   }
 
   return DEFAULT_DEALDESK_INSTANCE_ID;
@@ -156,10 +132,3 @@ export function resolveDefaultBackupDir(input: {
 export function resolveHomeAwarePath(value: string): string {
   return path.resolve(expandHomePrefix(value));
 }
-
-/** @deprecated Use resolveDealDeskHomeDir */
-export const resolvePaperclipHomeDir = resolveDealDeskHomeDir;
-/** @deprecated Use resolveDealDeskInstanceId */
-export const resolvePaperclipInstanceId = resolveDealDeskInstanceId;
-/** @deprecated Use resolveDealDeskInstanceRoot */
-export const resolvePaperclipInstanceRoot = resolveDealDeskInstanceRoot;

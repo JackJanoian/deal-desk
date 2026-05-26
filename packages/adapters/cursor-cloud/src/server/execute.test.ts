@@ -100,7 +100,7 @@ function createContext(
       CURSOR_API_KEY: "cursor-secret",
       EXTRA_FLAG: "1",
     },
-    repoUrl: "https://github.com/dealdesk/paperclip.git",
+    repoUrl: "https://github.com/dealdesk/dealdesk.git",
     repoStartingRef: "main",
     runtimeEnvType: "cloud",
     promptTemplate: "Do the work for {{agent.name}}",
@@ -118,7 +118,7 @@ function createContext(
     runtime,
     config,
     context,
-    authToken: "paperclip-run-jwt",
+    authToken: "dealdesk-run-jwt",
     onLog: async (stream, chunk) => {
       logs.push({ stream, chunk });
     },
@@ -169,7 +169,7 @@ describe("cursor_cloud execute", () => {
       model: { id: "gpt-5.4" },
       cloud: {
         env: { type: "cloud" },
-        repos: [{ url: "https://github.com/dealdesk/paperclip.git", startingRef: "main" }],
+        repos: [{ url: "https://github.com/dealdesk/dealdesk.git", startingRef: "main" }],
       },
     });
     expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).toMatchObject({
@@ -177,7 +177,7 @@ describe("cursor_cloud execute", () => {
       DEALDESK_RUN_ID: "run-heartbeat-1",
       DEALDESK_TASK_ID: "issue-1",
       DEALDESK_WAKE_REASON: "issue_commented",
-      DEALDESK_API_KEY: "paperclip-run-jwt",
+      DEALDESK_API_KEY: "dealdesk-run-jwt",
     });
     expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).not.toHaveProperty("CURSOR_API_KEY");
 
@@ -192,7 +192,7 @@ describe("cursor_cloud execute", () => {
         latestRunId: "run-123",
         runtime: "cloud",
         envType: "cloud",
-        repos: [{ url: "https://github.com/dealdesk/paperclip.git", startingRef: "main" }],
+        repos: [{ url: "https://github.com/dealdesk/dealdesk.git", startingRef: "main" }],
       },
     });
     expect(ctx.logs.map((entry) => entry.chunk)).toEqual(
@@ -219,7 +219,7 @@ describe("cursor_cloud execute", () => {
           latestRunId: "run-previous",
           runtime: "cloud",
           envType: "cloud",
-          repos: [{ url: "https://github.com/dealdesk/paperclip.git", startingRef: "main" }],
+          repos: [{ url: "https://github.com/dealdesk/dealdesk.git", startingRef: "main" }],
         },
       },
     });
@@ -279,7 +279,7 @@ describe("cursor_cloud execute", () => {
           latestRunId: "run-attached",
           runtime: "cloud",
           envType: "cloud",
-          repos: [{ url: "https://github.com/dealdesk/paperclip.git", startingRef: "main" }],
+          repos: [{ url: "https://github.com/dealdesk/dealdesk.git", startingRef: "main" }],
         },
       },
     });
@@ -311,7 +311,7 @@ describe("cursor_cloud execute", () => {
     expect(ctx.meta[0]?.context).toMatchObject({
       cursorCloud: {
         canReuseSession: true,
-        repoUrl: "https://github.com/dealdesk/paperclip.git",
+        repoUrl: "https://github.com/dealdesk/dealdesk.git",
       },
     });
   });

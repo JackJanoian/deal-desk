@@ -116,7 +116,7 @@ async function probeEmbeddedPostgresSupport(): Promise<EmbeddedPostgresTestSuppo
 
   try {
     const created = await createEmbeddedPostgresTestInstance(
-      "paperclip-embedded-postgres-probe-",
+      "dealdesk-embedded-postgres-probe-",
     );
     dataDir = created.dataDir;
     instance = created.instance;

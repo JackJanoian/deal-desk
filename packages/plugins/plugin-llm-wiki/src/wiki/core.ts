@@ -662,7 +662,7 @@ async function resolveDealDeskDistillationLimits(
     maxCharacters: Math.min(requestedMaxCharacters, hardCharacterCap),
     maxCharactersPerSource,
     maxRoutineRunCharacters: routineRunCap,
-    costCentsPerThousandSourceCharacters: normalizeCostRate(config.paperclipCostCentsPerThousandSourceCharacters),
+    costCentsPerThousandSourceCharacters: normalizeCostRate(config.dealdeskCostCentsPerThousandSourceCharacters),
   };
 }
 
@@ -827,7 +827,7 @@ function normalizeDealDeskIngestionProfile(
 
 async function profileForSpace(ctx: PluginContext, companyId: string, space: WikiSpace): Promise<DealDeskIngestionProfileV1> {
   const legacySettings = space.slug === DEFAULT_SPACE_SLUG ? await getEventIngestionSettings(ctx, companyId) : null;
-  return normalizeDealDeskIngestionProfile(space.settings.paperclipIngestion, { space, legacySettings });
+  return normalizeDealDeskIngestionProfile(space.settings.dealdeskIngestion, { space, legacySettings });
 }
 
 function eventIngestionStateKey(companyId: string) {
@@ -1034,7 +1034,7 @@ export async function updateDealDeskIngestionProfile(ctx: PluginContext, input: 
     companyId: input.companyId,
     wikiId,
     spaceSlug: space.slug,
-    settings: { paperclipIngestion: profile },
+    settings: { dealdeskIngestion: profile },
   });
   if (space.slug === DEFAULT_SPACE_SLUG) {
     await ctx.state.set(eventIngestionStateKey(input.companyId), {
@@ -1149,7 +1149,7 @@ export async function updateEventIngestionSettings(
     companyId: input.companyId,
     wikiId: next.wikiId,
     spaceSlug: DEFAULT_SPACE_SLUG,
-    settings: { paperclipIngestion: profile },
+    settings: { dealdeskIngestion: profile },
   });
   return next;
 }
@@ -2296,7 +2296,7 @@ function operationTitleWithSpace(title: string, space: WikiSpace): string {
 }
 
 function operationPromptWithSpaceContext(input: OperationSpaceContext): string {
-  const paperclipDerived = input.operationType === "distill" || input.operationType === "backfill";
+  const dealdeskDerived = input.operationType === "distill" || input.operationType === "backfill";
   return [
     `Plugin operation: ${input.operationType}`,
     `Wiki ID: ${input.wikiId}`,
@@ -2307,7 +2307,7 @@ function operationPromptWithSpaceContext(input: OperationSpaceContext): string {
     "Space isolation requirement:",
     `- Pass wikiId \`${input.wikiId}\` and spaceSlug \`${input.space.slug}\` on every LLM Wiki tool call.`,
     "- Treat all paths in the prompt as relative to this space root.",
-    paperclipDerived
+    dealdeskDerived
       ? "- DealDesk-derived distill/backfill operations are default-space-only in Phase 1. Stop and comment if asked to write DealDesk-derived pages into a non-default space."
       : "- Manual ingest, query, lint, index, and file-as-page operations follow the named destination space. Do not cross into another space unless the operation explicitly asks for a multi-space sweep.",
     "",
@@ -2389,14 +2389,14 @@ function isLlmWikiOperationIssue(issue: Issue): boolean {
   return typeof issue.originKind === "string" && issue.originKind.startsWith(OPERATION_ORIGIN_KIND);
 }
 
-function paperclipDistillationScope(input: { projectId?: string | null; rootIssueId?: string | null }): DealDeskDistillationScope {
+function dealdeskDistillationScope(input: { projectId?: string | null; rootIssueId?: string | null }): DealDeskDistillationScope {
   if (input.rootIssueId) return "root_issue";
   if (input.projectId) return "project";
   return "company";
 }
 
-function paperclipCursorScopeMetadata(input: { projectId?: string | null; rootIssueId?: string | null }) {
-  const sourceScope = paperclipDistillationScope(input);
+function dealdeskCursorScopeMetadata(input: { projectId?: string | null; rootIssueId?: string | null }) {
+  const sourceScope = dealdeskDistillationScope(input);
   const projectId = sourceScope === "project" ? input.projectId ?? null : null;
   const rootIssueId = sourceScope === "root_issue" ? input.rootIssueId ?? null : null;
   return {
@@ -2417,7 +2417,7 @@ async function upsertDealDeskDistillationCursor(ctx: PluginContext, input: {
   metadata?: Record<string, unknown>;
 }): Promise<string> {
   const cursorId = randomUUID();
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = dealdeskCursorScopeMetadata(input);
   await ctx.db.execute(
     `INSERT INTO ${distillationCursorTable(ctx)} AS dealdesk_distillation_cursors
        (id, company_id, wiki_id, space_id, source_scope, scope_key, project_id, root_issue_id, source_kind, last_observed_at, pending_event_count, metadata)
@@ -2618,7 +2618,7 @@ export async function assembleDealDeskSourceBundle(ctx: PluginContext, input: De
   const includeComments = input.includeComments !== false;
   const includeDocuments = input.includeDocuments !== false;
   const issues = await listDealDeskBundleIssues(ctx, input);
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = dealdeskCursorScopeMetadata(input);
   const sourceRefs: DealDeskSourceRef[] = [];
   const warnings: string[] = [];
   const lines = [
@@ -2769,7 +2769,7 @@ export async function createDealDeskDistillationRun(ctx: PluginContext, input: D
   const wikiId = normalizeWikiId(input.wikiId);
   assertDealDeskSourceScopePayload(input);
   const space = await requireDealDeskIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "execute", { requireEnabledProfile: true });
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = dealdeskCursorScopeMetadata(input);
   const limits = await resolveDealDeskDistillationLimitsForSpace(ctx, { ...input, space });
   const cursorId = await upsertDealDeskDistillationCursor(ctx, {
     companyId: input.companyId,
@@ -2899,7 +2899,7 @@ export async function createDealDeskDistillationWorkItem(ctx: PluginContext, inp
   assertDealDeskSourceScopePayload(input);
   const space = await requireDealDeskIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "queue", { requireEnabledProfile: true });
   const itemId = randomUUID();
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = dealdeskCursorScopeMetadata(input);
   if (input.kind === "backfill" && !scope.projectId && !scope.rootIssueId) {
     throw new Error("Backfill work items must target a projectId or rootIssueId; whole-company backfill is not allowed.");
   }
@@ -2959,7 +2959,7 @@ function issueSourceRef(issue: Issue): DealDeskSourceRef {
 }
 
 function projectPageSlug(input: { project: Project | null; rootIssue: Issue | null }): string {
-  return slugify(input.project?.name ?? input.rootIssue?.title ?? "paperclip-project");
+  return slugify(input.project?.name ?? input.rootIssue?.title ?? "dealdesk-project");
 }
 
 function issueDescription(issue: Issue): string {
@@ -3340,7 +3340,7 @@ export async function distillDealDeskProjectPage(ctx: PluginContext, input: Deal
   const wikiId = normalizeWikiId(input.wikiId);
   assertDealDeskSourceScopePayload(input);
   const space = await requireDealDeskIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "execute", { requireEnabledProfile: true });
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = dealdeskCursorScopeMetadata(input);
   const issues = await listDealDeskBundleIssues(ctx, input);
   const project = scope.projectId ? await ctx.projects.get(scope.projectId, input.companyId) : null;
   const rootIssue = scope.rootIssueId ? await ctx.issues.get(scope.rootIssueId, input.companyId) : null;
@@ -3563,7 +3563,7 @@ function rawPathForDealDeskEvent(input: {
 }): string {
   const identifier = input.issue.identifier ?? input.issue.id.slice(0, 8);
   const eventDate = input.event.occurredAt.slice(0, 10);
-  return assertRawPath(`raw/paperclip/${input.sourceKind}/${eventDate}-${slugify(identifier)}-${slugify(input.label)}-${contentHash(input.contents).slice(0, 8)}.md`);
+  return assertRawPath(`raw/dealdesk/${input.sourceKind}/${eventDate}-${slugify(identifier)}-${slugify(input.label)}-${contentHash(input.contents).slice(0, 8)}.md`);
 }
 
 function formatIssueEventSource(issue: Issue, event: PluginEvent, maxCharacters: number): string {
@@ -3671,7 +3671,7 @@ async function recordDealDeskCursorObservation(ctx: PluginContext, input: {
   };
 }
 
-async function paperclipProfileIncludesIssue(ctx: PluginContext, input: {
+async function dealdeskProfileIncludesIssue(ctx: PluginContext, input: {
   companyId: string;
   issue: Issue;
   profile: DealDeskIngestionProfileV1;
@@ -3715,7 +3715,7 @@ async function routeDealDeskCursorObservation(ctx: PluginContext, input: {
     const policy = evaluateDealDeskProfilePolicy({ space, profile, purpose: "event_routing", requireEnabledProfile: true });
     if (!policy.allowed) continue;
     if (!profile.sourceKinds[input.sourceKind]) continue;
-    if (!(await paperclipProfileIncludesIssue(ctx, { companyId: input.companyId, issue: input.issue, profile }))) continue;
+    if (!(await dealdeskProfileIncludesIssue(ctx, { companyId: input.companyId, issue: input.issue, profile }))) continue;
     eligibleProfileCount += 1;
     if (eligibleProfileCount > MAX_DEALDESK_DISTILLATION_FAN_OUT) {
       throw new Error(`DealDesk ingestion fan-out exceeds the hard cap of ${MAX_DEALDESK_DISTILLATION_FAN_OUT} enabled profiles.`);

@@ -426,7 +426,7 @@ describe("WikiRouteSidebar", () => {
     expect(tree().dataset.selectedFile).toBe("wiki/concepts/sidebar-navigation.md");
 
     hostLocation = {
-      pathname: "/PAP/wiki/page/wiki/entities/paperclip.md",
+      pathname: "/PAP/wiki/page/wiki/entities/dealdesk.md",
       search: "",
       hash: "",
     };

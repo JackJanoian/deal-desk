@@ -179,7 +179,7 @@ function printNextSteps(pkg) {
       "Publish succeeded. Next:",
       `1. Open https://www.npmjs.com/package/${pkg.name}`,
       "2. Go to Settings -> Trusted publishing",
-      "3. Add repository dealdesk/paperclip",
+      "3. Add repository dealdesk/dealdesk",
       "4. Set workflow filename to release.yml",
       "5. Optionally enable Settings -> Publishing access -> Require two-factor authentication and disallow tokens",
       "",

@@ -70,8 +70,8 @@ chain. Preferred sources are role-based:
 Local development can use:
 
 ```sh
-aws sso login --profile paperclip-dev
-AWS_PROFILE=paperclip-dev \
+aws sso login --profile dealdesk-dev
+AWS_PROFILE=dealdesk-dev \
 DEALDESK_SECRETS_PROVIDER=aws_secrets_manager \
 DEALDESK_SECRETS_AWS_REGION=us-east-1 \
 DEALDESK_SECRETS_AWS_DEPLOYMENT_ID=dev-local \
@@ -98,9 +98,9 @@ DEALDESK_SECRETS_AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/abcd-...
 Optional environment variables:
 
 ```sh
-DEALDESK_SECRETS_AWS_PREFIX=paperclip
+DEALDESK_SECRETS_AWS_PREFIX=dealdesk
 DEALDESK_SECRETS_AWS_ENVIRONMENT=production
-DEALDESK_SECRETS_AWS_PROVIDER_OWNER=paperclip
+DEALDESK_SECRETS_AWS_PROVIDER_OWNER=dealdesk
 DEALDESK_SECRETS_AWS_ENDPOINT=
 DEALDESK_SECRETS_AWS_DELETE_RECOVERY_DAYS=30
 ```
@@ -108,17 +108,17 @@ DEALDESK_SECRETS_AWS_DELETE_RECOVERY_DAYS=30
 Naming convention for DealDesk-managed secrets:
 
 ```text
-paperclip/{deploymentId}/{companyId}/{secretKey}
+dealdesk/{deploymentId}/{companyId}/{secretKey}
 ```
 
 Tag set for DealDesk-managed secrets:
 
-- `paperclip:managed-by=paperclip`
-- `paperclip:provider-owner=<owner tag>`
-- `paperclip:deployment-id=<deployment id>`
-- `paperclip:company-id=<company id>`
-- `paperclip:secret-key=<secret key>`
-- `paperclip:environment=<environment tag>`
+- `dealdesk:managed-by=dealdesk`
+- `dealdesk:provider-owner=<owner tag>`
+- `dealdesk:deployment-id=<deployment id>`
+- `dealdesk:company-id=<company id>`
+- `dealdesk:secret-key=<secret key>`
+- `dealdesk:environment=<environment tag>`
 
 ## IAM And KMS Assumptions
 
@@ -134,7 +134,7 @@ Minimum IAM boundary:
 - Scope resources to the deployment prefix:
 
 ```text
-arn:aws:secretsmanager:<region>:<account-id>:secret:paperclip/<deployment-id>/*
+arn:aws:secretsmanager:<region>:<account-id>:secret:dealdesk/<deployment-id>/*
 ```
 
 - Allow `kms:Encrypt`, `kms:Decrypt`, `kms:GenerateDataKey`, and `kms:DescribeKey` for the configured deployment CMK.
@@ -156,7 +156,7 @@ Example minimum policy shape:
         "secretsmanager:GetSecretValue",
         "secretsmanager:DeleteSecret"
       ],
-      "Resource": "arn:aws:secretsmanager:<region>:<account-id>:secret:paperclip/<deployment-id>/*"
+      "Resource": "arn:aws:secretsmanager:<region>:<account-id>:secret:dealdesk/<deployment-id>/*"
     },
     {
       "Sid": "DealDeskDeploymentKms",
@@ -220,7 +220,7 @@ operator-approved external prefixes that DealDesk is allowed to consume:
 
 If selected external secrets use customer-managed KMS keys, also grant
 `kms:Decrypt` and `kms:DescribeKey` on those keys. Keep managed write/delete
-permissions scoped to `paperclip/<deployment-id>/*`; do not broaden them for
+permissions scoped to `dealdesk/<deployment-id>/*`; do not broaden them for
 remote import.
 
 Safe scoping guidance:
@@ -234,7 +234,7 @@ Safe scoping guidance:
 
 DealDesk also blocks importing refs under its own managed namespace as
 external references. Use the DealDesk-managed flow for
-`paperclip/{deploymentId}/{companyId}/{secretKey}` resources.
+`dealdesk/{deploymentId}/{companyId}/{secretKey}` resources.
 
 ## Existing AWS Secrets
 
@@ -245,7 +245,7 @@ Use the DealDesk-managed flow when DealDesk should create and rotate the value. 
 secret name is derived from deployment and company scope:
 
 ```text
-paperclip/{deploymentId}/{companyId}/{secretKey}
+dealdesk/{deploymentId}/{companyId}/{secretKey}
 ```
 
 Use the external-reference flow when the secret already exists at an operator-owned path such
@@ -362,7 +362,7 @@ Prerequisites:
 Suggested smoke:
 
 1. Create a test secret through the DealDesk board or API under a throwaway company.
-2. Confirm the resulting AWS secret name matches `paperclip/{deploymentId}/{companyId}/{secretKey}`.
+2. Confirm the resulting AWS secret name matches `dealdesk/{deploymentId}/{companyId}/{secretKey}`.
 3. Rotate the secret once and confirm a new `providerVersionRef` appears in DealDesk metadata.
 4. Resolve the secret through a bound runtime path, not by adding a general-purpose reveal endpoint.
 5. Delete the throwaway secret and confirm AWS schedules deletion with the configured recovery window.

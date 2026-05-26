@@ -13,7 +13,7 @@ If you're using Claude Code, the `.agents/skills/create-agent-adapter` skill can
 
 | | Built-in | External Plugin |
 |---|---|---|
-| Source | Inside `paperclip-fork` | Separate npm package |
+| Source | Inside `dealdesk-fork` | Separate npm package |
 | Distribution | Ships with DealDesk | Independent npm publish |
 | UI parser | Static import | Dynamic load from API |
 | Registration | Edit 3 registries | Auto-loaded at startup |

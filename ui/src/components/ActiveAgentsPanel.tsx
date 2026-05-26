@@ -116,16 +116,14 @@ export function ActiveAgentsPanel({
   });
 
   return (
-    <div>
-      <h3 className="dd-kicker mb-3">
-        {title}
-      </h3>
+    <section>
+      <h3 className="mb-2 text-sm font-medium text-muted-foreground">{title}</h3>
       {runs.length === 0 ? (
-        <div className="dd-panel-subtle rounded-lg p-4">
+        <div className="rounded-lg border border-border/70 bg-card/30 px-4 py-6">
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : (
-        <div className={cn("grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4", gridClassName)}>
+        <div className={cn("-mx-1 flex gap-2 overflow-x-auto pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible xl:grid-cols-4", gridClassName)}>
           {visibleRuns.map((run) => (
             <AgentRunCard
               key={run.id}
@@ -147,7 +145,7 @@ export function ActiveAgentsPanel({
           </Link>
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -170,13 +168,13 @@ const AgentRunCard = memo(function AgentRunCard({
 }) {
   return (
     <div className={cn(
-      "flex h-[320px] flex-col overflow-hidden rounded-xl border shadow-sm",
+      "flex h-[300px] min-w-[min(100%,280px)] flex-col overflow-hidden rounded-lg border sm:min-w-0",
       isActive
-        ? "border-primary/30 bg-primary/[0.055] shadow-[0_16px_42px_color-mix(in_oklab,var(--primary)_13%,transparent)]"
-        : "border-border/70 bg-card/60",
+        ? "border-primary/35 bg-primary/[0.06]"
+        : "border-border/70 bg-card/40",
       className,
     )}>
-      <div className="border-b border-border/60 bg-background/20 px-3 py-3">
+      <div className="border-b border-border/60 px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -204,7 +202,7 @@ const AgentRunCard = memo(function AgentRunCard({
         </div>
 
         {run.issueId && (
-          <div className="mt-3 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-xs">
+          <div className="mt-2 rounded-md border border-border/60 bg-card/50 px-2 py-1.5 text-xs">
             <Link
               to={`/issues/${issue?.identifier ?? run.issueId}`}
               className={cn(

@@ -35,18 +35,18 @@ describe("resolveSessionKey", () => {
         runId: "run-123",
         issueId: null,
       }),
-    ).toBe("agent:meridian:paperclip");
+    ).toBe("agent:meridian:dealdesk");
   });
 
   it("does not double-prefix an already-routed session key", () => {
     expect(
       resolveSessionKey({
         strategy: "fixed",
-        configuredSessionKey: "agent:meridian:paperclip",
+        configuredSessionKey: "agent:meridian:dealdesk",
         agentId: "meridian",
         runId: "run-123",
         issueId: null,
       }),
-    ).toBe("agent:meridian:paperclip");
+    ).toBe("agent:meridian:dealdesk");
   });
 });

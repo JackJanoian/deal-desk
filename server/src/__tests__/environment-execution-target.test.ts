@@ -94,7 +94,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       remoteCwd: DEFAULT_SANDBOX_REMOTE_CWD,
     });
     expect(target).not.toHaveProperty("dealDeskApiUrl");
-    expect(target).not.toHaveProperty("paperclipTransport");
+    expect(target).not.toHaveProperty("dealdeskTransport");
   });
 
   it("passes through a provider-declared sandbox shell command from lease metadata", async () => {
@@ -140,7 +140,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
         host: "ssh.example.test",
         port: 22,
         username: "dealdesk",
-        remoteWorkspacePath: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/dealdesk",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
         strictHostKeyChecking: true,
@@ -165,15 +165,15 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(target).toMatchObject({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclip",
+      remoteCwd: "/srv/dealdesk",
       leaseId: "lease-ssh-1",
       environmentId: "env-ssh-1",
       spec: {
         host: "ssh.example.test",
         port: 22,
         username: "dealdesk",
-        remoteWorkspacePath: "/srv/paperclip",
-        remoteCwd: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/dealdesk",
+        remoteCwd: "/srv/dealdesk",
       },
     });
     expect(target).not.toHaveProperty("dealDeskApiUrl");

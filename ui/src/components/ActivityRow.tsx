@@ -50,30 +50,38 @@ export function ActivityRow({ event, agentMap, userProfileMap, entityNameMap, en
   const actorName = actor?.name ?? (event.actorType === "system" ? "System" : userProfile?.label ?? (event.actorType === "user" ? "Board" : event.actorId || "Unknown"));
   const actorAvatarUrl = userProfile?.image ?? null;
 
-  const inner = (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Avatar size="xs">
-            {actorAvatarUrl && <AvatarImage src={actorAvatarUrl} alt={actorName} />}
-            <AvatarFallback>{deriveInitials(actorName)}</AvatarFallback>
-          </Avatar>
-          <p className="min-w-0 flex-1 truncate">
-            <span>{actorName}</span>
-            <span className="text-muted-foreground"> {verb} </span>
-            {name && <span className="font-medium">{name}</span>}
-            {entityTitle && <span className="text-muted-foreground"> — {entityTitle}</span>}
-          </p>
-        </div>
-        <span className="text-xs text-muted-foreground shrink-0">{timeAgo(event.createdAt)}</span>
-      </div>
+  const referenceSummary = (
+    <div className="mt-1.5 pl-7">
       <IssueReferenceActivitySummary event={event} />
     </div>
   );
 
+  const inner = (
+    <>
+      <div className="flex min-h-10 items-center gap-2.5">
+        <Avatar size="xs" className="shrink-0">
+          {actorAvatarUrl && <AvatarImage src={actorAvatarUrl} alt={actorName} />}
+          <AvatarFallback>{deriveInitials(actorName)}</AvatarFallback>
+        </Avatar>
+        <p className="min-w-0 flex-1 truncate text-sm leading-snug">
+          <span className="text-foreground">{actorName}</span>
+          <span className="text-muted-foreground"> {verb} </span>
+          {name ? <span className="font-medium text-foreground">{name}</span> : null}
+          {entityTitle ? (
+            <span className="text-muted-foreground"> — {entityTitle}</span>
+          ) : null}
+        </p>
+        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+      {referenceSummary}
+    </>
+  );
+
   const classes = cn(
-    "px-4 py-2 text-sm",
-    link && "cursor-pointer hover:bg-accent/50 transition-colors",
+    "px-3 py-2 text-sm sm:px-4",
+    link && "cursor-pointer hover:bg-accent/30 transition-colors",
     className,
   );
 

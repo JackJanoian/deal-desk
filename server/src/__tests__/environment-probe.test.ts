@@ -48,7 +48,7 @@ describe("probeEnvironment", () => {
 
   it("runs an SSH probe and returns the verified remote cwd", async () => {
     mockEnsureSshWorkspaceReady.mockResolvedValue({
-      remoteCwd: "/srv/paperclip/workspace",
+      remoteCwd: "/srv/dealdesk/workspace",
     });
 
     const result = await probeEnvironment({} as any, {
@@ -62,7 +62,7 @@ describe("probeEnvironment", () => {
         host: "ssh.example.test",
         port: 2222,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         privateKeySecretRef: null,
         knownHosts: null,
@@ -81,8 +81,8 @@ describe("probeEnvironment", () => {
         host: "ssh.example.test",
         port: 2222,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
+        remoteCwd: "/srv/dealdesk/workspace",
       },
     });
     expect(mockEnsureSshWorkspaceReady).toHaveBeenCalledTimes(1);
@@ -225,7 +225,7 @@ describe("probeEnvironment", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/dealdesk/workspace",
         privateKey: null,
         privateKeySecretRef: null,
         knownHosts: null,

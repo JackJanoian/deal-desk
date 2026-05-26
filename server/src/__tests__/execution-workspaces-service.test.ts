@@ -132,7 +132,7 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createTempRepo() {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-execution-workspace-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-execution-workspace-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.name", "DealDesk Test"]);
   await runGit(repoRoot, ["config", "user.email", "test@dealdesk.local"]);
@@ -150,7 +150,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
   const tempDirs = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-execution-workspaces-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-execution-workspaces-service-");
     db = createDb(tempDb.connectionString);
     svc = executionWorkspaceService(db);
   }, 20_000);
@@ -200,7 +200,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Primary",
       sourceType: "local_path",
       isPrimary: true,
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/dealdesk-primary",
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
@@ -212,7 +212,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Shared workspace",
       status: "active",
       providerType: "local_fs",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/dealdesk-primary",
       metadata: {
         config: {
           teardownCommand: "bash ./scripts/teardown.sh",
@@ -349,8 +349,8 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
     const worktreePath = path.join(path.dirname(repoRoot), `dealdesk-worktree-${randomUUID()}`);
     tempDirs.add(worktreePath);
 
-    await runGit(repoRoot, ["branch", "paperclip-close-check"]);
-    await runGit(repoRoot, ["worktree", "add", worktreePath, "paperclip-close-check"]);
+    await runGit(repoRoot, ["branch", "dealdesk-close-check"]);
+    await runGit(repoRoot, ["worktree", "add", worktreePath, "dealdesk-close-check"]);
     await fs.writeFile(path.join(worktreePath, "feature.txt"), "hello\n", "utf8");
     await runGit(worktreePath, ["add", "feature.txt"]);
     await runGit(worktreePath, ["commit", "-m", "Feature commit"]);
@@ -402,7 +402,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       providerType: "git_worktree",
       cwd: worktreePath,
       providerRef: worktreePath,
-      branchName: "paperclip-close-check",
+      branchName: "dealdesk-close-check",
       baseRef: "main",
       metadata: {
         createdByRuntime: true,
@@ -422,7 +422,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       isDestructiveCloseAllowed: true,
       git: {
         workspacePath: worktreePath,
-        branchName: "paperclip-close-check",
+        branchName: "dealdesk-close-check",
         baseRef: "main",
         createdByRuntime: true,
         hasDirtyTrackedFiles: false,

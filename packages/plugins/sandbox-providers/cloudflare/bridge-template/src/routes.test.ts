@@ -46,7 +46,7 @@ describe("bridge routes", () => {
       bridgeRequest("/api/dealdesk-sandbox/v1/leases/acquire", {
         environmentId: "env-1",
         runId: "run-1",
-        requestedCwd: "/workspace/paperclip",
+        requestedCwd: "/workspace/dealdesk",
         sessionStrategy: "named",
         sessionId: "dealdesk",
       }),
@@ -71,8 +71,8 @@ describe("bridge routes", () => {
       expect(optionsArg).not.toHaveProperty("stdin");
     }
     expect(sessionExec.mock.calls[0]?.[0]).toContain("mkdir");
-    expect(sessionExec.mock.calls[0]?.[0]).toContain("/workspace/paperclip");
-    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/paperclip/.dealdesk-lease.json");
+    expect(sessionExec.mock.calls[0]?.[0]).toContain("/workspace/dealdesk");
+    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/dealdesk/.dealdesk-lease.json");
   });
 
   it("checks lease sentinels through the named-session exec target on resume", async () => {
@@ -90,7 +90,7 @@ describe("bridge routes", () => {
     const response = await handleBridgeRequest(
       bridgeRequest("/api/dealdesk-sandbox/v1/leases/resume", {
         providerLeaseId: "pc-run-1-abcd1234",
-        requestedCwd: "/workspace/paperclip",
+        requestedCwd: "/workspace/dealdesk",
         sessionStrategy: "named",
         sessionId: "dealdesk",
       }),
@@ -103,7 +103,7 @@ describe("bridge routes", () => {
     expect(typeof commandArg).toBe("string");
     expect(commandArg).toMatch(/^sh -lc /);
     expect(commandArg).toContain("test -s");
-    expect(commandArg).toContain("/workspace/paperclip/.dealdesk-lease.json");
+    expect(commandArg).toContain("/workspace/dealdesk/.dealdesk-lease.json");
     expect(optionsArg).toEqual({ cwd: "/", timeout: expect.any(Number) });
     expect(optionsArg).not.toHaveProperty("args");
   });

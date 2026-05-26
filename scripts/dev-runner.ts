@@ -354,7 +354,7 @@ async function updateDevServiceRecord(extra?: Record<string, unknown>) {
   await writeLocalServiceRegistryRecord({
     version: 1,
     serviceKey: devService.serviceKey,
-    profileKind: "paperclip-dev",
+    profileKind: "dealdesk-dev",
     serviceName: devService.serviceName,
     command: "dev-runner.ts",
     cwd: repoRoot,

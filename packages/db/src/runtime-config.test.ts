@@ -30,19 +30,19 @@ afterEach(() => {
 
 describe("resolveDatabaseTarget", () => {
   it("uses DATABASE_URL from process env first", () => {
-    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/paperclip";
+    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/dealdesk";
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://env-user:env-pass@db.example.com:5432/paperclip",
+      connectionString: "postgres://env-user:env-pass@db.example.com:5432/dealdesk",
       source: "DATABASE_URL",
     });
   });
 
   it("uses DATABASE_URL from repo-local .dealdesk/.env", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-db-runtime-"));
     const projectDir = path.join(tempDir, "repo");
     fs.mkdirSync(projectDir, { recursive: true });
     process.chdir(projectDir);
@@ -52,26 +52,26 @@ describe("resolveDatabaseTarget", () => {
     });
     writeText(
       path.join(projectDir, ".dealdesk", ".env"),
-      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/paperclip"\n',
+      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/dealdesk"\n',
     );
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://file-user:file-pass@db.example.com:6543/paperclip",
+      connectionString: "postgres://file-user:file-pass@db.example.com:6543/dealdesk",
       source: "dealdesk-env",
     });
   });
 
   it("uses config postgres connection string when configured", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
     process.env.DEALDESK_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "postgres",
-        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
+        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/dealdesk",
       },
     });
 
@@ -79,19 +79,19 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
+      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/dealdesk",
       source: "config.database.connectionString",
     });
   });
 
   it("falls back to embedded postgres settings from config", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
     process.env.DEALDESK_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "embedded-postgres",
-        embeddedPostgresDataDir: "~/paperclip-test-db",
+        embeddedPostgresDataDir: "~/dealdesk-test-db",
         embeddedPostgresPort: 55444,
       },
     });
@@ -100,15 +100,15 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "embedded-postgres",
-      dataDir: path.resolve(os.homedir(), "paperclip-test-db"),
+      dataDir: path.resolve(os.homedir(), "dealdesk-test-db"),
       port: 55444,
       source: "embedded-postgres@55444",
     });
   });
 
   it("uses the instance root for a fresh default embedded postgres target", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-home-"));
-    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-cwd-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-db-home-"));
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-db-cwd-"));
     process.chdir(cwd);
     process.env.DEALDESK_HOME = home;
     delete process.env.DEALDESK_CONFIG;

@@ -42,7 +42,7 @@ describeEmbeddedPostgres("dashboard service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-dashboard-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-dashboard-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

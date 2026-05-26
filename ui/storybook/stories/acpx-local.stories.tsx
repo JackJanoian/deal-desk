@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { queryKeys } from "@/lib/queryKeys";
 
 type SchemaWindow = typeof window & {
-  __paperclipStorybookAdapterSchemas?: Record<string, unknown>;
+  __dealdeskStorybookAdapterSchemas?: Record<string, unknown>;
 };
 
 // Mirrors packages/adapters/acpx-local/src/server/config-schema.ts. Inlined so the
@@ -94,8 +94,8 @@ const acpxLocalConfigSchema: AdapterConfigSchema = {
 function installAcpxSchemaMock(): void {
   if (typeof window === "undefined") return;
   const win = window as SchemaWindow;
-  win.__paperclipStorybookAdapterSchemas = {
-    ...(win.__paperclipStorybookAdapterSchemas ?? {}),
+  win.__dealdeskStorybookAdapterSchemas = {
+    ...(win.__dealdeskStorybookAdapterSchemas ?? {}),
     acpx_local: acpxLocalConfigSchema,
   };
 }
@@ -426,7 +426,7 @@ const SKILLS_COMPANY_ID = "company-storybook";
 
 const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
   {
-    id: "skill-paperclip",
+    id: "skill-dealdesk",
     companyId: SKILLS_COMPANY_ID,
     key: "dealdesk",
     slug: "dealdesk",

@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe("home path resolution", () => {
   it("resolves config and runtime data directly under the instance root", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-home-paths-"));
     process.env.DEALDESK_HOME = home;
     delete process.env.DEALDESK_INSTANCE_ID;
 

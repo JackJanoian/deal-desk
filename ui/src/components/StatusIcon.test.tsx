@@ -73,7 +73,8 @@ describe("StatusIcon", () => {
     expect(html).not.toContain('data-blocker-attention-state="covered"');
     expect(html).toContain('data-blocker-attention-state="needs_attention"');
     expect(html).toContain('aria-label="Blocked · 1 blocker needs attention"');
-    expect(html).toContain("border-red-600");
+    expect(html).toContain("bg-red-600");
+    expect(html).not.toContain("border-red-600");
     expect(html).not.toContain("border-dashed");
   });
 
@@ -96,9 +97,26 @@ describe("StatusIcon", () => {
 
     expect(html).toContain('data-blocker-attention-state="needs_attention"');
     expect(html).toContain('aria-label="Blocked · 3 blockers need attention; 2 covered by active work"');
-    expect(html).toContain("border-red-600");
+    expect(html).toContain("bg-red-600");
+    expect(html).not.toContain("border-red-600");
     expect(html).not.toContain("border-cyan-600");
-    expect(html).toContain("bg-cyan-600");
+    expect(html).toContain("bg-cyan-500");
+  });
+
+  it("renders done issues as a filled green circle with a checkmark", () => {
+    const html = renderToStaticMarkup(<StatusIcon status="done" />);
+
+    expect(html).toContain("bg-green-600");
+    expect(html).not.toContain("border-green-600");
+    expect(html).toContain('aria-label="Done"');
+  });
+
+  it("renders plain blocked issues as a filled red circle", () => {
+    const html = renderToStaticMarkup(<StatusIcon status="blocked" />);
+
+    expect(html).toContain("bg-red-600");
+    expect(html).not.toContain("border-red-600");
+    expect(html).toContain('aria-label="Blocked"');
   });
 
   it("renders stalled review chains with amber visual and stalled-leaf copy", () => {

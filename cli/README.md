@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/header.png" alt="DealDesk — runs your business" width="720" />
+  <img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/header.png" alt="DealDesk — runs your business" width="720" />
 </p>
 
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
   <a href="https://dealdesk.ing/docs"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/dealdesk/paperclip"><strong>GitHub</strong></a> &middot;
+  <a href="https://github.com/dealdesk/dealdesk"><strong>GitHub</strong></a> &middot;
   <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
-  <a href="https://x.com/papercliping"><strong>Twitter</strong></a>
+  <a href="https://x.com/dealdesking"><strong>Twitter</strong></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/dealdesk/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/dealdesk/paperclip/stargazers"><img src="https://img.shields.io/github/stars/dealdesk/paperclip?style=flat" alt="Stars" /></a>
+  <a href="https://github.com/dealdesk/dealdesk/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
+  <a href="https://github.com/dealdesk/dealdesk/stargazers"><img src="https://img.shields.io/github/stars/dealdesk/dealdesk?style=flat" alt="Stars" /></a>
   <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/discord/000000000?label=discord" alt="Discord" /></a>
 </p>
 
@@ -52,12 +52,12 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 <table>
   <tr>
     <td align="center"><strong>Works<br/>with</strong></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
   </tr>
 </table>
 
@@ -191,8 +191,8 @@ If you already have DealDesk configured, rerunning `onboard` keeps the existing 
 Or manually:
 
 ```bash
-git clone https://github.com/dealdesk/paperclip.git
-cd paperclip
+git clone https://github.com/dealdesk/dealdesk.git
+cd dealdesk
 pnpm install
 pnpm dev
 ```
@@ -243,7 +243,7 @@ pnpm db:migrate       # Apply migrations
 
 `pnpm test` does not run Playwright. Browser suites stay separate and are typically run only when working on those flows or in CI.
 
-See [doc/DEVELOPING.md](https://github.com/dealdesk/paperclip/blob/master/doc/DEVELOPING.md) for the full development guide.
+See [doc/DEVELOPING.md](https://github.com/dealdesk/dealdesk/blob/master/doc/DEVELOPING.md) for the full development guide.
 
 <br/>
 
@@ -268,20 +268,20 @@ See [doc/DEVELOPING.md](https://github.com/dealdesk/paperclip/blob/master/doc/DE
 
 ## Community & Plugins
 
-Find Plugins and more at [awesome-paperclip](https://github.com/gsxdsm/awesome-paperclip)
+Find Plugins and more at [awesome-dealdesk](https://github.com/gsxdsm/awesome-dealdesk)
 
 ## Contributing
 
-We welcome contributions. See the [contributing guide](https://github.com/dealdesk/paperclip/blob/master/CONTRIBUTING.md) for details.
+We welcome contributions. See the [contributing guide](https://github.com/dealdesk/dealdesk/blob/master/CONTRIBUTING.md) for details.
 
 <br/>
 
 ## Community
 
 - [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
-- [Twitter / X](https://x.com/papercliping) — Follow updates and announcements
-- [GitHub Issues](https://github.com/dealdesk/paperclip/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/dealdesk/paperclip/discussions) — ideas and RFC
+- [Twitter / X](https://x.com/dealdesking) — Follow updates and announcements
+- [GitHub Issues](https://github.com/dealdesk/dealdesk/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/dealdesk/dealdesk/discussions) — ideas and RFC
 
 <br/>
 
@@ -291,14 +291,14 @@ MIT &copy; 2026 DealDesk
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=dealdesk/paperclip&type=date&legend=top-left)](https://www.star-history.com/?repos=dealdesk%2Fpaperclip&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=dealdesk/dealdesk&type=date&legend=top-left)](https://www.star-history.com/?repos=dealdesk%2Fdealdesk&type=date&legend=top-left)
 
 <br/>
 
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/dealdesk/paperclip/master/doc/assets/footer.jpg" alt="" width="720" />
+  <img src="https://raw.githubusercontent.com/dealdesk/dealdesk/master/doc/assets/footer.jpg" alt="" width="720" />
 </p>
 
 <p align="center">

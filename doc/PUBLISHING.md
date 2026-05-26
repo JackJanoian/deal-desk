@@ -221,7 +221,7 @@ After that first publish succeeds:
 
 1. open `https://www.npmjs.com/package/@dealdesk/adapter-acpx-local`
 2. go to `Settings` → `Trusted publishing`
-3. add repository `dealdesk/paperclip`
+3. add repository `dealdesk/dealdesk`
 4. set workflow filename to `release.yml`
 5. optionally go to `Settings` → `Publishing access` and enable `Require two-factor authentication and disallow tokens`
 6. keep `publishFromCi: true` in [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json)

@@ -1,6 +1,6 @@
 .git
 .github
-.paperclip
+.dealdesk
 .pnpm-store
 node_modules
 **/node_modules

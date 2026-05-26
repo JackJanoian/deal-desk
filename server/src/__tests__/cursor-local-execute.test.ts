@@ -258,7 +258,7 @@ describe("cursor execute", () => {
     await fs.mkdir(workspace, { recursive: true });
     await writeFakeCursorCommand(commandPath);
 
-    const paperclipDir = await createSkillDir(runtimeSkillsRoot, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkillsRoot, "dealdesk");
     const asciiHeartDir = await createSkillDir(runtimeSkillsRoot, "ascii-heart");
 
     const previousHome = process.env.HOME;
@@ -287,7 +287,7 @@ describe("cursor execute", () => {
           dealDeskRuntimeSkills: [
             {
               name: "dealdesk",
-              source: paperclipDir,
+              source: dealdeskDir,
               required: true,
               requiredReason: "Bundled DealDesk skills are always available for local adapters.",
             },

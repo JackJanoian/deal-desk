@@ -13,7 +13,7 @@ export interface BridgeLeaseConfig {
   normalizeId: boolean;
 }
 
-export const DEFAULT_REMOTE_CWD = "/workspace/paperclip";
+export const DEFAULT_REMOTE_CWD = "/workspace/dealdesk";
 export const DEFAULT_SESSION_ID = "dealdesk";
 export const DEFAULT_TIMEOUT_MS = 300_000;
 export const LEASE_SENTINEL_FILE = ".dealdesk-lease.json";

@@ -82,7 +82,7 @@ If you change schema/API behavior, update all impacted layers:
 Prefer additive updates. Keep `doc/SPEC.md` and `doc/SPEC-implementation.md` aligned.
 
 5. Keep repo plan docs dated and centralized.
-When you are creating a plan file in the repository itself, new plan documents belong in `doc/plans/` and should use `YYYY-MM-DD-slug.md` filenames. This does not replace DealDesk issue planning: if a DealDesk issue asks for a plan, update the issue `plan` document per the `paperclip` skill instead of creating a repo markdown file.
+When you are creating a plan file in the repository itself, new plan documents belong in `doc/plans/` and should use `YYYY-MM-DD-slug.md` filenames. This does not replace DealDesk issue planning: if a DealDesk issue asks for a plan, update the issue `plan` document per the `dealdesk` skill instead of creating a repo markdown file.
 
 ## 6. Database Change Workflow
 
@@ -179,7 +179,7 @@ A change is done when all are true:
 ## 12. DealDesk Product Notes
 
 - CLI command: `dealdesk` (local dev: `pnpm dealdesk` or `pnpm dev`)
-- Config home: `~/.dealdesk` (legacy `~/.paperclip` supported via migration shim)
+- Config home: `~/.dealdesk` (legacy `~/.dealdesk` supported via migration shim)
 - Workspace packages: `@dealdesk/*`
-- External Hermes adapter: `@henkey/hermes-paperclip-adapter` (npm package name unchanged)
+- External Hermes adapter: `@henkey/hermes-dealdesk-adapter` (npm package name unchanged)
 - Adapter plugins config: `~/.dealdesk/adapter-plugins.json`

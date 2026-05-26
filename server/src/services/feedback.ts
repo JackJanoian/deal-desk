@@ -1314,7 +1314,7 @@ async function buildAgentContext(
         entryBody,
       }
       : null,
-    paperclip: {
+    dealdesk: {
       schemaVersion: FEEDBACK_SCHEMA_VERSION,
       bundleVersion: FEEDBACK_BUNDLE_VERSION,
     },

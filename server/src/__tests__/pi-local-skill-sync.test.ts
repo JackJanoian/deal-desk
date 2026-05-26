@@ -32,7 +32,7 @@ describe("pi local skill sync", () => {
     const runtimeSkills = await makeTempDir("dealdesk-pi-skill-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const ctx = {
       agentId: "agent-1",
@@ -48,7 +48,7 @@ describe("pi local skill sync", () => {
         dealDeskRuntimeSkills: [{
           key: dealdeskKey,
           runtimeName: "dealdesk",
-          source: paperclipDir,
+          source: dealdeskDir,
           sourceKind: "deal_desk",
         }],
       },
@@ -70,7 +70,7 @@ describe("pi local skill sync", () => {
     const runtimeSkills = await makeTempDir("dealdesk-pi-skill-prune-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -86,7 +86,7 @@ describe("pi local skill sync", () => {
         dealDeskRuntimeSkills: [{
           key: dealdeskKey,
           runtimeName: "dealdesk",
-          source: paperclipDir,
+          source: dealdeskDir,
           sourceKind: "deal_desk",
         }],
       },

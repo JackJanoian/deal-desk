@@ -41,7 +41,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
   const seededAgentIds = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-monitor-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-monitor-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

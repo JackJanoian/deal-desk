@@ -141,7 +141,7 @@ function resolveSkillConflictStrategy(mode: ImportMode, collisionStrategy: Compa
 function classifyPortableFileKind(pathValue: string): CompanyPortabilityExportPreviewResult["fileInventory"][number]["kind"] {
   const normalized = normalizePortablePath(pathValue);
   if (normalized === "COMPANY.md") return "company";
-  if (normalized === ".paperclip.yaml" || normalized === ".paperclip.yml") return "extension";
+  if (normalized === ".dealdesk.yaml" || normalized === ".dealdesk.yml") return "extension";
   if (normalized === "README.md") return "readme";
   if (normalized.startsWith("agents/")) return "agent";
   if (normalized.startsWith("skills/")) return "skill";
@@ -1158,11 +1158,11 @@ function buildLegacyRoutineTriggerFromRecurrence(
   const frequency = asString(issue.legacyRecurrence.frequency);
   const interval = asInteger(issue.legacyRecurrence.interval) ?? 1;
   if (!frequency) {
-    errors.push(`Recurring task ${issue.slug} uses legacy recurrence without frequency; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+    errors.push(`Recurring task ${issue.slug} uses legacy recurrence without frequency; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
     return { trigger: null, warnings, errors };
   }
   if (interval < 1) {
-    errors.push(`Recurring task ${issue.slug} uses legacy recurrence with an invalid interval; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+    errors.push(`Recurring task ${issue.slug} uses legacy recurrence with an invalid interval; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
     return { trigger: null, warnings, errors };
   }
 
@@ -1170,7 +1170,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
   const startsAt = asString(schedule?.startsAt);
   const zonedStartsAt = startsAt ? readZonedDateParts(startsAt, timezone) : null;
   if (startsAt && !zonedStartsAt) {
-    errors.push(`Recurring task ${issue.slug} has an invalid legacy startsAt/timezone combination; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+    errors.push(`Recurring task ${issue.slug} has an invalid legacy startsAt/timezone combination; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
     return { trigger: null, warnings, errors };
   }
 
@@ -1178,7 +1178,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
   const hour = asInteger(time?.hour) ?? zonedStartsAt?.hour ?? 0;
   const minute = asInteger(time?.minute) ?? zonedStartsAt?.minute ?? 0;
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-    errors.push(`Recurring task ${issue.slug} uses legacy recurrence with an invalid time; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+    errors.push(`Recurring task ${issue.slug} uses legacy recurrence with an invalid time; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
     return { trigger: null, warnings, errors };
   }
 
@@ -1197,14 +1197,14 @@ function buildLegacyRoutineTriggerFromRecurrence(
     cronExpression = `${minute} ${hourField} * * *`;
   } else if (frequency === "daily") {
     if (Array.isArray(issue.legacyRecurrence.weekdays) || Array.isArray(issue.legacyRecurrence.monthDays) || Array.isArray(issue.legacyRecurrence.months)) {
-      errors.push(`Recurring task ${issue.slug} uses unsupported legacy daily recurrence constraints; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses unsupported legacy daily recurrence constraints; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     const dayField = interval === 1 ? "*" : `*/${interval}`;
     cronExpression = `${minute} ${hour} ${dayField} * *`;
   } else if (frequency === "weekly") {
     if (interval !== 1) {
-      errors.push(`Recurring task ${issue.slug} uses legacy weekly recurrence with interval > 1; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy weekly recurrence with interval > 1; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     const weekdays = Array.isArray(issue.legacyRecurrence.weekdays)
@@ -1219,17 +1219,17 @@ function buildLegacyRoutineTriggerFromRecurrence(
       cronWeekdays.push(zonedStartsAt.weekday);
     }
     if (cronWeekdays.length === 0) {
-      errors.push(`Recurring task ${issue.slug} uses legacy weekly recurrence without weekdays; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy weekly recurrence without weekdays; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     cronExpression = `${minute} ${hour} * * ${normalizeCronList(cronWeekdays)}`;
   } else if (frequency === "monthly") {
     if (interval !== 1) {
-      errors.push(`Recurring task ${issue.slug} uses legacy monthly recurrence with interval > 1; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy monthly recurrence with interval > 1; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     if (Array.isArray(issue.legacyRecurrence.ordinalWeekdays) && issue.legacyRecurrence.ordinalWeekdays.length > 0) {
-      errors.push(`Recurring task ${issue.slug} uses legacy ordinal monthly recurrence; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy ordinal monthly recurrence; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     const monthDays = Array.isArray(issue.legacyRecurrence.monthDays)
@@ -1241,7 +1241,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
       monthDays.push(zonedStartsAt.day);
     }
     if (monthDays.length === 0) {
-      errors.push(`Recurring task ${issue.slug} uses legacy monthly recurrence without monthDays; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy monthly recurrence without monthDays; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     const months = Array.isArray(issue.legacyRecurrence.months)
@@ -1253,7 +1253,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
     cronExpression = `${minute} ${hour} ${normalizeCronList(monthDays.map(String))} ${monthField} *`;
   } else if (frequency === "yearly") {
     if (interval !== 1) {
-      errors.push(`Recurring task ${issue.slug} uses legacy yearly recurrence with interval > 1; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy yearly recurrence with interval > 1; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     const months = Array.isArray(issue.legacyRecurrence.months)
@@ -1273,12 +1273,12 @@ function buildLegacyRoutineTriggerFromRecurrence(
       monthDays.push(zonedStartsAt.day);
     }
     if (months.length === 0 || monthDays.length === 0) {
-      errors.push(`Recurring task ${issue.slug} uses legacy yearly recurrence without month/monthDay anchors; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+      errors.push(`Recurring task ${issue.slug} uses legacy yearly recurrence without month/monthDay anchors; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
       return { trigger: null, warnings, errors };
     }
     cronExpression = `${minute} ${hour} ${normalizeCronList(monthDays.map(String))} ${normalizeCronList(months.map(String))} *`;
   } else {
-    errors.push(`Recurring task ${issue.slug} uses unsupported legacy recurrence frequency "${frequency}"; add .paperclip.yaml routines.${issue.slug}.triggers.`);
+    errors.push(`Recurring task ${issue.slug} uses unsupported legacy recurrence frequency "${frequency}"; add .dealdesk.yaml routines.${issue.slug}.triggers.`);
     return { trigger: null, warnings, errors };
   }
 
@@ -1675,9 +1675,9 @@ function filterExportFiles(
 }
 
 function findDealDeskExtensionPath(files: Record<string, CompanyPortabilityFileEntry>) {
-  if (typeof files[".paperclip.yaml"] === "string") return ".paperclip.yaml";
-  if (typeof files[".paperclip.yml"] === "string") return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  if (typeof files[".dealdesk.yaml"] === "string") return ".dealdesk.yaml";
+  if (typeof files[".dealdesk.yml"] === "string") return ".dealdesk.yml";
+  return Object.keys(files).find((entry) => entry.endsWith("/.dealdesk.yaml") || entry.endsWith("/.dealdesk.yml")) ?? null;
 }
 
 function ensureMarkdownPath(pathValue: string) {
@@ -1705,7 +1705,7 @@ function normalizePortableConfig(
       key === "promptTemplate" ||
       key === "bootstrapPromptTemplate" || // deprecated — kept for backward compat
       key === "dealdeskSkillSync" ||
-      key === "paperclipSkillSync"
+      key === "dealdeskSkillSync"
     ) continue;
     if (key === "env") continue;
     next[key] = entry;
@@ -2059,7 +2059,7 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "dealdesk/paperclip",
+      repo: "dealdesk/dealdesk",
       path: `skills/${skill.slug}`,
       commit,
       trackingRef: "master",
@@ -2129,8 +2129,8 @@ async function withSkillSourceMetadata(skill: CompanySkill, markdown: string) {
   }
   metadata.skillKey = skill.key;
   metadata.dealDeskSkillKey = skill.key;
-  metadata.paperclip = {
-    ...(isPlainRecord(metadata.paperclip) ? metadata.paperclip : {}),
+  metadata.dealdesk = {
+    ...(isPlainRecord(metadata.dealdesk) ? metadata.dealdesk : {}),
     skillKey: skill.key,
     slug: skill.slug,
   };
@@ -3000,8 +3000,8 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         return (
           relative.endsWith(".md") ||
           relative.startsWith("skills/") ||
-          relative === ".paperclip.yaml" ||
-          relative === ".paperclip.yml"
+          relative === ".dealdesk.yaml" ||
+          relative === ".dealdesk.yml"
         );
       });
     for (const repoPath of candidatePaths) {
@@ -3556,7 +3556,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       dealDeskRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
-    const dealDeskExtensionPath = ".paperclip.yaml";
+    const dealDeskExtensionPath = ".dealdesk.yaml";
     const dealDeskAgents = Object.fromEntries(
       Object.entries(dealDeskAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
@@ -3571,7 +3571,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     );
     files[dealDeskExtensionPath] = buildYamlFile(
       {
-        schema: "paperclip/v1",
+        schema: "dealdesk/v1",
         company: stripEmptyValues({
           brandColor: company.brandColor ?? null,
           logoPath: companyLogoPath,

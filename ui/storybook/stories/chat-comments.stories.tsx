@@ -50,10 +50,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="dealdesk-story__frame overflow-hidden">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div>
-          <div className="paperclip-story__label">{eyebrow}</div>
+          <div className="dealdesk-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
         </div>
       </div>
@@ -771,8 +771,8 @@ function IssueChatMatrix() {
 
 function IssueThreadNoticeReview() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner max-w-4xl">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner max-w-4xl">
         <Section eyebrow="IssueChatThread" title="Workspace changes and stale disposition notices">
           <div className="rounded-lg border border-border bg-background/70 p-4">
             <IssueChatThread
@@ -808,10 +808,10 @@ function IssueThreadNoticeReview() {
 
 function ChatCommentsStories() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">
-        <section className="paperclip-story__frame p-6">
-          <div className="paperclip-story__label">Chat & Comments</div>
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner space-y-6">
+        <section className="dealdesk-story__frame p-6">
+          <div className="dealdesk-story__label">Chat & Comments</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Threaded work conversations</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Fixture-backed coverage for classic issue comments, embedded run chat, and the assistant-style issue chat
@@ -849,8 +849,8 @@ export const FullSurfaceMatrix: Story = {};
 
 export const CommentThreads: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner">
         <CommentThreadMatrix />
       </main>
     </div>
@@ -859,8 +859,8 @@ export const CommentThreads: Story = {
 
 export const LiveRunChat: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner">
         <RunChatMatrix />
       </main>
     </div>
@@ -869,8 +869,8 @@ export const LiveRunChat: Story = {
 
 export const IssueChatWithTimeline: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner">
         <IssueChatMatrix />
       </main>
     </div>

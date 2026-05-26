@@ -192,7 +192,7 @@ describe("claude_local environment diagnostics", () => {
         kind: "remote",
         transport: "sandbox",
         providerKey: "test-provider",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/dealdesk/workspace",
         runner: {
           execute: async () => ({
             exitCode: 0,
@@ -213,7 +213,7 @@ describe("claude_local environment diagnostics", () => {
       result.checks.some(
         (check) =>
           check.code === "claude_cwd_valid" &&
-          check.message === "Working directory is valid: /srv/paperclip/workspace",
+          check.message === "Working directory is valid: /srv/dealdesk/workspace",
       ),
     ).toBe(true);
     expect(result.checks.some((check) => check.code === "claude_cwd_invalid")).toBe(false);
@@ -232,7 +232,7 @@ describe("claude_local environment diagnostics", () => {
         kind: "remote",
         transport: "sandbox",
         providerKey: "cloudflare",
-        remoteCwd: "/workspace/paperclip",
+        remoteCwd: "/workspace/dealdesk",
         runner: {
           execute: async (input) => {
             executeCalls.push({ command: input.command, args: input.args });

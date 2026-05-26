@@ -60,8 +60,8 @@ const payload = {
     ? fs.readdirSync(process.env.CLAUDE_CONFIG_DIR).sort()
     : [],
   dealDeskApiUrl: process.env.DEALDESK_API_URL || null,
-  paperclipApiKey: process.env.DEALDESK_API_KEY || null,
-  paperclipApiBridgeMode: process.env.DEALDESK_API_BRIDGE_MODE || null,
+  dealdeskApiKey: process.env.DEALDESK_API_KEY || null,
+  dealdeskApiBridgeMode: process.env.DEALDESK_API_BRIDGE_MODE || null,
 };
 if (capturePath) {
   fs.writeFileSync(capturePath, JSON.stringify(payload), "utf8");
@@ -92,8 +92,8 @@ type CapturePayload = {
   claudeConfigDir: string | null;
   claudeConfigEntries?: string[];
   dealDeskApiUrl?: string | null;
-  paperclipApiKey?: string | null;
-  paperclipApiBridgeMode?: string | null;
+  dealdeskApiKey?: string | null;
+  dealdeskApiBridgeMode?: string | null;
   appendedSystemPromptFilePath?: string | null;
   appendedSystemPromptFileContents?: string | null;
 };
@@ -652,8 +652,8 @@ describe("claude execute", () => {
       expect(capture.claudeConfigDir).toBe(path.join(remoteWorkspace, ".dealdesk-runtime", "claude", "config"));
       expect(capture.claudeConfigEntries).toContain("settings.json");
       expect(capture.dealDeskApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
-      expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
-      expect(capture.paperclipApiBridgeMode).toBe("queue_v1");
+      expect(capture.dealdeskApiKey).not.toBe("run-jwt-token");
+      expect(capture.dealdeskApiBridgeMode).toBe("queue_v1");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -671,7 +671,7 @@ describe("claude execute", () => {
     const capturePath2 = path.join(root, "capture-2.json");
     const instructionsPath = path.join(root, "AGENTS.md");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     await fs.mkdir(workspace, { recursive: true });
     const dealdeskSkillDir = await createRuntimeSkillDir(runtimeSkillsRoot, "dealdesk");
     await fs.writeFile(instructionsPath, "You are managed instructions.\n", "utf8");
@@ -842,7 +842,7 @@ describe("claude execute", () => {
     const capturePath1 = path.join(root, "capture-before.json");
     const capturePath2 = path.join(root, "capture-after.json");
     const instructionsPath = path.join(root, "AGENTS.md");
-    const dealDeskHome = path.join(root, "paperclip-home");
+    const dealDeskHome = path.join(root, "dealdesk-home");
     const logs: string[] = [];
     await fs.mkdir(workspace, { recursive: true });
     await fs.writeFile(instructionsPath, "Version one instructions.\n", "utf8");

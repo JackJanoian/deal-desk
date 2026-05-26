@@ -494,10 +494,10 @@ function CommandPaletteWithSearchAll({
 
 function SearchStories() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner max-w-[1320px] space-y-6">
-        <section className="paperclip-story__frame p-6">
-          <div className="paperclip-story__label">Search</div>
+    <div className="dealdesk-story">
+      <main className="dealdesk-story__inner max-w-[1320px] space-y-6">
+        <section className="dealdesk-story__frame p-6">
+          <div className="dealdesk-story__label">Search</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Full search page and Command K handoff</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Snippet-forward results, scope tabs, match-source chips, and the supporting empty / loading / initial
@@ -505,41 +505,41 @@ function SearchStories() {
           </p>
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">/search</div>
+        <section className="dealdesk-story__frame overflow-hidden">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">Results, query &ldquo;auth flake&rdquo;</h2>
           </div>
           <SearchPagePreview response={fixtureResponse} state="results" query="auth flake" />
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">/search</div>
+        <section className="dealdesk-story__frame overflow-hidden">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">Initial state — no query</h2>
           </div>
           <SearchPagePreview response={fixtureResponse} state="initial" query="" />
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">/search</div>
+        <section className="dealdesk-story__frame overflow-hidden">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">Loading skeleton</h2>
           </div>
           <SearchPagePreview response={fixtureResponse} state="loading" query="auth flake" />
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">/search</div>
+        <section className="dealdesk-story__frame overflow-hidden">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">No results state</h2>
           </div>
           <SearchPagePreview response={{ ...fixtureResponse, results: [], countsByType: { issue: 0, agent: 0, project: 0 } }} state="empty" query="ghostbuster" />
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden p-4">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">Match-source chips</div>
+        <section className="dealdesk-story__frame overflow-hidden p-4">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">Match-source chips</div>
             <h2 className="mt-1 text-lg font-semibold">Type-coded chip variants</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 p-2">
@@ -551,9 +551,9 @@ function SearchStories() {
           </div>
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden p-4">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">Cmd+K palette</div>
+        <section className="dealdesk-story__frame overflow-hidden p-4">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">Cmd+K palette</div>
             <h2 className="mt-1 text-lg font-semibold">Search-all row with quick results</h2>
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -572,9 +572,9 @@ function SearchStories() {
           </div>
         </section>
 
-        <section className="paperclip-story__frame overflow-hidden p-4">
-          <div className="paperclip-story__title-block">
-            <div className="paperclip-story__label">Search result row</div>
+        <section className="dealdesk-story__frame overflow-hidden p-4">
+          <div className="dealdesk-story__title-block">
+            <div className="dealdesk-story__label">Search result row</div>
             <h2 className="mt-1 text-lg font-semibold">Issue, agent, project rows</h2>
           </div>
           <div className="flex w-full max-w-[960px] flex-col gap-y-1">

@@ -124,7 +124,7 @@ async function createRuntimeSkill(root: string, input: {
   runtimeName?: string;
   body?: string;
 }) {
-  const runtimeName = input.runtimeName ?? "paperclip-test-skill";
+  const runtimeName = input.runtimeName ?? "dealdesk-test-skill";
   const key = input.key ?? `company/${runtimeName}`;
   const source = path.join(root, "skills", runtimeName);
   await fs.mkdir(source, { recursive: true });
@@ -231,7 +231,7 @@ describe("acpx_local execute", () => {
       });
       expect(runtime.closeInputs).toEqual([
         expect.objectContaining({
-          reason: "paperclip completed turn cleanup",
+          reason: "dealdesk completed turn cleanup",
           discardPersistentState: false,
         }),
       ]);
@@ -303,7 +303,7 @@ describe("acpx_local execute", () => {
       ]));
       expect(runtime.closeInputs).toEqual([
         expect.objectContaining({
-          reason: "paperclip config cleanup",
+          reason: "dealdesk config cleanup",
           discardPersistentState: false,
         }),
       ]);
@@ -412,7 +412,7 @@ describe("acpx_local execute", () => {
       expect(runtimes).toHaveLength(2);
       expect(warmHandles.size).toBe(1);
       expect(runtimes.flatMap((runtime) => runtime.closeInputs).filter((input) =>
-        input.reason === "paperclip duplicate warm handle cleanup"
+        input.reason === "dealdesk duplicate warm handle cleanup"
       )).toHaveLength(1);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
@@ -450,7 +450,7 @@ describe("acpx_local execute", () => {
       expect(warmHandles.size).toBe(0);
       expect(runtime.closeInputs).toEqual([
         expect.objectContaining({
-          reason: "paperclip idle cleanup",
+          reason: "dealdesk idle cleanup",
           discardPersistentState: false,
         }),
       ]);

@@ -195,7 +195,7 @@ const PAGES = {
   ],
   sources: [
     { rawPath: "raw/karpathy-llm-wiki.md", title: "Karpathy LLM Wiki gist", sourceType: "url", url: "https://gist.github.com/karpathy/.../llm-wiki", status: "captured", createdAt: "2026-05-01T19:00:00Z" },
-    { rawPath: "raw/paperclip-v1-spec.md", title: "DealDesk V1 spec", sourceType: "file", url: null, status: "captured", createdAt: "2026-05-01T18:30:00Z" },
+    { rawPath: "raw/dealdesk-v1-spec.md", title: "DealDesk V1 spec", sourceType: "file", url: null, status: "captured", createdAt: "2026-05-01T18:30:00Z" },
     { rawPath: "raw/design-doc-2026-04.md", title: "Design doc — April 2026", sourceType: "file", url: null, status: "captured", createdAt: "2026-04-28T14:00:00Z" },
   ],
 };
@@ -218,7 +218,7 @@ The host treats managed resources as fully editable. The operator can rename, ch
   title: "Managed Resources",
   pageType: "concepts",
   backlinks: ["wiki/areas/plugin-runtime.md", "wiki/concepts/origin-kind.md", "wiki/projects/llm-wiki/index.md"],
-  sourceRefs: ["raw/karpathy-llm-wiki.md", "raw/paperclip-v1-spec.md"],
+  sourceRefs: ["raw/karpathy-llm-wiki.md", "raw/dealdesk-v1-spec.md"],
   updatedAt: "2026-05-01T19:30:00Z",
   hash: "deadbeefcafe1234",
 };
@@ -238,7 +238,7 @@ const OPERATIONS = {
       { severity: "backlink", message: "Missing reverse links: managed-resources.md -> wiki/projects/llm-wiki/index.md" },
       { severity: "index", message: "index.md does not list 5 pages created in last 24h" },
     ], affectedPages: [], createdAt: "2026-05-01T18:00:00Z", updatedAt: "2026-05-01T18:02:30Z" },
-    { id: "2939ffffffff", operationType: "ingest", status: "done", hiddenIssueId: "ii-2939", hiddenIssueIdentifier: "PAP-OP-2939", hiddenIssueTitle: "paperclip-v1-spec.md · 3 pages created", hiddenIssueStatus: "done", projectId: "prj-llmw-7e1a", costCents: 2, warnings: [], affectedPages: [{ path: "wiki/areas/control-plane.md" }, { path: "wiki/concepts/managed-resources.md" }, { path: "wiki/concepts/origin-kind.md" }], createdAt: "2026-05-01T18:30:00Z", updatedAt: "2026-05-01T18:32:00Z" },
+    { id: "2939ffffffff", operationType: "ingest", status: "done", hiddenIssueId: "ii-2939", hiddenIssueIdentifier: "PAP-OP-2939", hiddenIssueTitle: "dealdesk-v1-spec.md · 3 pages created", hiddenIssueStatus: "done", projectId: "prj-llmw-7e1a", costCents: 2, warnings: [], affectedPages: [{ path: "wiki/areas/control-plane.md" }, { path: "wiki/concepts/managed-resources.md" }, { path: "wiki/concepts/origin-kind.md" }], createdAt: "2026-05-01T18:30:00Z", updatedAt: "2026-05-01T18:32:00Z" },
     { id: "2934gggggggg", operationType: "ingest", status: "failed", hiddenIssueId: "ii-2934", hiddenIssueIdentifier: "PAP-OP-2934", hiddenIssueTitle: "Internal wiki dump (PDF) · outbound URL not on allowlist", hiddenIssueStatus: "blocked", projectId: "prj-llmw-7e1a", costCents: 0, warnings: [{ message: "outbound URL not on allowlist" }], affectedPages: [], createdAt: "2026-05-01T16:00:00Z", updatedAt: "2026-05-01T16:00:30Z" },
   ],
 };

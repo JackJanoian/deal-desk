@@ -862,7 +862,7 @@ describe("LLM Wiki plugin scaffold", () => {
     mockPageContentsByPath["wiki/concepts/sidebar-navigation.md"] = `---
 title: Sidebar navigation
 type: concept
-tags: [paperclip, wiki]
+tags: [dealdesk, wiki]
 sources:
   - raw/sidebar-notes.md
 created: 2026-05-04
@@ -1612,7 +1612,7 @@ Duplicate headings receive stable suffixes.
       entries: options?.relativePath === "wiki"
         ? [
             { path: "wiki/concepts/agent-memory-layer.md", name: "agent-memory-layer.md", kind: "file", size: 12, modifiedAt },
-            { path: "wiki/entities/paperclip.md", name: "paperclip.md", kind: "file", size: 10, modifiedAt },
+            { path: "wiki/entities/dealdesk.md", name: "dealdesk.md", kind: "file", size: 10, modifiedAt },
             { path: "wiki/projects/llm-wiki/standup.md", name: "standup.md", kind: "file", size: 16, modifiedAt },
           ]
         : [
@@ -1636,7 +1636,7 @@ Duplicate headings receive stable suffixes.
 
     expect(result.pages).toEqual([
       expect.objectContaining({ path: "wiki/concepts/agent-memory-layer.md", title: null }),
-      expect.objectContaining({ path: "wiki/entities/paperclip.md", title: null }),
+      expect.objectContaining({ path: "wiki/entities/dealdesk.md", title: null }),
       expect.objectContaining({ path: "wiki/projects/llm-wiki/standup.md", title: null }),
     ]);
     expect(result.sources).toEqual([
@@ -1873,7 +1873,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: enabledProfile } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { dealdeskIngestion: enabledProfile } });
 
     await harness.emit("issue.created", {}, {
       companyId: COMPANY_ID,
@@ -1914,7 +1914,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: enabledProfile } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { dealdeskIngestion: enabledProfile } });
     await harness.emit("issue.created", {}, {
       companyId: COMPANY_ID,
       entityId: issue.id,
@@ -1926,7 +1926,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: { ...enabledProfile, enabled: false },
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: { ...enabledProfile, enabled: false } } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { dealdeskIngestion: { ...enabledProfile, enabled: false } } });
     await harness.emit("issue.updated", {}, {
       companyId: COMPANY_ID,
       entityId: issue.id,
@@ -2216,7 +2216,7 @@ Duplicate headings receive stable suffixes.
         maxDealDeskRoutineRunCostCents: 1,
         maxDealDeskDistillationTaskCostCents: 1,
         maxDealDeskDistillationProjectCostCents: 1,
-        paperclipCostCentsPerThousandSourceCharacters: 100,
+        dealdeskCostCentsPerThousandSourceCharacters: 100,
       },
     });
     const project = existingProject();

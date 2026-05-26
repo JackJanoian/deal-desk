@@ -124,6 +124,11 @@ import { InlineEditor } from "@/components/InlineEditor";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { Identity } from "@/components/Identity";
 import { IssueReferencePill } from "@/components/IssueReferencePill";
+import { PageHeader } from "@/components/PageHeader";
+import { PageToolbar } from "@/components/PageToolbar";
+import { ListSurface } from "@/components/ListSurface";
+import { StatInline } from "@/components/StatInline";
+import { listRowSelectionClass } from "@/lib/list-row-styles";
 
 /* ------------------------------------------------------------------ */
 /*  Section wrapper                                                    */
@@ -815,6 +820,78 @@ export function DesignGuide() {
             <MetricCard icon={DollarSign} value="$1,234" label="Monthly Cost" description="Under budget" />
             <MetricCard icon={Zap} value="99.9%" label="Uptime" />
           </div>
+        </SubSection>
+      </Section>
+
+      {/* ============================================================ */}
+      {/*  PAGE PRIMITIVES                                              */}
+      {/* ============================================================ */}
+      <Section title="Page Primitives">
+        <p className="text-[12.5px] text-muted-foreground">
+          Shared layout primitives used by the Dashboard, Inbox, and other major screens.
+          They keep page chrome consistent so each page only needs to compose primitives + content.
+        </p>
+
+        <SubSection title="PageHeader">
+          <div className="border border-border/60 rounded-md p-4">
+            <PageHeader
+              eyebrow="Dashboard"
+              title="Acme Corp"
+              description="Overview of agents, work, spend, and approvals."
+              actions={
+                <>
+                  <Button size="sm" variant="outline">Configure</Button>
+                  <Button size="sm">New issue</Button>
+                </>
+              }
+            />
+          </div>
+        </SubSection>
+
+        <SubSection title="PageToolbar">
+          <div className="border border-border/60 rounded-md px-3">
+            <PageToolbar
+              leading={
+                <Tabs defaultValue="mine">
+                  <TabsList variant="line">
+                    <TabsTrigger value="mine">Mine</TabsTrigger>
+                    <TabsTrigger value="recent">Recent</TabsTrigger>
+                    <TabsTrigger value="unread">Unread</TabsTrigger>
+                    <TabsTrigger value="all">All</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              }
+              center={<Input className="h-8 text-xs" placeholder="Search..." />}
+              trailing={
+                <>
+                  <Button variant="outline" size="icon" className="h-8 w-8"><Search className="h-3.5 w-3.5" /></Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8"><Plus className="h-3.5 w-3.5" /></Button>
+                </>
+              }
+            />
+          </div>
+        </SubSection>
+
+        <SubSection title="ListSurface">
+          <ListSurface>
+            {["First row", "Second row", "Third row"].map((label, i) => (
+              <div key={label} className={listRowSelectionClass(i === 1)}>
+                <span className="text-sm">{label}</span>
+                <span className="ml-auto text-xs text-muted-foreground">Just now</span>
+              </div>
+            ))}
+          </ListSurface>
+        </SubSection>
+
+        <SubSection title="StatInline">
+          <ListSurface withoutDividers>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+              <StatInline icon={Bot} label="Agents enabled" value={12} hint="3 running" to="#" />
+              <StatInline icon={CircleDot} label="Tasks in progress" value={48} hint="6 blocked" to="#" />
+              <StatInline icon={DollarSign} label="Month spend" value="$1,234" hint="48% of $2,500" to="#" />
+              <StatInline icon={Zap} label="Pending approvals" value={3} tone="warning" to="#" />
+            </div>
+          </ListSurface>
         </SubSection>
       </Section>
 

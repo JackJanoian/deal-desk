@@ -33,7 +33,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-thread-interactions-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-issue-thread-interactions-");
     db = createDb(tempDb.connectionString);
     issuesSvc = issueService(db);
     interactionsSvc = issueThreadInteractionService(db);

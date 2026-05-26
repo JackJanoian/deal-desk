@@ -33,7 +33,7 @@ describe("cursor local skill sync", () => {
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const ctx = {
       agentId: "agent-1",
@@ -49,7 +49,7 @@ describe("cursor local skill sync", () => {
         dealDeskRuntimeSkills: [{
           key: dealdeskKey,
           runtimeName: "dealdesk",
-          source: paperclipDir,
+          source: dealdeskDir,
           sourceKind: "deal_desk",
         }],
       },
@@ -72,7 +72,7 @@ describe("cursor local skill sync", () => {
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkills, "dealdesk");
     const asciiHeartDir = await createSkillDir(runtimeSkills, "ascii-heart");
 
     const ctx = {
@@ -87,7 +87,7 @@ describe("cursor local skill sync", () => {
           {
             key: "dealdesk",
             runtimeName: "dealdesk",
-            source: paperclipDir,
+            source: dealdeskDir,
             required: true,
             requiredReason: "Bundled DealDesk skills are always available for local adapters.",
             sourceKind: "dealdesk_bundled",
@@ -121,7 +121,7 @@ describe("cursor local skill sync", () => {
     const runtimeSkills = await makeTempDir("dealdesk-cursor-skill-prune-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
+    const dealdeskDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -137,7 +137,7 @@ describe("cursor local skill sync", () => {
         dealDeskRuntimeSkills: [{
           key: dealdeskKey,
           runtimeName: "dealdesk",
-          source: paperclipDir,
+          source: dealdeskDir,
           sourceKind: "deal_desk",
         }],
       },

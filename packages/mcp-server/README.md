@@ -32,52 +32,52 @@ node packages/mcp-server/dist/stdio.js
 
 Read tools:
 
-- `paperclipMe`
-- `paperclipInboxLite`
-- `paperclipListAgents`
-- `paperclipGetAgent`
-- `paperclipListIssues`
-- `paperclipGetIssue`
-- `paperclipGetHeartbeatContext`
-- `paperclipListComments`
-- `paperclipGetComment`
-- `paperclipListIssueApprovals`
-- `paperclipListDocuments`
-- `paperclipGetDocument`
-- `paperclipListDocumentRevisions`
-- `paperclipListProjects`
-- `paperclipGetProject`
-- `paperclipGetIssueWorkspaceRuntime`
-- `paperclipWaitForIssueWorkspaceService`
-- `paperclipListGoals`
-- `paperclipGetGoal`
-- `paperclipListApprovals`
-- `paperclipGetApproval`
-- `paperclipGetApprovalIssues`
-- `paperclipListApprovalComments`
+- `dealdeskMe`
+- `dealdeskInboxLite`
+- `dealdeskListAgents`
+- `dealdeskGetAgent`
+- `dealdeskListIssues`
+- `dealdeskGetIssue`
+- `dealdeskGetHeartbeatContext`
+- `dealdeskListComments`
+- `dealdeskGetComment`
+- `dealdeskListIssueApprovals`
+- `dealdeskListDocuments`
+- `dealdeskGetDocument`
+- `dealdeskListDocumentRevisions`
+- `dealdeskListProjects`
+- `dealdeskGetProject`
+- `dealdeskGetIssueWorkspaceRuntime`
+- `dealdeskWaitForIssueWorkspaceService`
+- `dealdeskListGoals`
+- `dealdeskGetGoal`
+- `dealdeskListApprovals`
+- `dealdeskGetApproval`
+- `dealdeskGetApprovalIssues`
+- `dealdeskListApprovalComments`
 
 Write tools:
 
-- `paperclipCreateIssue`
-- `paperclipUpdateIssue`
-- `paperclipCheckoutIssue`
-- `paperclipReleaseIssue`
-- `paperclipAddComment`
-- `paperclipSuggestTasks`
-- `paperclipAskUserQuestions`
-- `paperclipRequestConfirmation`
-- `paperclipUpsertIssueDocument`
-- `paperclipRestoreIssueDocumentRevision`
-- `paperclipControlIssueWorkspaceServices`
-- `paperclipCreateApproval`
-- `paperclipLinkIssueApproval`
-- `paperclipUnlinkIssueApproval`
-- `paperclipApprovalDecision`
-- `paperclipAddApprovalComment`
+- `dealdeskCreateIssue`
+- `dealdeskUpdateIssue`
+- `dealdeskCheckoutIssue`
+- `dealdeskReleaseIssue`
+- `dealdeskAddComment`
+- `dealdeskSuggestTasks`
+- `dealdeskAskUserQuestions`
+- `dealdeskRequestConfirmation`
+- `dealdeskUpsertIssueDocument`
+- `dealdeskRestoreIssueDocumentRevision`
+- `dealdeskControlIssueWorkspaceServices`
+- `dealdeskCreateApproval`
+- `dealdeskLinkIssueApproval`
+- `dealdeskUnlinkIssueApproval`
+- `dealdeskApprovalDecision`
+- `dealdeskAddApprovalComment`
 
 Escape hatch:
 
-- `paperclipApiRequest`
+- `dealdeskApiRequest`
 
-`paperclipApiRequest` is limited to paths under `/api` and JSON bodies. It is
+`dealdeskApiRequest` is limited to paths under `/api` and JSON bodies. It is
 meant for endpoints that do not yet have a dedicated MCP tool.

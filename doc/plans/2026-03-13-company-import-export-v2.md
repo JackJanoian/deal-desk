@@ -44,9 +44,9 @@ The new direction is:
 2. GitHub repo or local folder as the default source of truth
 3. a vendor-neutral base package spec for agent-company runtimes, not just DealDesk
 4. the company package model is explicitly an extension of Agent Skills
-5. no future dependency on `paperclip.manifest.json`
+5. no future dependency on `dealdesk.manifest.json`
 6. implicit folder discovery by convention for the common case
-7. an always-emitted `.paperclip.yaml` sidecar for high-fidelity DealDesk-specific details
+7. an always-emitted `.dealdesk.yaml` sidecar for high-fidelity DealDesk-specific details
 8. package graph resolution at import time
 9. entity-level import UI with dependency-aware tree selection
 10. `skills.sh` compatibility is a V1 requirement for skill packages and skill installation flows
@@ -134,7 +134,7 @@ Rules:
 - `SKILL.md` stays Agent Skills compatible
 - the company package model is an extension of Agent Skills
 - the base package is vendor-neutral and intended for any agent-company runtime
-- DealDesk-specific fidelity lives in `.paperclip.yaml`
+- DealDesk-specific fidelity lives in `.dealdesk.yaml`
 - DealDesk may resolve and install `SKILL.md` packages, but it must not require a DealDesk-only skill format
 - `skills.sh` compatibility is a V1 requirement, not a future nice-to-have
 
@@ -161,13 +161,13 @@ The repo format should have two layers:
   - implicit folder discovery by convention
   - no DealDesk-only runtime fields by default
 - DealDesk extension:
-  - `.paperclip.yaml`
+  - `.dealdesk.yaml`
   - adapter/runtime/permissions/budget/workspace fidelity
   - emitted by DealDesk tools as a sidecar while the base package stays readable
 
 ### 5.5 Relationship To Current V1 Manifest
 
-`paperclip.manifest.json` is not part of the future package direction.
+`dealdesk.manifest.json` is not part of the future package direction.
 
 This should be treated as a hard cutover in product direction.
 
@@ -380,9 +380,9 @@ Exports should:
 - omit timestamps and counters unless explicitly needed
 - omit secret values
 - omit local absolute paths
-- omit duplicated inline prompt content from `.paperclip.yaml` when `AGENTS.md` already carries the instructions
+- omit duplicated inline prompt content from `.dealdesk.yaml` when `AGENTS.md` already carries the instructions
 - preserve references and attribution
-- emit `.paperclip.yaml` alongside the base package
+- emit `.dealdesk.yaml` alongside the base package
 - express adapter env/secrets as portable env input declarations rather than exported secret binding ids
 - preserve compatible `SKILL.md` content as-is
 

@@ -73,7 +73,7 @@ interface CompanyImportOptions extends BaseClientOptions {
   agents?: string;
   collision?: CompanyCollisionMode;
   ref?: string;
-  paperclipUrl?: string;
+  dealdeskUrl?: string;
   yes?: boolean;
   dryRun?: boolean;
 }
@@ -201,15 +201,15 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isDealDeskYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isDealDeskYaml = baseName === ".dealdesk.yaml" || baseName === ".dealdesk.yml";
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
   return isMarkdown || isDealDeskYaml || Boolean(contentType);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
-  if (files[".paperclip.yaml"] !== undefined) return ".paperclip.yaml";
-  if (files[".paperclip.yml"] !== undefined) return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  if (files[".dealdesk.yaml"] !== undefined) return ".dealdesk.yaml";
+  if (files[".dealdesk.yml"] !== undefined) return ".dealdesk.yml";
+  return Object.keys(files).find((entry) => entry.endsWith("/.dealdesk.yaml") || entry.endsWith("/.dealdesk.yml")) ?? null;
 }
 
 function collectFilesUnderDirectory(
@@ -1275,13 +1275,13 @@ export function registerCompanyCommands(program: Command): void {
       .option("--agents <list>", "Comma-separated agent slugs to import, or all", "all")
       .option("--collision <mode>", "Collision strategy: rename | skip | replace", "rename")
       .option("--ref <value>", "Git ref to use for GitHub imports (branch, tag, or commit)")
-      .option("--paperclip-url <url>", "Alias for --api-base on this command")
+      .option("--dealdesk-url <url>", "Alias for --api-base on this command")
       .option("--yes", "Accept default selection and skip the pre-import confirmation prompt", false)
       .option("--dry-run", "Run preview only without applying", false)
       .action(async (fromPathOrUrl: string, opts: CompanyImportOptions) => {
         try {
-          if (!opts.apiBase?.trim() && opts.paperclipUrl?.trim()) {
-            opts.apiBase = opts.paperclipUrl.trim();
+          if (!opts.apiBase?.trim() && opts.dealdeskUrl?.trim()) {
+            opts.apiBase = opts.dealdeskUrl.trim();
           }
           const ctx = resolveCommandContext(opts);
           const interactiveView = isInteractiveTerminal() && !ctx.json;

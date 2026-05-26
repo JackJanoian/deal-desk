@@ -229,7 +229,7 @@ describe("buildRealizedExecutionWorkspaceFromPersisted", () => {
         name: "PAP-880-thumbs-capture-for-evals-feature",
         status: "active",
         cwd: "/tmp/reused-worktree",
-        repoUrl: "https://example.com/paperclip.git",
+        repoUrl: "https://example.com/dealdesk.git",
         baseRef: "main",
         branchName: "PAP-880-thumbs-capture-for-evals-feature",
         providerType: "git_worktree",

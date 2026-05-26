@@ -198,7 +198,7 @@ describe("worktree helpers", () => {
 
   it("builds isolated config and env paths for a worktree", () => {
     const paths = resolveWorktreeLocalPaths({
-      cwd: "/tmp/paperclip-feature",
+      cwd: "/tmp/dealdesk-feature",
       homeDir: "/tmp/dealdesk-worktrees",
       instanceId: "feature-worktree-support",
     });
@@ -530,7 +530,7 @@ describe("worktree helpers", () => {
         const sourceDbClient = createDb(sourceDb.connectionString);
         await sourceDbClient.insert(authUsers).values({
           id: "user-existing",
-          email: "existing@paperclip.ing",
+          email: "existing@dealdesk.ing",
           name: "Existing User",
           emailVerified: true,
           createdAt: new Date(),
@@ -590,7 +590,7 @@ describe("worktree helpers", () => {
             `postgres://dealdesk:dealdesk@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/dealdesk`,
           );
           const seededUsers = await targetDb.select().from(authUsers);
-          expect(seededUsers.some((row) => row.email === "existing@paperclip.ing")).toBe(true);
+          expect(seededUsers.some((row) => row.email === "existing@dealdesk.ing")).toBe(true);
         } finally {
           await targetPg.stop();
         }
@@ -817,7 +817,7 @@ describe("worktree helpers", () => {
     });
     const sourcePaths = resolveWorktreeLocalPaths({
       cwd: sourceRoot,
-      homeDir: path.join(tempRoot, ".paperclip-source"),
+      homeDir: path.join(tempRoot, ".dealdesk-source"),
       instanceId: "default",
     });
     const originalCwd = process.cwd();
@@ -897,7 +897,7 @@ describe("worktree helpers", () => {
     });
     const sourcePaths = resolveWorktreeLocalPaths({
       cwd: sourceRoot,
-      homeDir: path.join(tempRoot, ".paperclip-source"),
+      homeDir: path.join(tempRoot, ".dealdesk-source"),
       instanceId: "default",
     });
     const originalCwd = process.cwd();
@@ -968,17 +968,17 @@ describe("worktree helpers", () => {
   it("rebinds same-repo workspace paths onto the current worktree root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
+        sourceRepoRoot: "/Users/example/dealdesk",
         targetRepoRoot: "/Users/example/dealdesk-pr-432",
-        workspaceCwd: "/Users/example/paperclip",
+        workspaceCwd: "/Users/example/dealdesk",
       }),
     ).toBe("/Users/example/dealdesk-pr-432");
 
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
+        sourceRepoRoot: "/Users/example/dealdesk",
         targetRepoRoot: "/Users/example/dealdesk-pr-432",
-        workspaceCwd: "/Users/example/paperclip/packages/db",
+        workspaceCwd: "/Users/example/dealdesk/packages/db",
       }),
     ).toBe("/Users/example/dealdesk-pr-432/packages/db");
   });
@@ -986,7 +986,7 @@ describe("worktree helpers", () => {
   it("does not rebind paths outside the source repo root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
+        sourceRepoRoot: "/Users/example/dealdesk",
         targetRepoRoot: "/Users/example/dealdesk-pr-432",
         workspaceCwd: "/Users/example/other-project",
       }),

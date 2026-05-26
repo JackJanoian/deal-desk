@@ -29,7 +29,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-pnpm dealdesk run --data-dir ./tmp/paperclip-dev
+pnpm dealdesk run --data-dir ./tmp/dealdesk-dev
 ```
 
 ## Context Profiles

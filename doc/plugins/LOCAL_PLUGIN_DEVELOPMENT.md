@@ -16,15 +16,15 @@ For the full alpha surface — manifest fields, capabilities, managed agents/pro
 pnpm dealdesk run
 
 # 2. Scaffold a plugin outside the DealDesk repo
-dealdesk plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
+dealdesk plugin init @acme/hello-plugin --output ~/dev/dealdesk-plugins
 
 # 3. Install dependencies and start the watch build
-cd ~/dev/paperclip-plugins/hello-plugin
+cd ~/dev/dealdesk-plugins/hello-plugin
 pnpm install
 pnpm dev
 
 # 4. In another terminal, install the plugin from its absolute path
-dealdesk plugin install ~/dev/paperclip-plugins/hello-plugin
+dealdesk plugin install ~/dev/dealdesk-plugins/hello-plugin
 
 # 5. Confirm it loaded
 dealdesk plugin list
@@ -44,10 +44,10 @@ DealDesk listens on `http://127.0.0.1:3100` by default. The CLI talks to that se
 ### 2. Scaffold the plugin
 
 ```bash
-dealdesk plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
+dealdesk plugin init @acme/hello-plugin --output ~/dev/dealdesk-plugins
 ```
 
-This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@dealdesk/plugin-sdk` from your local DealDesk checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/dealdesk-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@dealdesk/plugin-sdk` from your local DealDesk checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -61,7 +61,7 @@ When `plugin init` finishes, it prints the next four commands literally. You can
 ### 3. Install dependencies and run the watch build
 
 ```bash
-cd ~/dev/paperclip-plugins/hello-plugin
+cd ~/dev/dealdesk-plugins/hello-plugin
 pnpm install
 pnpm dev
 ```
@@ -73,7 +73,7 @@ If your plugin has UI and you want a browser-side dev server with hot module rep
 ### 4. Install from the absolute path
 
 ```bash
-dealdesk plugin install ~/dev/paperclip-plugins/hello-plugin
+dealdesk plugin install ~/dev/dealdesk-plugins/hello-plugin
 ```
 
 The CLI auto-detects local paths (anything that looks absolute, starts with `./`, `../`, or `~`, or resolves to an existing folder relative to the current directory) and sends `{ isLocalPath: true }` to `POST /api/plugins/install` with the resolved absolute path. If you want to be explicit, pass `--local`.
@@ -81,10 +81,10 @@ The CLI auto-detects local paths (anything that looks absolute, starts with `./`
 You will see a confirmation like:
 
 ```
-Installing plugin from local path: /Users/you/dev/paperclip-plugins/hello-plugin
+Installing plugin from local path: /Users/you/dev/dealdesk-plugins/hello-plugin
 ✓ Installed acme.hello-plugin v0.1.0 (ready)
 Local plugin installs run trusted local code from your machine.
-Keep `pnpm dev` running in /Users/you/dev/paperclip-plugins/hello-plugin;
+Keep `pnpm dev` running in /Users/you/dev/dealdesk-plugins/hello-plugin;
 DealDesk watches rebuilt dist output and reloads the plugin worker.
 ```
 

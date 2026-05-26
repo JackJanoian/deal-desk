@@ -55,7 +55,7 @@ OPENAI_API_KEY=... ANTHROPIC_API_KEY=... docker compose -f docker/docker-compose
 Inside the container:
 
 ```sh
-review-checkout-pr dealdesk/paperclip 432
+review-checkout-pr dealdesk/dealdesk 432
 cd /work/checkouts/dealdesk-dealdesk/pr-432
 ```
 
@@ -110,7 +110,7 @@ Notes:
 
 - `pnpm install` can run untrusted lifecycle scripts from the PR. That is why this happens inside the isolated container instead of on your host.
 - If you only want static inspection, do not run install/dev commands.
-- DealDesk's embedded PostgreSQL and local storage stay inside the container home volume via `DEALDESK_HOME=/home/reviewer/.paperclip-review`.
+- DealDesk's embedded PostgreSQL and local storage stay inside the container home volume via `DEALDESK_HOME=/home/reviewer/.dealdesk-review`.
 
 ## Reset state
 

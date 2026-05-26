@@ -16,7 +16,7 @@ Open [http://localhost:3100](http://localhost:3100).
 Defaults:
 
 - Host port: `3100`
-- Data directory: `./data/docker-paperclip`
+- Data directory: `./data/docker-dealdesk`
 
 Override with environment variables:
 
@@ -30,18 +30,18 @@ DEALDESK_PORT=3200 DEALDESK_DATA_DIR=../data/pc \
 ## Manual Docker Build
 
 ```sh
-docker build -t paperclip-local .
+docker build -t dealdesk-local .
 docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e DEALDESK_HOME=/paperclip \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -e DEALDESK_HOME=/dealdesk \
+  -v "$(pwd)/data/docker-dealdesk:/dealdesk" \
+  dealdesk-local
 ```
 
 ## Data Persistence
 
-All data is persisted under the bind mount (`./data/docker-paperclip`):
+All data is persisted under the bind mount (`./data/docker-dealdesk`):
 
 - Embedded PostgreSQL data
 - Uploaded assets
@@ -61,11 +61,11 @@ Pass API keys to enable local adapter runs inside the container:
 docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e DEALDESK_HOME=/paperclip \
+  -e DEALDESK_HOME=/dealdesk \
   -e OPENAI_API_KEY=sk-... \
   -e ANTHROPIC_API_KEY=sk-... \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -v "$(pwd)/data/docker-dealdesk:/dealdesk" \
+  dealdesk-local
 ```
 
 Without API keys, the app runs normally — adapter environment checks will surface missing prerequisites.

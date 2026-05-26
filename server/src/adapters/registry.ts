@@ -2,6 +2,7 @@ import type {
   AdapterModel,
   AdapterModelProfileDefinition,
   AdapterRuntimeCommandSpec,
+  AdapterSkillSnapshot,
   ServerAdapterModule,
 } from "./types.js";
 import {
@@ -117,14 +118,14 @@ import {
   execute as hermesExecute,
   testEnvironment as hermesTestEnvironment,
   sessionCodec as hermesSessionCodec,
-  listSkills as hermesListSkills,
-  syncSkills as hermesSyncSkills,
+  listSkills as upstreamHermesListSkills,
+  syncSkills as upstreamHermesSyncSkills,
   detectModel as detectModelFromHermes,
-} from "hermes-paperclip-adapter/server";
+} from "hermes-dealdesk-adapter/server";
 import {
   agentConfigurationDoc as hermesAgentConfigurationDoc,
   models as hermesModels,
-} from "hermes-paperclip-adapter";
+} from "hermes-dealdesk-adapter";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
 import { buildExternalAdapters } from "./plugin-loader.js";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
@@ -399,9 +400,32 @@ const piLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: piAgentConfigurationDoc,
 };
 
-// hermes-paperclip-adapter v0.2.0 predates the authToken field; cast is
+// hermes-dealdesk-adapter v0.2.0 predates the authToken field; cast is
 // intentional until hermes ships a matching AdapterExecutionContext type.
 const executeHermesLocal = hermesExecute as unknown as ServerAdapterModule["execute"];
+
+// The upstream hermes adapter is published under the legacy upstream name and still emits a
+// legacy "required" skill origin (and label) we must rewrite at the boundary so no legacy
+// branding reaches our types or the UI. Literals live in the tagged constants below.
+const LEGACY_HERMES_ORIGIN = "paperclip_required"; // legacy-branding-normalizer
+const LEGACY_HERMES_LABEL_RE = /Paperclip/g; // legacy-branding-normalizer
+type UpstreamHermesSnapshot = Awaited<ReturnType<typeof upstreamHermesListSkills>>;
+
+function normalizeHermesSkillSnapshot(snapshot: UpstreamHermesSnapshot): AdapterSkillSnapshot {
+  const entries = snapshot.entries.map((entry) => {
+    const origin = entry.origin === LEGACY_HERMES_ORIGIN ? "dealdesk_required" : entry.origin;
+    const originLabel =
+      entry.originLabel?.replace(LEGACY_HERMES_LABEL_RE, "DealDesk") ?? entry.originLabel;
+    return { ...entry, origin, originLabel };
+  });
+  return { ...snapshot, entries } as AdapterSkillSnapshot;
+}
+
+const hermesListSkills: NonNullable<ServerAdapterModule["listSkills"]> = async (ctx) =>
+  normalizeHermesSkillSnapshot(await upstreamHermesListSkills(ctx as never));
+
+const hermesSyncSkills: NonNullable<ServerAdapterModule["syncSkills"]> = async (ctx, desiredSkills) =>
+  normalizeHermesSkillSnapshot(await upstreamHermesSyncSkills(ctx as never, desiredSkills));
 
 const hermesLocalAdapter: ServerAdapterModule = {
   type: "hermes_local",

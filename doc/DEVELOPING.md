@@ -136,13 +136,13 @@ pnpm dealdesk run
 Build and run DealDesk in Docker:
 
 ```sh
-docker build -t paperclip-local .
+docker build -t dealdesk-local .
 docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e DEALDESK_HOME=/paperclip \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -e DEALDESK_HOME=/dealdesk \
+  -v "$(pwd)/data/docker-dealdesk:/dealdesk" \
+  dealdesk-local
 ```
 
 Or use Compose:
@@ -304,7 +304,7 @@ dealdesk worktree init --force
 Repair an already-created repo-managed worktree and reseed its isolated instance from the main default install. Point `--from-config` at the instance config:
 
 ```sh
-cd /path/to/paperclip/.dealdesk/worktrees/PAP-884-ai-commits-component
+cd /path/to/dealdesk/.dealdesk/worktrees/PAP-884-ai-commits-component
 pnpm dealdesk worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
   --from-config ~/.dealdesk/instances/default/config.json
@@ -330,12 +330,12 @@ For an already-created worktree where you want the CLI to decide whether to rebu
 Examples:
 
 ```sh
-# From inside a linked worktree, rebuild missing .paperclip metadata and reseed it from the default instance.
-cd /path/to/paperclip/.dealdesk/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
+# From inside a linked worktree, rebuild missing .dealdesk metadata and reseed it from the default instance.
+cd /path/to/dealdesk/.dealdesk/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 pnpm dealdesk worktree repair
 
 # From the primary checkout, create or repair a linked worktree for a branch under .dealdesk/worktrees/.
-cd /path/to/paperclip
+cd /path/to/dealdesk
 pnpm dealdesk worktree repair --branch PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 ```
 
@@ -358,7 +358,7 @@ Examples:
 
 ```sh
 # From the main repo, reseed a worktree from the current default/master instance.
-cd /path/to/paperclip
+cd /path/to/dealdesk
 pnpm dealdesk worktree reseed \
   --from current \
   --to PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat \
@@ -366,7 +366,7 @@ pnpm dealdesk worktree reseed \
   --yes
 
 # From inside a worktree, reseed it from the default instance config.
-cd /path/to/paperclip/.dealdesk/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
+cd /path/to/dealdesk/.dealdesk/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 pnpm dealdesk worktree reseed \
   --from-instance default \
   --seed-mode full
@@ -610,7 +610,7 @@ Model behavior for this smoke script:
 
 State behavior for this smoke script:
 
-- defaults to isolated config dir `~/.openclaw-paperclip-smoke`
+- defaults to isolated config dir `~/.openclaw-dealdesk-smoke`
 - resets smoke agent state each run by default (`OPENCLAW_RESET_STATE=1`) to avoid stale provider/auth drift
 
 Networking behavior for this smoke script:

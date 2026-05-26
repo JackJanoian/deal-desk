@@ -281,7 +281,7 @@ describeEmbeddedPostgres("dealdesk company import/export e2e", () => {
     tempRoot = mkdtempSync(path.join(os.tmpdir(), "dealdesk-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
-    dealDeskHome = path.join(tempRoot, "paperclip-home");
+    dealDeskHome = path.join(tempRoot, "dealdesk-home");
     cliShellHome = path.join(tempRoot, "shell-home");
     dealDeskInstanceId = "company-cli-e2e";
     mkdirSync(dealDeskHome, { recursive: true });
@@ -443,7 +443,7 @@ describeEmbeddedPostgres("dealdesk company import/export e2e", () => {
     expect(exportResult.ok).toBe(true);
     expect(exportResult.filesWritten).toBeGreaterThan(0);
     expect(readFileSync(path.join(exportDir, "COMPANY.md"), "utf8")).toContain(sourceCompany.name);
-    expect(readFileSync(path.join(exportDir, ".paperclip.yaml"), "utf8")).toContain('schema: "paperclip/v1"');
+    expect(readFileSync(path.join(exportDir, ".dealdesk.yaml"), "utf8")).toContain('schema: "dealdesk/v1"');
 
     const importedNew = await runCliJson<{
       company: { id: string; name: string; action: string };

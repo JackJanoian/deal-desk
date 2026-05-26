@@ -5,7 +5,7 @@ import { createTestHarness } from "../../../packages/plugins/sdk/src/testing.js"
 
 function manifest(capabilities: DealDeskPluginManifestV1["capabilities"]): DealDeskPluginManifestV1 {
   return {
-    id: "paperclip.test-orchestration",
+    id: "dealdesk.test-orchestration",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Test Orchestration",
@@ -77,7 +77,7 @@ describe("plugin SDK orchestration contract", () => {
       blockedByIssueIds: [blockerIssueId],
     });
 
-    expect(created.originKind).toBe("plugin:paperclip.test-orchestration");
+    expect(created.originKind).toBe("plugin:dealdesk.test-orchestration");
     expect(created.originId).toBe("mission-alpha");
     expect(created.billingCode).toBe("mission:alpha");
     expect(created.assigneeUserId).toBe("board-user");
@@ -124,14 +124,14 @@ describe("plugin SDK orchestration contract", () => {
     const created = await harness.ctx.issues.create({
       companyId,
       title: "Generated issue",
-      originKind: "plugin:paperclip.test-orchestration:feature",
+      originKind: "plugin:dealdesk.test-orchestration:feature",
     });
 
-    expect(created.originKind).toBe("plugin:paperclip.test-orchestration:feature");
+    expect(created.originKind).toBe("plugin:dealdesk.test-orchestration:feature");
     await expect(
       harness.ctx.issues.list({
         companyId,
-        originKind: "plugin:paperclip.test-orchestration:feature",
+        originKind: "plugin:dealdesk.test-orchestration:feature",
       }),
     ).resolves.toHaveLength(1);
     await expect(
@@ -140,14 +140,14 @@ describe("plugin SDK orchestration contract", () => {
         title: "Spoofed issue",
         originKind: "plugin:other.plugin:feature",
       }),
-    ).rejects.toThrow("Plugin may only use originKind values under plugin:paperclip.test-orchestration");
+    ).rejects.toThrow("Plugin may only use originKind values under plugin:dealdesk.test-orchestration");
     await expect(
       harness.ctx.issues.update(
         created.id,
         { originKind: "plugin:other.plugin:feature" },
         companyId,
       ),
-    ).rejects.toThrow("Plugin may only use originKind values under plugin:paperclip.test-orchestration");
+    ).rejects.toThrow("Plugin may only use originKind values under plugin:dealdesk.test-orchestration");
   });
 
   it("supports generic plugin operation issue visibility in the test harness", async () => {
@@ -163,7 +163,7 @@ describe("plugin SDK orchestration contract", () => {
       originId: "operation-1",
     });
 
-    expect(created.originKind).toBe("plugin:paperclip.test-orchestration:operation");
+    expect(created.originKind).toBe("plugin:dealdesk.test-orchestration:operation");
     expect(created.originId).toBe("operation-1");
   });
 

@@ -35,7 +35,7 @@ OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-${TMPDIR:-/tmp}}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR%/}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-/tmp}"
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${OPENCLAW_TMP_DIR}/openclaw-paperclip-smoke}"
+OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${OPENCLAW_TMP_DIR}/openclaw-dealdesk-smoke}"
 OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-${OPENCLAW_CONFIG_DIR}/workspace}"
 OPENCLAW_CONTAINER_NAME="${OPENCLAW_CONTAINER_NAME:-openclaw-docker-openclaw-gateway-1}"
 OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-openclaw:local}"
@@ -462,7 +462,7 @@ persist_claimed_key_artifacts() {
   local workspace_dir="${OPENCLAW_CONFIG_DIR%/}/workspace"
   local skill_dir="${OPENCLAW_CONFIG_DIR%/}/skills/dealdesk"
   local claimed_file="${workspace_dir}/dealdesk-claimed-api-key.json"
-  local claimed_raw_file="${workspace_dir}/paperclip-claimed-api-key.raw.json"
+  local claimed_raw_file="${workspace_dir}/dealdesk-claimed-api-key.raw.json"
 
   mkdir -p "$workspace_dir" "$skill_dir"
   local token
@@ -887,7 +887,7 @@ main() {
   wait_http_ready "${DEALDESK_API_URL%/}/api/health" 15 || fail "DealDesk API health endpoint not reachable"
   api_request "GET" "/health"
   assert_status "200"
-  log "paperclip health deploymentMode=$(jq -r '.deploymentMode // "unknown"' <<<"$RESPONSE_BODY") exposure=$(jq -r '.deploymentExposure // "unknown"' <<<"$RESPONSE_BODY")"
+  log "dealdesk health deploymentMode=$(jq -r '.deploymentMode // "unknown"' <<<"$RESPONSE_BODY") exposure=$(jq -r '.deploymentExposure // "unknown"' <<<"$RESPONSE_BODY")"
 
   require_board_auth
   resolve_company_id

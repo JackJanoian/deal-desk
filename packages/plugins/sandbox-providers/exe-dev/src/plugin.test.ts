@@ -94,7 +94,7 @@ describe("exe.dev sandbox provider plugin", () => {
       normalizedConfig: {
         apiKey: null,
         apiUrl: "https://exe.dev/exec",
-        namePrefix: "paperclip-sandbox",
+        namePrefix: "dealdesk-sandbox",
         image: "ubuntu:22.04",
         command: null,
         cpu: 4,
@@ -622,11 +622,11 @@ describe("exe.dev sandbox provider plugin", () => {
         providerLeaseId: "vm-1",
         metadata: {
           sshDest: "vm-1.exe.xyz",
-          remoteCwd: "/srv/paperclip/run-1",
+          remoteCwd: "/srv/dealdesk/run-1",
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
+        localPath: "/local/dealdesk",
         remotePath: undefined,
       },
     });
@@ -635,12 +635,12 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(spawnMock.mock.calls[0]?.[0]).toBe("ssh");
     const sshCommand = String(spawnMock.mock.calls[0]?.[1]?.at(-1) ?? "");
     expect(sshCommand).toContain("mkdir -p");
-    expect(sshCommand).toContain("/srv/paperclip/run-1");
+    expect(sshCommand).toContain("/srv/dealdesk/run-1");
     expect(result).toMatchObject({
-      cwd: "/srv/paperclip/run-1",
+      cwd: "/srv/dealdesk/run-1",
       metadata: {
         provider: "exe-dev",
-        remoteCwd: "/srv/paperclip/run-1",
+        remoteCwd: "/srv/dealdesk/run-1",
       },
     });
   });
@@ -663,12 +663,12 @@ describe("exe.dev sandbox provider plugin", () => {
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
-        remotePath: "/srv/paperclip/remote-fallback",
+        localPath: "/local/dealdesk",
+        remotePath: "/srv/dealdesk/remote-fallback",
       },
     });
 
-    expect(result?.cwd).toBe("/srv/paperclip/remote-fallback");
+    expect(result?.cwd).toBe("/srv/dealdesk/remote-fallback");
   });
 
   it("skips ensureRemoteWorkspace and returns the resolved cwd when no VM metadata is available", async () => {
@@ -683,15 +683,15 @@ describe("exe.dev sandbox provider plugin", () => {
       lease: {
         providerLeaseId: null,
         metadata: {
-          remoteCwd: "/srv/paperclip/no-vm",
+          remoteCwd: "/srv/dealdesk/no-vm",
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
+        localPath: "/local/dealdesk",
       },
     });
 
     expect(spawnMock).not.toHaveBeenCalled();
-    expect(result?.cwd).toBe("/srv/paperclip/no-vm");
+    expect(result?.cwd).toBe("/srv/dealdesk/no-vm");
   });
 });

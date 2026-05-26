@@ -1,6 +1,6 @@
 import type { DealDeskPluginManifestV1 } from "@dealdesk/plugin-sdk";
 
-const PLUGIN_ID = "paperclip.e2b-sandbox-provider";
+const PLUGIN_ID = "dealdesk.e2b-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";
 
 const manifest: DealDeskPluginManifestV1 = {

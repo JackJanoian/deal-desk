@@ -48,7 +48,7 @@ describe("secret provider registry", () => {
   });
 
   it("warns when the local encrypted key file is readable by group or others", async () => {
-    const dir = path.join(os.tmpdir(), `paperclip-secret-provider-${randomBytes(6).toString("hex")}`);
+    const dir = path.join(os.tmpdir(), `dealdesk-secret-provider-${randomBytes(6).toString("hex")}`);
     tmpDirs.push(dir);
     mkdirSync(dir, { recursive: true });
     const keyFile = path.join(dir, "master.key");

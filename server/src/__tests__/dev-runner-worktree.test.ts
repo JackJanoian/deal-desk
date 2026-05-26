@@ -26,7 +26,7 @@ function createTempRoot(prefix: string): string {
 describe("dev-runner worktree env bootstrap", () => {
   it("detects linked git worktrees from .git files", () => {
     const root = createTempRoot("dealdesk-dev-runner-worktree-");
-    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/feature\n", "utf8");
+    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/dealdesk/.git/worktrees/feature\n", "utf8");
 
     expect(isLinkedGitWorktreeCheckout(root)).toBe(true);
   });
@@ -34,7 +34,7 @@ describe("dev-runner worktree env bootstrap", () => {
   it("loads repo-local DealDesk env for initialized worktrees without overriding explicit env", () => {
     const root = createTempRoot("dealdesk-dev-runner-worktree-env-");
     fs.mkdirSync(path.join(root, ".dealdesk"), { recursive: true });
-    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/feature\n", "utf8");
+    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/dealdesk/.git/worktrees/feature\n", "utf8");
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
       [
@@ -65,7 +65,7 @@ describe("dev-runner worktree env bootstrap", () => {
 
   it("reports uninitialized linked worktrees so dev runner can fail fast", () => {
     const root = createTempRoot("dealdesk-dev-runner-worktree-missing-");
-    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/feature\n", "utf8");
+    fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/dealdesk/.git/worktrees/feature\n", "utf8");
 
     expect(bootstrapDevRunnerWorktreeEnv(root, {})).toEqual({
       envPath: resolveWorktreeEnvFilePath(root),

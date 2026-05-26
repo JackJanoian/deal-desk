@@ -284,7 +284,7 @@ Provide board-only destructive action in approval detail:
 - explicit confirmation dialog
 - preserves approval + comment history (audit)
 
-## 8. New Skill: `paperclip-create-agent`
+## 8. New Skill: `dealdesk-create-agent`
 
 Create new skill directory:
 
@@ -344,7 +344,7 @@ New/updated invariants:
 - permission controls
 - approval detail + comments/revision flow in inbox/approvals
 - disapproved agent delete flow
-- `paperclip-create-agent` skill + docs updates
+- `dealdesk-create-agent` skill + docs updates
 
 ## 11. Test Plan
 

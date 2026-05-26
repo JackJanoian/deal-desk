@@ -31,7 +31,7 @@ Both are discoverable through the **Company Store**.
 ```
 modules/
   observability/
-    paperclip.module.json     # manifest (required)
+    dealdesk.module.json     # manifest (required)
     src/
       index.ts                # entry point — exports register function
       routes.ts               # Express router
@@ -45,7 +45,7 @@ modules/
 
 Modules live in a top-level `modules/` directory. Each module is a pnpm workspace package.
 
-### Manifest (`paperclip.module.json`)
+### Manifest (`dealdesk.module.json`)
 
 ```json
 {
@@ -315,7 +315,7 @@ Modules can reference core tables via foreign keys (e.g., `agent_id → agents.i
 On server startup:
 
 ```
-1. Scan modules/ directory for paperclip.module.json manifests
+1. Scan modules/ directory for dealdesk.module.json manifests
 2. Validate each manifest (JSON Schema check on configSchema, required fields)
 3. Check slot conflicts (error if two active modules claim the same slot)
 4. Topological sort by dependencies (if module A requires module B)
@@ -333,7 +333,7 @@ On server startup:
 Module config lives in the server's environment or a config file:
 
 ```jsonc
-// paperclip.config.json (or env vars)
+// dealdesk.config.json (or env vars)
 {
   "modules": {
     "enabled": ["observability", "revenue", "notifications"],
@@ -569,7 +569,7 @@ The Company Store is a registry for discovering and installing modules and templ
       "id": "observability",
       "name": "Observability",
       "description": "Token tracking, cost metrics, and agent performance",
-      "repo": "github:paperclip/mod-observability",
+      "repo": "github:dealdesk/mod-observability",
       "version": "0.1.0",
       "tags": ["metrics", "monitoring", "tokens"]
     }
@@ -579,7 +579,7 @@ The Company Store is a registry for discovering and installing modules and templ
       "id": "startup-in-a-box",
       "name": "Startup in a Box",
       "description": "5-agent startup team",
-      "url": "https://store.paperclip.ing/templates/startup-in-a-box.json",
+      "url": "https://store.dealdesk.ing/templates/startup-in-a-box.json",
       "tags": ["startup", "team"]
     }
   ]
@@ -634,7 +634,7 @@ Add to `@dealdesk/server`:
 1. **HookBus** — Event emitter with `register()` and `emit()`, using `Promise.allSettled`
 2. **Module loader** — Scans `modules/`, validates manifests, calls `register(api)`
 3. **Module API object** — `registerRoutes()`, `on()`, `registerService()`, logger, core service access
-4. **Module config** — `paperclip.config.json` with per-module config, env var interpolation
+4. **Module config** — `dealdesk.config.json` with per-module config, env var interpolation
 5. **Module migration runner** — Extends `db:migrate` to discover and run module migrations
 6. **Emit hooks from core services** — Add `hookBus.emit()` calls to existing CRUD operations
 

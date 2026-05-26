@@ -1548,7 +1548,7 @@ export function readDealDeskSkillSyncPreference(config: Record<string, unknown>)
 } {
   const raw =
     config.dealdeskSkillSync ??
-    (Object.prototype.hasOwnProperty.call(config, "paperclipSkillSync") ? config.paperclipSkillSync : undefined);
+    (Object.prototype.hasOwnProperty.call(config, "dealdeskSkillSync") ? config.dealdeskSkillSync : undefined);
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     return { explicit: false, desiredSkills: [] };
   }
@@ -1613,7 +1613,7 @@ export function writeDealDeskSkillSyncPreference(
   const next = { ...config };
   const raw =
     next.dealdeskSkillSync ??
-    (Object.prototype.hasOwnProperty.call(next, "paperclipSkillSync") ? next.paperclipSkillSync : undefined);
+    (Object.prototype.hasOwnProperty.call(next, "dealdeskSkillSync") ? next.dealdeskSkillSync : undefined);
   const current =
     typeof raw === "object" && raw !== null && !Array.isArray(raw)
       ? { ...(raw as Record<string, unknown>) }

@@ -38,7 +38,7 @@ DealDesk is a monorepo with four main layers.
 ## Repository Structure
 
 ```
-paperclip/
+dealdesk/
 ├── ui/                          # React frontend
 │   ├── src/pages/              # Route pages
 │   ├── src/components/         # React components
@@ -60,7 +60,7 @@ paperclip/
 │       └── codex-local/         # OpenAI Codex adapter
 │
 ├── skills/                      # Agent skills
-│   └── paperclip/               # Core DealDesk skill (heartbeat protocol)
+│   └── dealdesk/               # Core DealDesk skill (heartbeat protocol)
 │
 ├── cli/                         # CLI client
 │   └── src/                     # Setup and control-plane commands

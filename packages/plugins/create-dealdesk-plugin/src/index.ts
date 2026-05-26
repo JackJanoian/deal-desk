@@ -711,7 +711,7 @@ function runCli() {
   const pluginName = process.argv[2];
   if (!pluginName) {
     // eslint-disable-next-line no-console
-    console.error("Usage: create-dealdesk-plugin <name> [--template default|connector|workspace] [--output <dir>] [--sdk-path <paperclip-sdk-path>]");
+    console.error("Usage: create-dealdesk-plugin <name> [--template default|connector|workspace] [--output <dir>] [--sdk-path <dealdesk-sdk-path>]");
     process.exit(1);
   }
 
