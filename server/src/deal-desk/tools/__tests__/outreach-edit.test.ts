@@ -2,6 +2,7 @@ import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { outreachEditHandler } from "../outreach-edit.js";
+import { collectStringParams } from "./helpers/where-introspection.js";
 
 function makeApp(deps: Parameters<typeof outreachEditHandler>[0]) {
   const app = express();
@@ -159,25 +160,6 @@ describe("PATCH /outreach/sends/:id", () => {
     expect(selectParams).toContain("send-B");
     expect(selectParams).not.toContain("co-B");
     expect(lastUpdateWhere).toBeUndefined();
-
-    function collectStringParams(node: unknown, seen = new Set<unknown>()): string[] {
-      if (node === null || node === undefined) return [];
-      if (typeof node === "string") return [node];
-      if (typeof node !== "object") return [];
-      if (seen.has(node)) return [];
-      seen.add(node);
-      const out: string[] = [];
-      const SKIP = new Set(["table", "_", "schema"]);
-      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
-        if (SKIP.has(k)) continue;
-        if (Array.isArray(v)) {
-          for (const item of v) out.push(...collectStringParams(item, seen));
-        } else {
-          out.push(...collectStringParams(v, seen));
-        }
-      }
-      return out;
-    }
   });
 
   it("allows local_trusted board edits without a uuid user id", async () => {

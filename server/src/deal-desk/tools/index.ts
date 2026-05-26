@@ -147,10 +147,21 @@ export function registerDealDeskTools(
 
   parent.delete("/email-accounts/:id", async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    await db
+    const companyId = req.params.companyId as string;
+    const result = await db
       .update(ddEmailAccounts)
       .set({ revokedAt: new Date() })
-      .where(eq(ddEmailAccounts.id, id));
+      .where(
+        and(
+          eq(ddEmailAccounts.id, id),
+          eq(ddEmailAccounts.dealDeskCompanyId, companyId),
+        ),
+      )
+      .returning({ id: ddEmailAccounts.id });
+    if (result.length === 0) {
+      res.status(404).json({ ok: false, reason: "Email account not found" });
+      return;
+    }
     res.status(200).json({ ok: true });
   });
 
