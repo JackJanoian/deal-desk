@@ -174,12 +174,15 @@ describe("POST /outreach/sends/:id/approve", () => {
       contactId: "c-1",
       status: "awaiting_approval" as const,
     };
-    const findFirst = vi.fn(async (_args: unknown) => {
-      // A correctly-scoped handler asks for (id=send-B AND companyId=co-A) -> undefined.
-      // A buggy handler that only filters by id would get the send and proceed.
-      // We emulate the post-fix DB by always returning undefined for this URL,
-      // because no row exists for (send-B, co-A).
-      return undefined;
+    // Conditional mock: emulate a real tenant-scoped DB.
+    // - If the where clause mentions co-A (correct scoped query) -> no such row -> undefined.
+    // - If the where clause does NOT mention co-A (handler is unscoped) -> return the
+    //   seeded SEND row so an unscoped handler would proceed past the 404 and the test
+    //   would fail at the status assertion. This gives the IDOR mock real teeth.
+    const findFirst = vi.fn(async (args: { where: unknown }) => {
+      const params = collectStringParams(args.where);
+      if (params.includes("co-A")) return undefined;
+      return SEND;
     });
     const fakeDb = {
       query: {
