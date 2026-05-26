@@ -38,6 +38,7 @@ export function outreachEditHandler(deps: { db: Db }): RequestHandler {
     }
     const editedByUserId = resolveEditedByUserId(req);
 
+    const companyId = req.params.companyId as string;
     const existing = await deps.db
       .select({
         id: ddOutreachSends.id,
@@ -46,7 +47,12 @@ export function outreachEditHandler(deps: { db: Db }): RequestHandler {
         intermediaryId: ddOutreachSends.intermediaryId,
       })
       .from(ddOutreachSends)
-      .where(eq(ddOutreachSends.id, id))
+      .where(
+        and(
+          eq(ddOutreachSends.id, id),
+          eq(ddOutreachSends.dealDeskCompanyId, companyId),
+        ),
+      )
       .limit(1);
     if (!existing[0]) {
       res.status(404).json({ ok: false, reason: "send not found" });
@@ -96,7 +102,8 @@ export function outreachEditHandler(deps: { db: Db }): RequestHandler {
       .set(patch)
       .where(
         and(
-          eq(ddOutreachSends.id, id as string),
+          eq(ddOutreachSends.id, id),
+          eq(ddOutreachSends.dealDeskCompanyId, companyId),
           eq(ddOutreachSends.status, "awaiting_approval"),
         ),
       );

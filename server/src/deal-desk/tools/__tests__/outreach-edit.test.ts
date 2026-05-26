@@ -91,6 +91,95 @@ describe("PATCH /outreach/sends/:id", () => {
     ).toBe(true);
   });
 
+  it("returns 404 when sendId belongs to a different company (IDOR guard)", async () => {
+    // Conditional mock emulating a tenant-scoped DB:
+    // - If the where clause mentions co-A (correct scoped query) -> no row -> [].
+    // - Otherwise (unscoped) -> return the seeded send so an unscoped handler would
+    //   advance past the 404 and the test would fail.
+    const SEND = {
+      id: "send-B",
+      status: "awaiting_approval" as const,
+      contactId: "c-1",
+      intermediaryId: null,
+      dealDeskCompanyId: "co-B",
+    };
+    const selectLimitFn = vi.fn(async () => [SEND]);
+    let lastSelectWhere: unknown = undefined;
+    let lastUpdateWhere: unknown = undefined;
+    const updateWhereFn = vi.fn(async (clause: unknown) => {
+      lastUpdateWhere = clause;
+      return [];
+    });
+
+    const db: any = {
+      select: () => ({
+        from: () => ({
+          where: (clause: unknown) => {
+            lastSelectWhere = clause;
+            const params = collectStringParams(clause);
+            // Override the default mock based on where-shape
+            if (params.includes("co-A")) {
+              return { limit: vi.fn(async () => []) };
+            }
+            return { limit: selectLimitFn };
+          },
+        }),
+      }),
+      update: () => ({
+        set: () => ({ where: updateWhereFn }),
+      }),
+    };
+
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      (req as any).actor = {
+        type: "board",
+        userId: "11111111-1111-4111-8111-111111111111",
+        source: "session",
+      };
+      next();
+    });
+    app.patch(
+      "/companies/:companyId/outreach/sends/:id",
+      outreachEditHandler({ db }),
+    );
+
+    const res = await request(app)
+      .patch("/companies/co-A/outreach/sends/send-B")
+      .send({ subject: "Hi" });
+    expect(res.status).toBe(404);
+    expect(res.body).toMatchObject({ ok: false });
+    expect(updateWhereFn).not.toHaveBeenCalled();
+
+    // Confirm the handler issued a scoped lookup (where contains co-A + send-B,
+    // never the send's real owner co-B).
+    const selectParams = collectStringParams(lastSelectWhere);
+    expect(selectParams).toContain("co-A");
+    expect(selectParams).toContain("send-B");
+    expect(selectParams).not.toContain("co-B");
+    expect(lastUpdateWhere).toBeUndefined();
+
+    function collectStringParams(node: unknown, seen = new Set<unknown>()): string[] {
+      if (node === null || node === undefined) return [];
+      if (typeof node === "string") return [node];
+      if (typeof node !== "object") return [];
+      if (seen.has(node)) return [];
+      seen.add(node);
+      const out: string[] = [];
+      const SKIP = new Set(["table", "_", "schema"]);
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (SKIP.has(k)) continue;
+        if (Array.isArray(v)) {
+          for (const item of v) out.push(...collectStringParams(item, seen));
+        } else {
+          out.push(...collectStringParams(v, seen));
+        }
+      }
+      return out;
+    }
+  });
+
   it("allows local_trusted board edits without a uuid user id", async () => {
     const app = express();
     app.use(express.json());
