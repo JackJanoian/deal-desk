@@ -50,6 +50,10 @@ export function outreachApproveHandler(deps: ApproveDeps) {
 
   return async (req: Request, res: Response) => {
     const sendId = req.params.id as string;
+    if (req.actor.type !== "board") {
+      res.status(403).json({ ok: false, reason: "Only human users can approve outreach sends" });
+      return;
+    }
     const send = await deps.db.query.ddOutreachSends.findFirst({
       where: and(
         eq(ddOutreachSends.id, sendId),

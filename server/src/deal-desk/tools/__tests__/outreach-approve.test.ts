@@ -128,6 +128,10 @@ describe("POST /outreach/sends/:id/approve", () => {
       update: () => ({ set: () => ({ where: async () => undefined }) }),
     };
     const app = express();
+    app.use((req, _res, next) => {
+      (req as any).actor = { type: "board", userId: "u-1", source: "session" };
+      next();
+    });
     app.post("/outreach/sends/:id/approve", outreachApproveHandler({
       db: fakeDb as never,
       loadClientConfig: async () => ({ clientId: "c", clientSecret: "s" }),
@@ -154,12 +158,43 @@ describe("POST /outreach/sends/:id/approve", () => {
       },
     };
     const app = express();
+    app.use((req, _res, next) => {
+      (req as any).actor = { type: "board", userId: "u-1", source: "session" };
+      next();
+    });
     app.post("/outreach/sends/:id/approve", outreachApproveHandler({
       db: fakeDb as never,
       loadClientConfig: async () => null,
     }));
     const res = await request(app).post("/outreach/sends/s-1/approve");
     expect(res.status).toBe(412);
+  });
+
+  it("returns 403 when actor is an agent (only board may approve)", async () => {
+    const findFirst = vi.fn();
+    const fakeDb = {
+      query: {
+        ddOutreachSends: { findFirst },
+      },
+    };
+    const fakeSendGmail = vi.fn();
+    const app = express();
+    app.use((req, _res, next) => {
+      (req as any).actor = { type: "agent", agentId: "a1", companyId: "co-A" };
+      (req as any).params = { ...(req as any).params, companyId: "co-A" };
+      next();
+    });
+    app.post("/companies/:companyId/outreach/sends/:id/approve", outreachApproveHandler({
+      db: fakeDb as never,
+      loadClientConfig: async () => ({ clientId: "c", clientSecret: "s" }),
+      sendGmail: fakeSendGmail,
+    }));
+    const res = await request(app)
+      .post("/companies/co-A/outreach/sends/send-1/approve");
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({ ok: false });
+    expect(findFirst).not.toHaveBeenCalled();
+    expect(fakeSendGmail).not.toHaveBeenCalled();
   });
 
   it("returns 404 when sendId belongs to a different company (IDOR guard)", async () => {
