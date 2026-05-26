@@ -51,9 +51,10 @@ export function createTargetHandler(db: Db) {
 
       res.status(result.action === "created" ? 201 : 200).json(result);
     } catch (error) {
+      console.error("[deal-desk] create-target failed", { error });
       res.status(500).json({
         ok: false,
-        reason: `Database error: ${error instanceof Error ? error.message : "unknown"}`,
+        reason: "Internal error creating target",
       });
     }
   };
