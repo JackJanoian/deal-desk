@@ -18,6 +18,7 @@ export interface CreateRouterInput {
   loadClientConfig: (companyId: string) => Promise<GmailClientConfig | null>;
   resolveRedirectUri: (req: Request) => string;
   resolveCompanyId: (req: Request) => string | null;
+  authorizeCompanyId: (req: Request, companyId: string) => void;
   deps: { db: Db };
 }
 
@@ -28,6 +29,13 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
     const companyId = input.resolveCompanyId(req);
     if (!companyId) {
       res.status(400).json({ ok: false, reason: "companyId required" });
+      return;
+    }
+    try {
+      input.authorizeCompanyId(req, companyId);
+    } catch (err) {
+      const status = (err as { status?: number }).status ?? 403;
+      res.status(status).json({ ok: false, reason: "forbidden" });
       return;
     }
     const clientConfig = await input.loadClientConfig(companyId);
@@ -65,6 +73,13 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
       return;
     }
     const companyId = state.split(".")[0]!;
+    try {
+      input.authorizeCompanyId(req, companyId);
+    } catch (err) {
+      const status = (err as { status?: number }).status ?? 403;
+      res.status(status).json({ ok: false, reason: "forbidden" });
+      return;
+    }
     const clientConfig = await input.loadClientConfig(companyId);
     if (!clientConfig) {
       res.status(412).send("Gmail OAuth client not configured for this company");

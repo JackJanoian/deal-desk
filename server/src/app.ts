@@ -50,6 +50,7 @@ import { llmRoutes } from "./routes/llms.js";
 import { authRoutes } from "./routes/auth.js";
 import { assetRoutes } from "./routes/assets.js";
 import { accessRoutes } from "./routes/access.js";
+import { assertCompanyAccess } from "./routes/authz.js";
 import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
@@ -250,6 +251,7 @@ export async function createApp(
         (req.query.companyId as string | undefined) ??
         (req as ExpressRequest & { user?: { companyId?: string } }).user?.companyId ??
         null,
+      authorizeCompanyId: (req, companyId) => assertCompanyAccess(req, companyId),
       deps: { db },
     }),
   );
