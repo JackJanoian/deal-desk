@@ -1,30 +1,30 @@
-# Paperclip MCP Server
+# DealDesk MCP Server
 
-Model Context Protocol server for Paperclip.
+Model Context Protocol server for DealDesk.
 
-This package is a thin MCP wrapper over the existing Paperclip REST API. It does
+This package is a thin MCP wrapper over the existing DealDesk REST API. It does
 not talk to the database directly and it does not reimplement business logic.
 
 ## Authentication
 
 The server reads its configuration from environment variables:
 
-- `PAPERCLIP_API_URL` - Paperclip base URL, for example `http://localhost:3100`
-- `PAPERCLIP_API_KEY` - bearer token used for `/api` requests
-- `PAPERCLIP_COMPANY_ID` - optional default company for company-scoped tools
-- `PAPERCLIP_AGENT_ID` - optional default agent for checkout helpers
-- `PAPERCLIP_RUN_ID` - optional run id forwarded on mutating requests
+- `DEALDESK_API_URL` - DealDesk base URL, for example `http://localhost:3100`
+- `DEALDESK_API_KEY` - bearer token used for `/api` requests
+- `DEALDESK_COMPANY_ID` - optional default company for company-scoped tools
+- `DEALDESK_AGENT_ID` - optional default agent for checkout helpers
+- `DEALDESK_RUN_ID` - optional run id forwarded on mutating requests
 
 ## Usage
 
 ```sh
-npx -y @paperclipai/mcp-server
+npx -y @dealdesk/mcp-server
 ```
 
 Or locally in this repo:
 
 ```sh
-pnpm --filter @paperclipai/mcp-server build
+pnpm --filter @dealdesk/mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 

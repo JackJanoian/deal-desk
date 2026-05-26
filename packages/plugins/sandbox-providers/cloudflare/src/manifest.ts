@@ -1,16 +1,16 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/plugin-sdk";
 
 const PLUGIN_ID = "paperclip.cloudflare-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: DealDeskPluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Cloudflare Sandbox Provider",
   description:
     "First-party sandbox provider plugin that provisions Cloudflare sandboxes through an operator-deployed Worker bridge.",
-  author: "Paperclip",
+  author: "DealDesk",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
   entrypoints: {
@@ -22,7 +22,7 @@ const manifest: PaperclipPluginManifestV1 = {
       kind: "sandbox_provider",
       displayName: "Cloudflare Sandbox",
       description:
-        "Runs Paperclip sandbox environments through a Cloudflare Worker bridge backed by the Sandbox SDK and Durable Objects.",
+        "Runs DealDesk sandbox environments through a Cloudflare Worker bridge backed by the Sandbox SDK and Durable Objects.",
       configSchema: {
         type: "object",
         properties: {
@@ -70,7 +70,7 @@ const manifest: PaperclipPluginManifestV1 = {
           },
           sessionId: {
             type: "string",
-            default: "paperclip",
+            default: "dealdesk",
             description: "Named Cloudflare session ID used when sessionStrategy is named.",
           },
           timeoutMs: {

@@ -3,7 +3,7 @@ import { Router, type Request, type Response } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   activityLog,
   executionWorkspaces,
@@ -11,7 +11,7 @@ import {
   issueRelations,
   issues as issueRows,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import {
   addIssueCommentSchema,
   acceptIssueThreadInteractionSchema,
@@ -47,8 +47,8 @@ import {
   type ExecutionWorkspace,
   type IssueRelationIssueSummary,
   type SuccessfulRunHandoffState,
-} from "@paperclipai/shared";
-import { trackAgentTaskCompleted } from "@paperclipai/shared/telemetry";
+} from "@dealdesk/shared";
+import { trackAgentTaskCompleted } from "@dealdesk/shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import type { StorageService } from "../storage/types.js";
 import { validate } from "../middleware/validate.js";
@@ -59,7 +59,6 @@ import {
   companyService,
   companySearchService,
   executionWorkspaceService,
-  goalService,
   heartbeatService,
   issueApprovalService,
   issueRecoveryActionService,
@@ -836,7 +835,6 @@ export function issueRoutes(
   const instanceSettings = instanceSettingsService(db);
   const agentsSvc = agentService(db);
   const projectsSvc = projectService(db);
-  const goalsSvc = goalService(db);
   const issueApprovalsSvc = issueApprovalService(db);
   const recoveryActionsSvc = issueRecoveryActionService(db);
   const executionWorkspacesSvc = executionWorkspaceServiceDirect(db);
@@ -1344,25 +1342,7 @@ export function issueRoutes(
     projectId: string | null;
     goalId: string | null;
   }) {
-    const projectPromise = issue.projectId ? projectsSvc.getById(issue.projectId) : Promise.resolve(null);
-    const directGoalPromise = issue.goalId ? goalsSvc.getById(issue.goalId) : Promise.resolve(null);
-    const [project, directGoal] = await Promise.all([projectPromise, directGoalPromise]);
-
-    if (directGoal) {
-      return { project, goal: directGoal };
-    }
-
-    const projectGoalId = project?.goalId ?? project?.goalIds[0] ?? null;
-    if (projectGoalId) {
-      const projectGoal = await goalsSvc.getById(projectGoalId);
-      return { project, goal: projectGoal };
-    }
-
-    if (!issue.projectId) {
-      const defaultGoal = await goalsSvc.getDefaultCompanyGoal(issue.companyId);
-      return { project, goal: defaultGoal };
-    }
-
+    const project = issue.projectId ? await projectsSvc.getById(issue.projectId) : null;
     return { project, goal: null };
   }
 
@@ -1634,7 +1614,7 @@ export function issueRoutes(
         activeRecoveryAction,
         priority: issue.priority,
         projectId: issue.projectId,
-        goalId: goal?.id ?? issue.goalId,
+        goalId: issue.goalId,
         parentId: issue.parentId,
         blockedBy: relationsWithRecoveryActions.blockedBy,
         blocks: relationsWithRecoveryActions.blocks,
@@ -1659,15 +1639,7 @@ export function issueRoutes(
             targetDate: project.targetDate,
           }
         : null,
-      goal: goal
-        ? {
-            id: goal.id,
-            title: goal.title,
-            status: goal.status,
-            level: goal.level,
-            parentId: goal.parentId,
-          }
-        : null,
+      goal: null,
       commentCursor,
       wakeComment:
         wakeComment && wakeComment.issueId === issue.id
@@ -1746,7 +1718,7 @@ export function issueRoutes(
     const workProducts = await workProductsSvc.listForIssue(issue.id);
     res.json({
       ...issue,
-      goalId: goal?.id ?? issue.goalId,
+      goalId: issue.goalId,
       ancestors,
       ...(blockerAttention ? { blockerAttention } : {}),
       productivityReview,

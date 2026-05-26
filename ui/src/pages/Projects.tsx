@@ -42,9 +42,15 @@ export function Projects() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+          <p className="text-sm text-muted-foreground">
+            Group issues, budgets, and workspaces under shared delivery goals.
+          </p>
+        </div>
         <Button size="sm" variant="outline" onClick={openNewProject}>
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
           Add Project
         </Button>
       </div>
@@ -61,26 +67,37 @@ export function Projects() {
       )}
 
       {projects.length > 0 && (
-        <div className="border border-border">
-          {projects.map((project) => (
-            <EntityRow
-              key={project.id}
-              title={project.name}
-              subtitle={project.description ?? undefined}
-              to={projectUrl(project)}
-              trailing={
-                <div className="flex items-center gap-3">
-                  {project.targetDate && (
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(project.targetDate)}
-                    </span>
-                  )}
-                  <StatusBadge status={project.status} />
-                </div>
-              }
-            />
-          ))}
-        </div>
+        <>
+          <p className="text-xs text-muted-foreground">
+            {projects.length} project{projects.length !== 1 ? "s" : ""}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45">
+            {projects.map((project) => (
+              <EntityRow
+                key={project.id}
+                title={project.name}
+                subtitle={project.description ?? undefined}
+                to={projectUrl(project)}
+                leading={
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: project.color ?? "#6366f1" }}
+                  />
+                }
+                trailing={
+                  <div className="flex items-center gap-3">
+                    {project.targetDate && (
+                      <span className="hidden text-xs text-muted-foreground sm:inline">
+                        {formatDate(project.targetDate)}
+                      </span>
+                    )}
+                    <StatusBadge status={project.status} />
+                  </div>
+                }
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

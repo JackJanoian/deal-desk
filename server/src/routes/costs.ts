@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   createCostEventSchema,
   createFinanceEventSchema,
@@ -7,7 +7,7 @@ import {
   resolveBudgetIncidentSchema,
   updateBudgetSchema,
   upsertBudgetPolicySchema,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { validate } from "../middleware/validate.js";
 import {
   budgetService,
@@ -135,6 +135,33 @@ export function costRoutes(
     const range = parseCostDateRange(req.query);
     const summary = await costs.summary(companyId, range);
     res.json(summary);
+  });
+
+  router.post("/companies/:companyId/costs/backfill", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+
+    const dryRun = req.body?.dryRun === true;
+    const limitRaw = req.body?.limit;
+    const limit = typeof limitRaw === "number" && Number.isFinite(limitRaw) ? limitRaw : undefined;
+
+    const { costBackfillService } = await import("../services/cost-backfill.js");
+    const result = await costBackfillService(db, budgetHooks).backfillCompany(companyId, { dryRun, limit });
+
+    const actor = getActorInfo(req);
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      action: "cost.backfill",
+      entityType: "company",
+      entityId: companyId,
+      details: result,
+    });
+
+    res.json(result);
   });
 
   router.get("/issues/:id/cost-summary", async (req, res) => {

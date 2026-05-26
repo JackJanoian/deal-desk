@@ -2,8 +2,8 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { and, eq, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { ddIntermediaries } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddIntermediaries } from "@dealdesk/db";
 
 export const createIntermediaryInputSchema = z.object({
   name: z.string().min(1).max(255),
@@ -65,7 +65,7 @@ export function createIntermediaryHandler(db: Db) {
         : sql`${ddIntermediaries.firm} IS NULL`;
       const existing = await db.query.ddIntermediaries.findFirst({
         where: and(
-          eq(ddIntermediaries.paperclipCompanyId, companyId),
+          eq(ddIntermediaries.dealDeskCompanyId, companyId),
           eq(ddIntermediaries.name, input.name),
           firmCond,
         ),
@@ -85,7 +85,7 @@ export function createIntermediaryHandler(db: Db) {
       const inserted = await db
         .insert(ddIntermediaries)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: input.name,
           firm: input.firm,
           title: input.title,

@@ -1,11 +1,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/shared";
 import {
   JsonRpcCallError,
   type HostToWorkerMethods,
-} from "@paperclipai/plugin-sdk";
+} from "@dealdesk/plugin-sdk";
 import {
   appendStderrExcerpt,
   createPluginWorkerHandle,
@@ -16,13 +16,13 @@ const FIXTURES_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "fi
 const DELAYED_WORKER_ENTRYPOINT = path.join(FIXTURES_DIR, "plugin-worker-delayed.cjs");
 const TERMINATED_WORKER_ENTRYPOINT = path.join(FIXTURES_DIR, "plugin-worker-terminated.cjs");
 
-const TEST_MANIFEST: PaperclipPluginManifestV1 = {
+const TEST_MANIFEST: DealDeskPluginManifestV1 = {
   id: "test.plugin",
   apiVersion: 1,
   version: "1.0.0",
   displayName: "Test plugin",
   description: "Test plugin",
-  author: "Paperclip",
+  author: "DealDesk",
   categories: ["automation"],
   capabilities: [],
   entrypoints: { worker: "dist/worker.js" },

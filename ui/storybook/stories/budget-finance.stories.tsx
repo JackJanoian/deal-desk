@@ -9,7 +9,7 @@ import type {
   FinanceByKind,
   FinanceEvent,
   QuotaWindow,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { AlertTriangle, CheckCircle2, CreditCard, Landmark, ReceiptText, WalletCards } from "lucide-react";
 import { AccountingModelCard } from "@/components/AccountingModelCard";
 import { BillerSpendCard } from "@/components/BillerSpendCard";
@@ -105,7 +105,7 @@ const budgetIncidents: BudgetIncident[] = [
     policyId: "budget-project-app",
     scopeType: "project",
     scopeId: "project-board-ui",
-    scopeName: "Paperclip App",
+    scopeName: "DealDesk App",
     metric: "billed_cents",
     windowKind: "calendar_month_utc",
     windowStart,
@@ -126,7 +126,7 @@ const budgetIncidents: BudgetIncident[] = [
     policyId: "budget-company",
     scopeType: "company",
     scopeId: "company-storybook",
-    scopeName: "Paperclip Storybook",
+    scopeName: "DealDesk Storybook",
     metric: "billed_cents",
     windowKind: "calendar_month_utc",
     windowStart,

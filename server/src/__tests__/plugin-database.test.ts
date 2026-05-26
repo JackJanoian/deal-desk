@@ -12,8 +12,8 @@ import {
   pluginDatabaseNamespaces,
   pluginMigrations,
   plugins,
-} from "@paperclipai/db";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+} from "@dealdesk/db";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -90,7 +90,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   let packageRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-plugin-db-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -113,8 +113,8 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     await tempDb?.cleanup();
   });
 
-  async function createPluginPackage(manifest: PaperclipPluginManifestV1, migrationSql: string) {
-    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-package-"));
+  async function createPluginPackage(manifest: DealDeskPluginManifestV1, migrationSql: string) {
+    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "dealdesk-plugin-package-"));
     packageRoots.push(packageRoot);
     const migrationsDir = path.join(packageRoot, manifest.database!.migrationsDir);
     await mkdir(migrationsDir, { recursive: true });
@@ -123,7 +123,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   }
 
   async function createInstallablePluginPackage(
-    pluginManifest: PaperclipPluginManifestV1,
+    pluginManifest: DealDeskPluginManifestV1,
     migrationSql: string,
   ) {
     const packageRoot = await createPluginPackage(pluginManifest, migrationSql);
@@ -133,7 +133,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
         name: pluginManifest.id,
         version: pluginManifest.version,
         type: "module",
-        paperclipPlugin: { manifest: "./manifest.js" },
+        dealDeskPlugin: { manifest: "./manifest.js" },
       }),
       "utf8",
     );
@@ -147,7 +147,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return packageRoot;
   }
 
-  async function installPluginRecord(manifest: PaperclipPluginManifestV1) {
+  async function installPluginRecord(manifest: DealDeskPluginManifestV1) {
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
@@ -163,14 +163,14 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return pluginId;
   }
 
-  function manifest(pluginKey = "paperclip.dbtest"): PaperclipPluginManifestV1 {
+  function manifest(pluginKey = "paperclip.dbtest"): DealDeskPluginManifestV1 {
     return {
       id: pluginKey,
       apiVersion: 1,
       version: "1.0.0",
       displayName: "DB Test",
       description: "Exercises restricted plugin database access.",
-      author: "Paperclip",
+      author: "DealDesk",
       categories: ["automation"],
       capabilities: [
         "database.namespace.migrate",
@@ -228,7 +228,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     const issueId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: "TST",
       requireBoardApprovalForNewAgents: false,
     });
@@ -339,7 +339,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
 
   it("refreshes persisted manifests from disk before activation", async () => {
     const staleManifest = manifest("paperclip.refresh");
-    const refreshedManifest: PaperclipPluginManifestV1 = {
+    const refreshedManifest: DealDeskPluginManifestV1 = {
       ...staleManifest,
       database: {
         ...staleManifest.database!,
@@ -408,8 +408,8 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       expect.objectContaining({
         databaseNamespace: namespace,
         env: {
-          PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
-          PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+          DEALDESK_DEPLOYMENT_MODE: "authenticated",
+          DEALDESK_DEPLOYMENT_EXPOSURE: "public",
         },
         manifest: expect.objectContaining({
           database: expect.objectContaining({ coreReadTables: ["companies"] }),

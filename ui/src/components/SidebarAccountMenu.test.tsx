@@ -16,6 +16,7 @@ const mockAuthApi = vi.hoisted(() => ({
 }));
 const mockToggleTheme = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
@@ -25,12 +26,25 @@ vi.mock("@/lib/router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
   ),
+  useNavigate: () => mockNavigate,
 }));
 
 vi.mock("../context/SidebarContext", () => ({
   useSidebar: () => ({
     isMobile: false,
     setSidebarOpen: mockSetSidebarOpen,
+  }),
+}));
+
+vi.mock("../context/CompanyContext", () => ({
+  useCompany: () => ({
+    clearSelectedCompanyId: vi.fn(),
+  }),
+}));
+
+vi.mock("../context/DialogContext", () => ({
+  useDialogActions: () => ({
+    openOnboarding: vi.fn(),
   }),
 }));
 
@@ -107,7 +121,7 @@ describe("SidebarAccountMenu", () => {
 
     expect(document.body.textContent).toContain("Edit profile");
     expect(document.body.textContent).not.toContain("Documentation");
-    expect(document.body.textContent).toContain("Paperclip v1.2.3");
+    expect(document.body.textContent).toContain("DealDesk v1.2.3");
     expect(document.body.textContent).toContain("jane@example.com");
     expect(document.body.querySelector('[data-slot="popover-content"]')?.className)
       .toContain("w-[var(--radix-popover-trigger-width)]");

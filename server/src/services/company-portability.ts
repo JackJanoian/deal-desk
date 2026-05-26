@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import type {
   CompanyPortabilityAgentManifestEntry,
   CompanyPortabilityCollisionStrategy,
@@ -30,7 +30,7 @@ import type {
   CompanySkill,
   AgentEnvConfig,
   RoutineVariable,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   ISSUE_PRIORITIES,
@@ -47,12 +47,12 @@ import {
   issueCommentMetadataSchema,
   issueCommentPresentationSchema,
   normalizeAgentUrlKey,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import {
-  readPaperclipSkillSyncPreference,
-  writePaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
-import { requireOpenCodeModelId } from "@paperclipai/adapter-opencode-local/server";
+  readDealDeskSkillSyncPreference,
+  writeDealDeskSkillSyncPreference,
+} from "@dealdesk/adapter-utils/server-utils";
+import { requireOpenCodeModelId } from "@dealdesk/adapter-opencode-local/server";
 import { findServerAdapter } from "../adapters/index.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
@@ -165,15 +165,15 @@ function normalizeSkillKey(value: string | null | undefined) {
 
 function readSkillKey(frontmatter: Record<string, unknown>) {
   const metadata = isPlainRecord(frontmatter.metadata) ? frontmatter.metadata : null;
-  const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
+  const dealdesk = isPlainRecord(metadata?.dealDesk) ? metadata?.dealDesk as Record<string, unknown> : null;
   return normalizeSkillKey(
     asString(frontmatter.key)
     ?? asString(frontmatter.skillKey)
     ?? asString(metadata?.skillKey)
     ?? asString(metadata?.canonicalKey)
-    ?? asString(metadata?.paperclipSkillKey)
-    ?? asString(paperclip?.skillKey)
-    ?? asString(paperclip?.key),
+    ?? asString(metadata?.dealDeskSkillKey)
+    ?? asString(dealdesk?.skillKey)
+    ?? asString(dealdesk?.key),
   );
 }
 
@@ -193,8 +193,8 @@ function deriveManifestSkillKey(
   if ((sourceType === "github" || sourceType === "skills_sh" || sourceKind === "github" || sourceKind === "skills_sh") && owner && repo) {
     return `${owner}/${repo}/${slug}`;
   }
-  if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+  if (sourceKind === "dealdesk_bundled") {
+    return `dealdesk/dealdesk/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
     try {
@@ -313,8 +313,8 @@ function deriveSkillExportDirCandidates(
     }
   };
 
-  if (sourceKind === "paperclip_bundled") {
-    pushSuffix("paperclip");
+  if (sourceKind === "dealdesk_bundled") {
+    pushSuffix("dealdesk");
   }
 
   if (skill.sourceType === "github" || skill.sourceType === "skills_sh") {
@@ -495,7 +495,7 @@ type CompanyPackageIncludeEntry = {
   path: string;
 };
 
-type PaperclipExtensionDoc = {
+type DealDeskExtensionDoc = {
   schema?: string;
   company?: Record<string, unknown> | null;
   agents?: Record<string, Record<string, unknown>> | null;
@@ -624,7 +624,7 @@ const ADAPTER_DEFAULT_RULES_BY_TYPE: Record<string, Array<{ path: string[]; valu
     { path: ["timeoutSec"], value: 120 },
     { path: ["waitTimeoutMs"], value: 120000 },
     { path: ["sessionKeyStrategy"], value: "fixed" },
-    { path: ["sessionKey"], value: "paperclip" },
+    { path: ["sessionKey"], value: "dealdesk" },
     { path: ["role"], value: "operator" },
     { path: ["scopes"], value: ["operator.admin"] },
   ],
@@ -1183,7 +1183,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
   }
 
   if (issue.legacyRecurrence.until != null || issue.legacyRecurrence.count != null) {
-    warnings.push(`Recurring task ${issue.slug} uses legacy recurrence end bounds; Paperclip will import the routine trigger without those limits.`);
+    warnings.push(`Recurring task ${issue.slug} uses legacy recurrence end bounds; DealDesk will import the routine trigger without those limits.`);
   }
 
   let cronExpression: string | null = null;
@@ -1649,7 +1649,7 @@ function filterPortableExtensionYaml(yaml: string, selectedFiles: Set<string>) {
 function filterExportFiles(
   files: Record<string, CompanyPortabilityFileEntry>,
   selectedFilesInput: string[] | undefined,
-  paperclipExtensionPath: string,
+  dealDeskExtensionPath: string,
 ) {
   if (!selectedFilesInput || selectedFilesInput.length === 0) {
     return files;
@@ -1666,15 +1666,15 @@ function filterExportFiles(
     filtered[filePath] = content;
   }
 
-  const extensionEntry = filtered[paperclipExtensionPath];
-  if (selectedFiles.has(paperclipExtensionPath) && typeof extensionEntry === "string") {
-    filtered[paperclipExtensionPath] = filterPortableExtensionYaml(extensionEntry, selectedFiles);
+  const extensionEntry = filtered[dealDeskExtensionPath];
+  if (selectedFiles.has(dealDeskExtensionPath) && typeof extensionEntry === "string") {
+    filtered[dealDeskExtensionPath] = filterPortableExtensionYaml(extensionEntry, selectedFiles);
   }
 
   return filtered;
 }
 
-function findPaperclipExtensionPath(files: Record<string, CompanyPortabilityFileEntry>) {
+function findDealDeskExtensionPath(files: Record<string, CompanyPortabilityFileEntry>) {
   if (typeof files[".paperclip.yaml"] === "string") return ".paperclip.yaml";
   if (typeof files[".paperclip.yml"] === "string") return ".paperclip.yml";
   return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
@@ -1704,6 +1704,7 @@ function normalizePortableConfig(
       key === "instructionsEntryFile" ||
       key === "promptTemplate" ||
       key === "bootstrapPromptTemplate" || // deprecated — kept for backward compat
+      key === "dealdeskSkillSync" ||
       key === "paperclipSkillSync"
     ) continue;
     if (key === "env") continue;
@@ -2054,15 +2055,15 @@ async function resolveBundledSkillsCommit() {
 
 async function buildSkillSourceEntry(skill: CompanySkill) {
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
-  if (asString(metadata?.sourceKind) === "paperclip_bundled") {
+  if (asString(metadata?.sourceKind) === "dealdesk_bundled") {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "paperclipai/paperclip",
+      repo: "dealdesk/paperclip",
       path: `skills/${skill.slug}`,
       commit,
       trackingRef: "master",
-      url: `https://github.com/paperclipai/paperclip/tree/master/skills/${skill.slug}`,
+      url: `https://github.com/dealdesk/dealdesk/tree/master/skills/${skill.slug}`,
     };
   }
 
@@ -2094,7 +2095,7 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
 function shouldReferenceSkillOnExport(skill: CompanySkill, expandReferencedSkills: boolean) {
   if (expandReferencedSkills) return false;
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
-  if (asString(metadata?.sourceKind) === "paperclip_bundled") return true;
+  if (asString(metadata?.sourceKind) === "dealdesk_bundled") return true;
   return skill.sourceType === "github" || skill.sourceType === "skills_sh" || skill.sourceType === "url";
 }
 
@@ -2127,7 +2128,7 @@ async function withSkillSourceMetadata(skill: CompanySkill, markdown: string) {
     metadata.sources = [...existingSources, sourceEntry];
   }
   metadata.skillKey = skill.key;
-  metadata.paperclipSkillKey = skill.key;
+  metadata.dealDeskSkillKey = skill.key;
   metadata.paperclip = {
     ...(isPlainRecord(metadata.paperclip) ? metadata.paperclip : {}),
     skillKey: skill.key,
@@ -2456,16 +2457,16 @@ function buildManifestFromPackageFiles(
   }
   const companyDoc = parseFrontmatterMarkdown(companyMarkdown);
   const companyFrontmatter = companyDoc.frontmatter;
-  const paperclipExtensionPath = findPaperclipExtensionPath(normalizedFiles);
-  const paperclipExtension = paperclipExtensionPath
-    ? parseYamlFile(readPortableTextFile(normalizedFiles, paperclipExtensionPath) ?? "")
+  const dealDeskExtensionPath = findDealDeskExtensionPath(normalizedFiles);
+  const dealDeskExtension = dealDeskExtensionPath
+    ? parseYamlFile(readPortableTextFile(normalizedFiles, dealDeskExtensionPath) ?? "")
     : {};
-  const paperclipCompany = isPlainRecord(paperclipExtension.company) ? paperclipExtension.company : {};
-  const paperclipSidebar = normalizePortableSidebarOrder(paperclipExtension.sidebar);
-  const paperclipAgents = isPlainRecord(paperclipExtension.agents) ? paperclipExtension.agents : {};
-  const paperclipProjects = isPlainRecord(paperclipExtension.projects) ? paperclipExtension.projects : {};
-  const paperclipTasks = isPlainRecord(paperclipExtension.tasks) ? paperclipExtension.tasks : {};
-  const paperclipRoutines = isPlainRecord(paperclipExtension.routines) ? paperclipExtension.routines : {};
+  const dealDeskCompany = isPlainRecord(dealDeskExtension.company) ? dealDeskExtension.company : {};
+  const dealDeskSidebar = normalizePortableSidebarOrder(dealDeskExtension.sidebar);
+  const dealDeskAgents = isPlainRecord(dealDeskExtension.agents) ? dealDeskExtension.agents : {};
+  const dealDeskProjects = isPlainRecord(dealDeskExtension.projects) ? dealDeskExtension.projects : {};
+  const dealDeskTasks = isPlainRecord(dealDeskExtension.tasks) ? dealDeskExtension.tasks : {};
+  const dealDeskRoutines = isPlainRecord(dealDeskExtension.routines) ? dealDeskExtension.routines : {};
   const companyName =
     asString(companyFrontmatter.name)
     ?? opts?.sourceLabel?.companyName
@@ -2520,30 +2521,30 @@ function buildManifestFromPackageFiles(
       path: resolvedCompanyPath,
       name: companyName,
       description: asString(companyFrontmatter.description),
-      brandColor: asString(paperclipCompany.brandColor),
-      logoPath: asString(paperclipCompany.logoPath) ?? asString(paperclipCompany.logo),
+      brandColor: asString(dealDeskCompany.brandColor),
+      logoPath: asString(dealDeskCompany.logoPath) ?? asString(dealDeskCompany.logo),
       attachmentMaxBytes:
-        typeof paperclipCompany.attachmentMaxBytes === "number" && Number.isFinite(paperclipCompany.attachmentMaxBytes)
-          ? Math.max(1, Math.floor(paperclipCompany.attachmentMaxBytes))
+        typeof dealDeskCompany.attachmentMaxBytes === "number" && Number.isFinite(dealDeskCompany.attachmentMaxBytes)
+          ? Math.max(1, Math.floor(dealDeskCompany.attachmentMaxBytes))
           : null,
       requireBoardApprovalForNewAgents:
-        typeof paperclipCompany.requireBoardApprovalForNewAgents === "boolean"
-          ? paperclipCompany.requireBoardApprovalForNewAgents
+        typeof dealDeskCompany.requireBoardApprovalForNewAgents === "boolean"
+          ? dealDeskCompany.requireBoardApprovalForNewAgents
           : readCompanyApprovalDefault(companyFrontmatter),
       feedbackDataSharingEnabled:
-        typeof paperclipCompany.feedbackDataSharingEnabled === "boolean"
-          ? paperclipCompany.feedbackDataSharingEnabled
+        typeof dealDeskCompany.feedbackDataSharingEnabled === "boolean"
+          ? dealDeskCompany.feedbackDataSharingEnabled
           : false,
       feedbackDataSharingConsentAt:
-        typeof paperclipCompany.feedbackDataSharingConsentAt === "string"
-          ? paperclipCompany.feedbackDataSharingConsentAt
+        typeof dealDeskCompany.feedbackDataSharingConsentAt === "string"
+          ? dealDeskCompany.feedbackDataSharingConsentAt
           : null,
       feedbackDataSharingConsentByUserId:
-        asString(paperclipCompany.feedbackDataSharingConsentByUserId),
+        asString(dealDeskCompany.feedbackDataSharingConsentByUserId),
       feedbackDataSharingTermsVersion:
-        asString(paperclipCompany.feedbackDataSharingTermsVersion),
+        asString(dealDeskCompany.feedbackDataSharingTermsVersion),
     },
-    sidebar: paperclipSidebar,
+    sidebar: dealDeskSidebar,
     agents: [],
     skills: [],
     projects: [],
@@ -2565,7 +2566,7 @@ function buildManifestFromPackageFiles(
     const frontmatter = agentDoc.frontmatter;
     const fallbackSlug = normalizeAgentUrlKey(path.posix.basename(path.posix.dirname(agentPath))) ?? "agent";
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipAgents[slug]) ? paperclipAgents[slug] : {};
+    const extension = isPlainRecord(dealDeskAgents[slug]) ? dealDeskAgents[slug] : {};
     const extensionAdapter = isPlainRecord(extension.adapter) ? extension.adapter : null;
     const extensionRuntime = isPlainRecord(extension.runtime) ? extension.runtime : null;
     const extensionPermissions = isPlainRecord(extension.permissions) ? extension.permissions : null;
@@ -2704,7 +2705,7 @@ function buildManifestFromPackageFiles(
       projectPath,
     );
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipProjects[slug]) ? paperclipProjects[slug] : {};
+    const extension = isPlainRecord(dealDeskProjects[slug]) ? dealDeskProjects[slug] : {};
     const workspaceExtensions = isPlainRecord(extension.workspaces) ? extension.workspaces : {};
     const workspaces = Object.entries(workspaceExtensions)
       .map(([workspaceKey, entry]) => normalizePortableProjectWorkspaceExtension(workspaceKey, entry))
@@ -2742,9 +2743,9 @@ function buildManifestFromPackageFiles(
     const frontmatter = taskDoc.frontmatter;
     const fallbackSlug = normalizeAgentUrlKey(path.posix.basename(path.posix.dirname(taskPath))) ?? "task";
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipTasks[slug]) ? paperclipTasks[slug] : {};
-    const routineExtension = normalizeRoutineExtension(paperclipRoutines[slug]);
-    const routineExtensionRaw = isPlainRecord(paperclipRoutines[slug]) ? paperclipRoutines[slug] : {};
+    const extension = isPlainRecord(dealDeskTasks[slug]) ? dealDeskTasks[slug] : {};
+    const routineExtension = normalizeRoutineExtension(dealDeskRoutines[slug]);
+    const routineExtensionRaw = isPlainRecord(dealDeskRoutines[slug]) ? dealDeskRoutines[slug] : {};
     const schedule = isPlainRecord(frontmatter.schedule) ? frontmatter.schedule : null;
     const legacyRecurrence = schedule && isPlainRecord(schedule.recurrence)
       ? schedule.recurrence
@@ -2862,7 +2863,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
   const issues = issueService(db);
   const companySkills = companySkillService(db);
   const secrets = secretService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.DEALDESK_SECRETS_STRICT_MODE === "true";
 
   function assertKnownImportAdapterType(type: string | null | undefined): string {
     const adapterType = typeof type === "string" ? type.trim() : "";
@@ -2899,7 +2900,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     if (mode === "agent_safe" && IMPORT_FORBIDDEN_ADAPTER_TYPES.has(effectiveAdapterType)) {
       throw forbidden(`Adapter type "${effectiveAdapterType}" is not allowed in safe imports`);
     }
-    const nextAdapterConfig = writePaperclipSkillSyncPreference(
+    const nextAdapterConfig = writeDealDeskSkillSyncPreference(
       applyImportAdapterRunDefaults(effectiveAdapterType, adapterConfig),
       desiredSkills,
     );
@@ -3281,11 +3282,11 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       }
     }
 
-    const paperclipAgentsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipProjectsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipTasksOut: Record<string, Record<string, unknown>> = {};
+    const dealDeskAgentsOut: Record<string, Record<string, unknown>> = {};
+    const dealDeskProjectsOut: Record<string, Record<string, unknown>> = {};
+    const dealDeskTasksOut: Record<string, Record<string, unknown>> = {};
     const unportableTaskWorkspaceRefs = new Map<string, { workspaceId: string; taskSlugs: string[] }>();
-    const paperclipRoutinesOut: Record<string, Record<string, unknown>> = {};
+    const dealDeskRoutinesOut: Record<string, Record<string, unknown>> = {};
 
     const skillByReference = new Map<string, typeof companySkillRows[number]>();
     for (const skill of companySkillRows) {
@@ -3367,7 +3368,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             .filter((inputValue) => inputValue.agentSlug === slug),
         );
         const reportsToSlug = agent.reportsTo ? (idToSlug.get(agent.reportsTo) ?? null) : null;
-        const desiredSkills = readPaperclipSkillSyncPreference(
+        const desiredSkills = readDealDeskSkillSyncPreference(
           (agent.adapterConfig as Record<string, unknown>) ?? {},
         ).desiredSkills;
 
@@ -3411,7 +3412,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             env: buildEnvInputMap(agentEnvInputs),
           };
         }
-        paperclipAgentsOut[slug] = isPlainRecord(extension) ? extension : {};
+        dealDeskAgentsOut[slug] = isPlainRecord(extension) ? extension : {};
       }
     }
 
@@ -3454,7 +3455,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           env: buildEnvInputMap(projectEnvInputs),
         };
       }
-      paperclipProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
+      dealDeskProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
     }
 
     for (const issue of selectedIssueRows) {
@@ -3511,7 +3512,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             }))
           : undefined,
       });
-      paperclipTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      dealDeskTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
     for (const { workspaceId, taskSlugs } of unportableTaskWorkspaceRefs.values()) {
@@ -3552,23 +3553,23 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             : undefined,
         })),
       });
-      paperclipRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      dealDeskRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
-    const paperclipExtensionPath = ".paperclip.yaml";
-    const paperclipAgents = Object.fromEntries(
-      Object.entries(paperclipAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const dealDeskExtensionPath = ".paperclip.yaml";
+    const dealDeskAgents = Object.fromEntries(
+      Object.entries(dealDeskAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipProjects = Object.fromEntries(
-      Object.entries(paperclipProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const dealDeskProjects = Object.fromEntries(
+      Object.entries(dealDeskProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipTasks = Object.fromEntries(
-      Object.entries(paperclipTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const dealDeskTasks = Object.fromEntries(
+      Object.entries(dealDeskTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipRoutines = Object.fromEntries(
-      Object.entries(paperclipRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const dealDeskRoutines = Object.fromEntries(
+      Object.entries(dealDeskRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    files[paperclipExtensionPath] = buildYamlFile(
+    files[dealDeskExtensionPath] = buildYamlFile(
       {
         schema: "paperclip/v1",
         company: stripEmptyValues({
@@ -3582,15 +3583,15 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           feedbackDataSharingTermsVersion: company.feedbackDataSharingTermsVersion ?? null,
         }),
         sidebar: stripEmptyValues(sidebarOrder),
-        agents: Object.keys(paperclipAgents).length > 0 ? paperclipAgents : undefined,
-        projects: Object.keys(paperclipProjects).length > 0 ? paperclipProjects : undefined,
-        tasks: Object.keys(paperclipTasks).length > 0 ? paperclipTasks : undefined,
-        routines: Object.keys(paperclipRoutines).length > 0 ? paperclipRoutines : undefined,
+        agents: Object.keys(dealDeskAgents).length > 0 ? dealDeskAgents : undefined,
+        projects: Object.keys(dealDeskProjects).length > 0 ? dealDeskProjects : undefined,
+        tasks: Object.keys(dealDeskTasks).length > 0 ? dealDeskTasks : undefined,
+        routines: Object.keys(dealDeskRoutines).length > 0 ? dealDeskRoutines : undefined,
       },
       { preserveEmptyStrings: true },
     );
 
-    let finalFiles = filterExportFiles(files, input.selectedFiles, paperclipExtensionPath);
+    let finalFiles = filterExportFiles(files, input.selectedFiles, dealDeskExtensionPath);
     let resolved = buildManifestFromPackageFiles(finalFiles, {
       sourceLabel: {
         companyId: company.id,
@@ -3646,7 +3647,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       manifest: resolved.manifest,
       files: finalFiles,
       warnings: resolved.warnings,
-      paperclipExtensionPath,
+      dealDeskExtensionPath,
     };
   }
 

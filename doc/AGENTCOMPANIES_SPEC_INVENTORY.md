@@ -1,6 +1,6 @@
 # Agent Companies Spec Inventory
 
-This document indexes every part of the Paperclip codebase that touches the [Agent Companies Specification](docs/companies/companies-spec.md) (`agentcompanies/v1-draft`).
+This document indexes every part of the DealDesk codebase that touches the [Agent Companies Specification](docs/companies/companies-spec.md) (`agentcompanies/v1-draft`).
 
 Use it when you need to:
 
@@ -38,7 +38,7 @@ These define the contract between server, CLI, and UI.
 | File | Responsibility |
 |---|---|
 | `server/src/services/company-portability.ts` | **Core portability service.** Export (manifest generation, markdown file emission, `.paperclip.yaml` sidecars), import (graph resolution, collision handling, entity creation), preview (planned-action summary). Handles skill key derivation, recurring task <-> routine mapping, legacy recurrence migration, and package README generation. References `agentcompanies/v1` version string. |
-| `server/src/services/routines.ts` | Paperclip routine runtime service. Portability now exports routines as recurring `TASK.md` entries and imports recurring tasks back through this service. |
+| `server/src/services/routines.ts` | DealDesk routine runtime service. Portability now exports routines as recurring `TASK.md` entries and imports recurring tasks back through this service. |
 | `server/src/services/company-export-readme.ts` | Generates `README.md` and Mermaid org-chart for exported company packages. |
 | `server/src/services/index.ts` | Re-exports `companyPortabilityService`. |
 
@@ -94,7 +94,7 @@ Route registration lives in `server/src/app.ts` via `companyRoutes(db, storage)`
 
 | File | Relevance |
 |---|---|
-| `skills/paperclip/references/company-skills.md` | Reference doc for company skill library workflow — install, inspect, update, assign. Skill packages are a subset of the agent companies spec. |
+| `skills/dealdesk/references/company-skills.md` | Reference doc for company skill library workflow — install, inspect, update, assign. Skill packages are a subset of the agent companies spec. |
 | `server/src/services/company-skills.ts` | Company skill management service — handles SKILL.md-based imports and company-level skill library. |
 | `server/src/services/agent-instructions.ts` | Agent instructions service — resolves AGENTS.md paths for agent instruction loading. |
 

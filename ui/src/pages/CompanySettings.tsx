@@ -1,9 +1,10 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@/lib/router";
 import {
   DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES,
   MAX_COMPANY_ATTACHMENT_MAX_BYTES,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { companiesApi } from "../api/companies";
@@ -33,10 +34,12 @@ export function CompanySettings() {
     companies,
     selectedCompany,
     selectedCompanyId,
-    setSelectedCompanyId
+    setSelectedCompanyId,
+    clearSelectedCompanyId,
   } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   // General settings local state
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
@@ -202,6 +205,8 @@ export function CompanySettings() {
     onSuccess: async ({ nextCompanyId }) => {
       if (nextCompanyId) {
         setSelectedCompanyId(nextCompanyId);
+      } else {
+        clearSelectedCompanyId();
       }
       await queryClient.invalidateQueries({
         queryKey: queryKeys.companies.all
@@ -209,6 +214,7 @@ export function CompanySettings() {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.companies.stats
       });
+      navigate("/onboarding", { replace: true });
     }
   });
 
@@ -248,10 +254,10 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           General
         </div>
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+        <div className="dd-panel-subtle space-y-3 rounded-lg px-4 py-4">
           <Field label="Company name" hint="The display name for your company.">
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-border/75 bg-card/55 px-2.5 py-1.5 text-sm outline-none focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
@@ -262,7 +268,7 @@ export function CompanySettings() {
             hint="Optional description shown in the company profile."
           >
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-border/75 bg-card/55 px-2.5 py-1.5 text-sm outline-none focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
               type="text"
               value={description}
               placeholder="Optional company description"
@@ -277,7 +283,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Appearance
         </div>
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+        <div className="dd-panel-subtle space-y-3 rounded-lg px-4 py-4">
           <div className="flex items-start gap-4">
             <div className="shrink-0">
               <CompanyPatternIcon
@@ -297,7 +303,7 @@ export function CompanySettings() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={handleLogoFileChange}
-                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs"
+                    className="w-full rounded-md border border-border/75 bg-card/55 px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                   />
                   {logoUrl && (
                     <div className="flex items-center gap-2">
@@ -338,7 +344,7 @@ export function CompanySettings() {
                     type="color"
                     value={brandColor || "#6366f1"}
                     onChange={(e) => setBrandColor(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
+                    className="h-8 w-8 cursor-pointer rounded border border-border/75 bg-card/55 p-0"
                   />
                   <input
                     type="text"
@@ -350,7 +356,7 @@ export function CompanySettings() {
                       }
                     }}
                     placeholder="Auto"
-                    className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-mono outline-none"
+                    className="w-28 rounded-md border border-border/75 bg-card/55 px-2.5 py-1.5 text-sm font-mono outline-none focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                   />
                   {brandColor && (
                     <Button
@@ -377,7 +383,7 @@ export function CompanySettings() {
                       step={1}
                       value={attachmentMaxMiB}
                       onChange={(e) => setAttachmentMaxMiB(e.target.value)}
-                      className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-28 rounded-md border border-border/75 bg-card/55 px-2.5 py-1.5 text-sm outline-none focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                     />
                     <span className="text-xs text-muted-foreground">MiB</span>
                   </div>
@@ -421,7 +427,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Hiring
         </div>
-        <div className="rounded-md border border-border px-4 py-3">
+        <div className="dd-panel-subtle rounded-lg px-4 py-3">
           <ToggleField
             label="Require board approval for new hires"
             hint="New agent hires stay pending until approved by board."
@@ -437,7 +443,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Invites
         </div>
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+        <div className="dd-panel-subtle space-y-3 rounded-lg px-4 py-4">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground">
               Generate an OpenClaw agent invite snippet.
@@ -461,7 +467,7 @@ export function CompanySettings() {
           )}
           {inviteSnippet && (
             <div
-              className="rounded-md border border-border bg-muted/30 p-2"
+              className="rounded-md border border-border/70 bg-muted/30 p-2"
               data-testid="company-settings-invites-snippet"
             >
               <div className="flex items-center justify-between gap-2">
@@ -481,7 +487,7 @@ export function CompanySettings() {
               <div className="mt-1 space-y-1.5">
                 <textarea
                   data-testid="company-settings-invites-snippet-textarea"
-                  className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none"
+                  className="h-[28rem] w-full rounded-md border border-border/75 bg-card/55 px-2 py-1.5 font-mono text-xs outline-none focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                   value={inviteSnippet}
                   readOnly
                 />
@@ -515,7 +521,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Company Packages
         </div>
-        <div className="rounded-md border border-border px-4 py-4">
+        <div className="dd-panel-subtle rounded-lg px-4 py-4">
           <p className="text-sm text-muted-foreground">
             Import and export have moved to dedicated pages accessible from the{" "}
             <a href="/org" className="underline hover:text-foreground">Org Chart</a> header.
@@ -542,7 +548,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-destructive uppercase tracking-wide">
           Danger Zone
         </div>
-        <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
+        <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
             Archive this company to hide it from the sidebar. This persists in
             the database.
@@ -604,35 +610,35 @@ function buildAgentSnippet(input: AgentSnippetInput) {
 
   const connectivityBlock =
     candidateUrls.length === 0
-      ? `No candidate URLs are available. Ask your user to configure a reachable hostname in Paperclip, then retry.
+      ? `No candidate URLs are available. Ask your user to configure a reachable hostname in DealDesk, then retry.
 Suggested steps:
-- choose a hostname that resolves to the Paperclip host from your runtime
-- run: pnpm paperclipai allowed-hostname <host>
-- restart Paperclip
+- choose a hostname that resolves to the DealDesk host from your runtime
+- run: pnpm dealdesk allowed-hostname <host>
+- restart DealDesk
 - verify with: curl -fsS http://<host>:3100/api/health
 - regenerate this invite snippet`
-      : `If none are reachable, ask your user to add a reachable hostname in Paperclip, restart, and retry.
+      : `If none are reachable, ask your user to add a reachable hostname in DealDesk, restart, and retry.
 Suggested command:
-- pnpm paperclipai allowed-hostname <host>
+- pnpm dealdesk allowed-hostname <host>
 Then verify with: curl -fsS <base-url>/api/health`;
 
   const resolutionLine = resolutionTestUrl
-    ? `\nYou MUST test Paperclip-to-gateway reachability, call: ${resolutionTestUrl}?url=<urlencoded-gateway-url> (using the hostname that worked above). Do not assume your 172.x is necessarily reachable from Paperclip. Test it. `
+    ? `\nYou MUST test DealDesk-to-gateway reachability, call: ${resolutionTestUrl}?url=<urlencoded-gateway-url> (using the hostname that worked above). Do not assume your 172.x is necessarily reachable from DealDesk. Test it. `
     : "";
 
-  return `You're invited to join a Paperclip organization.
+  return `You're invited to join a DealDesk organization.
 
 The URLs you should try are:
 ${candidateList}
 
 Connectivity guidance:
-If you are running on a different machine than Paperclip, Paperclip must be reachable at one of the hostnames used above.
+If you are running on a different machine than DealDesk, DealDesk must be reachable at one of the hostnames used above.
 Verify the hostname works from your runtime with: GET <base-url>/api/health
 
 ${connectivityBlock}
 
 For your "agentName", just use your own agent name (OpenClaw or whatever your name is) and send it directly.
-You also need to send a gateway URL that Paperclip can access. Check your config and include that URL.${resolutionLine}
+You also need to send a gateway URL that DealDesk can access. Check your config and include that URL.${resolutionLine}
 
 ---
 
@@ -642,14 +648,14 @@ When you submit the join request, use:
 - \`agentDefaultsPayload.url\` as your \`ws://\` or \`wss://\` gateway URL
 - \`agentDefaultsPayload.headers["x-openclaw-token"]\` with your gateway token
 - (legacy accepted) \`agentDefaultsPayload.headers["x-openclaw-auth"]\`
-- Keep device auth enabled (recommended). If \`devicePrivateKeyPem\` is omitted, Paperclip will generate and persist one during join so pairing approvals remain stable.
+- Keep device auth enabled (recommended). If \`devicePrivateKeyPem\` is omitted, DealDesk will generate and persist one during join so pairing approvals remain stable.
 - Only use \`disableDeviceAuth=true\` for special environments where pairing cannot be completed.
 
 Do NOT use \`/v1/responses\` or \`/hooks/*\` in this join flow.
 
-Before you do anything, please respond to your user that you understand the instructions and you're going to work on them. Then do the step above in another session called "paperclip-onboarding" and then tell your user when you're done. Update your user in intermediate steps along the way so they know what's going on.
+Before you do anything, please respond to your user that you understand the instructions and you're going to work on them. Then do the step above in another session called "dealdesk-onboarding" and then tell your user when you're done. Update your user in intermediate steps along the way so they know what's going on.
 
-Then after you've connected to Paperclip (exchanged keys etc.) you MUST review and follow the onboarding instructions in onboarding.txt they give you.
+Then after you've connected to DealDesk (exchanged keys etc.) you MUST review and follow the onboarding instructions in onboarding.txt they give you.
 
 `;
 }

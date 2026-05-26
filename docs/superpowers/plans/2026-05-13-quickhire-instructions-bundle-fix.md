@@ -4,7 +4,7 @@
 
 **Goal:** Stop `QuickHire` from getting "New agents must use instructionsBundle/AGENTS.md instead of adapterConfig.promptTemplate" by sending the instructions as a top-level `instructionsBundle`, not `adapterConfig.promptTemplate`.
 
-**Architecture:** Single change in `ui/src/pages/deal-desk/QuickHire.tsx`. Paperclip rejects `adapterConfig.promptTemplate` for new agents whose adapter supports instructions bundles (see `server/src/routes/agents.ts:1132`). The accepted shape is a sibling field: `instructionsBundle: { entryFile: "AGENTS.md", files: { "AGENTS.md": "<prompt text>" } }`. The schema lives at `packages/shared/src/validators/agent.ts:47-52` (`createAgentInstructionsBundleSchema`).
+**Architecture:** Single change in `ui/src/pages/deal-desk/QuickHire.tsx`. DealDesk rejects `adapterConfig.promptTemplate` for new agents whose adapter supports instructions bundles (see `server/src/routes/agents.ts:1132`). The accepted shape is a sibling field: `instructionsBundle: { entryFile: "AGENTS.md", files: { "AGENTS.md": "<prompt text>" } }`. The schema lives at `packages/shared/src/validators/agent.ts:47-52` (`createAgentInstructionsBundleSchema`).
 
 **Tech Stack:** React + TypeScript strict, agentsApi (Express), zod (server-side), vitest.
 
@@ -48,7 +48,7 @@ return agentsApi.create(selectedCompanyId, {
 Replace the body above with this exact code:
 
 ```tsx
-// DEAL DESK: v0.3.1 — Paperclip rejects adapterConfig.promptTemplate for new
+// DEAL DESK: v0.3.1 — DealDesk rejects adapterConfig.promptTemplate for new
 // agents on adapters that support instructions bundles (server/src/routes/agents.ts
 // assertNoNewAgentLegacyPromptTemplate). Send the prompt via the top-level
 // instructionsBundle instead.
@@ -108,7 +108,7 @@ Repeat for the "Create custom employee" card — confirm that flow also succeeds
 git add ui/src/pages/deal-desk/QuickHire.tsx
 git commit -m "fix(deal-desk): QuickHire sends instructionsBundle, not promptTemplate
 
-Paperclip rejects adapterConfig.promptTemplate for new agents on
+DealDesk rejects adapterConfig.promptTemplate for new agents on
 adapters that support instructions bundles (claude_local does).
 QuickHire was hitting the unprocessable() guard at
 server/src/routes/agents.ts:1132 with:

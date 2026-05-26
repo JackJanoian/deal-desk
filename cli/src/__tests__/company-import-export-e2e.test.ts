@@ -85,7 +85,7 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
         baseDir: path.join(tempRoot, "storage"),
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "dealdesk",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -104,26 +104,26 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
-interface TestPaperclipEnv {
+interface TestDealDeskEnv {
   configPath: string;
-  paperclipHome: string;
+  dealDeskHome: string;
   instanceId: string;
   shellHome?: string;
 }
 
-function createBasePaperclipEnv(options: TestPaperclipEnv) {
+function createBaseDealDeskEnv(options: TestDealDeskEnv) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("DEALDESK_")) {
       delete env[key];
     }
   }
 
-  env.PAPERCLIP_CONFIG = options.configPath;
-  env.PAPERCLIP_HOME = options.paperclipHome;
-  env.PAPERCLIP_INSTANCE_ID = options.instanceId;
-  env.PAPERCLIP_CONTEXT = path.join(options.paperclipHome, "context.json");
-  env.PAPERCLIP_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
+  env.DEALDESK_CONFIG = options.configPath;
+  env.DEALDESK_HOME = options.dealDeskHome;
+  env.DEALDESK_INSTANCE_ID = options.instanceId;
+  env.DEALDESK_CONTEXT = path.join(options.dealDeskHome, "context.json");
+  env.DEALDESK_AUTH_STORE = path.join(options.dealDeskHome, "auth.json");
   if (options.shellHome) {
     env.HOME = options.shellHome;
   }
@@ -135,9 +135,9 @@ function createServerEnv(
   configPath: string,
   port: number,
   connectionString: string,
-  options: Omit<TestPaperclipEnv, "configPath">,
+  options: Omit<TestDealDeskEnv, "configPath">,
 ) {
-  const env = createBasePaperclipEnv({
+  const env = createBaseDealDeskEnv({
     configPath,
     ...options,
   });
@@ -152,24 +152,24 @@ function createServerEnv(
   env.HOST = "127.0.0.1";
   env.PORT = String(port);
   env.SERVE_UI = "false";
-  env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
+  env.DEALDESK_DB_BACKUP_ENABLED = "false";
   env.HEARTBEAT_SCHEDULER_ENABLED = "false";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY = "true";
-  env.PAPERCLIP_UI_DEV_MIDDLEWARE = "false";
+  env.DEALDESK_MIGRATION_AUTO_APPLY = "true";
+  env.DEALDESK_UI_DEV_MIDDLEWARE = "false";
 
   return env;
 }
 
-function createCliEnv(options: TestPaperclipEnv) {
-  const env = createBasePaperclipEnv(options);
+function createCliEnv(options: TestDealDeskEnv) {
+  const env = createBaseDealDeskEnv(options);
   delete env.DATABASE_URL;
   delete env.PORT;
   delete env.HOST;
   delete env.SERVE_UI;
-  delete env.PAPERCLIP_DB_BACKUP_ENABLED;
+  delete env.DEALDESK_DB_BACKUP_ENABLED;
   delete env.HEARTBEAT_SCHEDULER_ENABLED;
-  delete env.PAPERCLIP_MIGRATION_AUTO_APPLY;
-  delete env.PAPERCLIP_UI_DEV_MIDDLEWARE;
+  delete env.DEALDESK_MIGRATION_AUTO_APPLY;
+  delete env.DEALDESK_UI_DEV_MIDDLEWARE;
   return env;
 }
 
@@ -210,10 +210,10 @@ async function api<T>(baseUrl: string, pathname: string, init?: RequestInit): Pr
 
 async function runCliJson<T>(
   args: string[],
-  opts: TestPaperclipEnv & { apiBase?: string; includeConfigArg?: boolean },
+  opts: TestDealDeskEnv & { apiBase?: string; includeConfigArg?: boolean },
 ) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const cliArgs = ["--silent", "paperclipai", ...args];
+  const cliArgs = ["--silent", "dealdesk", ...args];
   if (opts.apiBase) {
     cliArgs.push("--api-base", opts.apiBase);
   }
@@ -247,7 +247,7 @@ async function waitForServer(
   while (Date.now() - startedAt < 30_000) {
     if (child.exitCode !== null) {
       throw new Error(
-        `paperclipai run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
+        `dealdesk run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
       );
     }
 
@@ -266,28 +266,28 @@ async function waitForServer(
   );
 }
 
-describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
+describeEmbeddedPostgres("dealdesk company import/export e2e", () => {
   let tempRoot = "";
   let configPath = "";
   let exportDir = "";
   let apiBase = "";
-  let paperclipHome = "";
+  let dealDeskHome = "";
   let cliShellHome = "";
-  let paperclipInstanceId = "";
+  let dealDeskInstanceId = "";
   let serverProcess: ServerProcess | null = null;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempRoot = mkdtempSync(path.join(os.tmpdir(), "paperclip-company-cli-e2e-"));
+    tempRoot = mkdtempSync(path.join(os.tmpdir(), "dealdesk-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
-    paperclipHome = path.join(tempRoot, "paperclip-home");
+    dealDeskHome = path.join(tempRoot, "paperclip-home");
     cliShellHome = path.join(tempRoot, "shell-home");
-    paperclipInstanceId = "company-cli-e2e";
-    mkdirSync(paperclipHome, { recursive: true });
+    dealDeskInstanceId = "company-cli-e2e";
+    mkdirSync(dealDeskHome, { recursive: true });
     mkdirSync(cliShellHome, { recursive: true });
 
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-cli-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-company-cli-db-");
 
     const port = await getAvailablePort();
     writeTestConfig(configPath, tempRoot, port, tempDb.connectionString);
@@ -297,12 +297,12 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
     const output = { stdout: [] as string[], stderr: [] as string[] };
     const child = spawn(
       "pnpm",
-      ["paperclipai", "run", "--config", configPath],
+      ["dealdesk", "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {
-          paperclipHome,
-          instanceId: paperclipInstanceId,
+          dealDeskHome,
+          instanceId: dealDeskInstanceId,
           shellHome: cliShellHome,
         }),
         stdio: ["ignore", "pipe", "pipe"],
@@ -338,15 +338,15 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       ["context", "set", "--profile", "isolation-check", "--api-base", "https://example.test"],
       {
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
         includeConfigArg: false,
       },
     );
 
-    const expectedContextPath = path.join(paperclipHome, "context.json");
-    const leakedContextPath = path.join(cliShellHome, ".paperclip", "context.json");
+    const expectedContextPath = path.join(dealDeskHome, "context.json");
+    const leakedContextPath = path.join(cliShellHome, ".dealdesk", "context.json");
     expect(cliContext.contextPath).toBe(expectedContextPath);
     expect(cliContext.profileName).toBe("isolation-check");
     expect(cliContext.profile.apiBase).toBe("https://example.test");
@@ -434,8 +434,8 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -464,8 +464,8 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -518,8 +518,8 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -551,8 +551,8 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -583,7 +583,7 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
     const zipPath = path.join(tempRoot, "exported-company.zip");
     const portableFiles: Record<string, string> = {};
     collectTextFiles(exportDir, exportDir, portableFiles);
-    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "paperclip-demo"));
+    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "dealdesk-demo"));
 
     const importedFromZip = await runCliJson<{
       company: { id: string; name: string; action: string };
@@ -604,8 +604,8 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        dealDeskHome,
+        instanceId: dealDeskInstanceId,
         shellHome: cliShellHome,
       },
     );

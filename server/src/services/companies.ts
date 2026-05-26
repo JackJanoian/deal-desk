@@ -1,5 +1,5 @@
 import { and, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   companies,
   companyLogos,
@@ -28,7 +28,7 @@ import {
   companyMemberships,
   companySkills,
   documents,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import { notFound, unprocessable } from "../errors.js";
 import { environmentService } from "./environments.js";
 
@@ -124,17 +124,43 @@ export function companyService(db: Db) {
     return "A".repeat(attempt - 1);
   }
 
+  function readPostgresUniqueViolation(error: unknown): { constraint?: string } | null {
+    const candidates: unknown[] = [error];
+    if (typeof error === "object" && error !== null && "cause" in error) {
+      candidates.push((error as { cause?: unknown }).cause);
+    }
+
+    for (const candidate of candidates) {
+      if (typeof candidate !== "object" || candidate === null) continue;
+      const record = candidate as {
+        code?: string;
+        constraint?: string;
+        constraint_name?: string;
+        message?: string;
+      };
+      const constraint = record.constraint ?? record.constraint_name;
+      if (record.code === "23505") {
+        return { constraint };
+      }
+      if (typeof record.message === "string" && record.message.includes("23505")) {
+        return { constraint };
+      }
+    }
+
+    if (typeof error === "object" && error !== null && "message" in error) {
+      const message = String((error as { message?: unknown }).message ?? "");
+      if (message.includes("companies_issue_prefix_idx")) {
+        return { constraint: "companies_issue_prefix_idx" };
+      }
+    }
+
+    return null;
+  }
+
   function isIssuePrefixConflict(error: unknown) {
-    const constraint = typeof error === "object" && error !== null && "constraint" in error
-      ? (error as { constraint?: string }).constraint
-      : typeof error === "object" && error !== null && "constraint_name" in error
-        ? (error as { constraint_name?: string }).constraint_name
-        : undefined;
-    return typeof error === "object"
-      && error !== null
-      && "code" in error
-      && (error as { code?: string }).code === "23505"
-      && constraint === "companies_issue_prefix_idx";
+    const violation = readPostgresUniqueViolation(error);
+    if (!violation) return false;
+    return !violation.constraint || violation.constraint === "companies_issue_prefix_idx";
   }
 
   async function createCompanyWithUniquePrefix(data: typeof companies.$inferInsert) {

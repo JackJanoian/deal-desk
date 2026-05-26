@@ -21,7 +21,6 @@ import {
   CircleDot,
   Bot,
   Hexagon,
-  Target,
   LayoutDashboard,
   Inbox,
   DollarSign,
@@ -33,7 +32,7 @@ import {
 import { Identity } from "./Identity";
 import { agentUrl, projectUrl } from "../lib/utils";
 
-const SEARCH_ALL_VALUE = "__paperclip-search-all__";
+const SEARCH_ALL_VALUE = "__dealdesk-search-all__";
 
 export function buildFullSearchPath(query: string) {
   const trimmed = query.trim();
@@ -210,10 +209,6 @@ export function CommandPalette() {
           <CommandItem onSelect={() => go("/projects")}>
             <Hexagon className="mr-2 h-4 w-4" />
             Projects
-          </CommandItem>
-          <CommandItem onSelect={() => go("/goals")}>
-            <Target className="mr-2 h-4 w-4" />
-            Goals
           </CommandItem>
           <CommandItem onSelect={() => go("/agents")}>
             <Bot className="mr-2 h-4 w-4" />

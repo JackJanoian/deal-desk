@@ -1,9 +1,10 @@
 import { and, desc, eq, gte, isNotNull, isNull, lt, lte, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@paperclipai/db";
-import { activityLog, agents, companies, costEvents, heartbeatRuns, issues, projects } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { activityLog, agents, companies, costEvents, heartbeatRuns, issues, projects } from "@dealdesk/db";
 import { notFound, unprocessable } from "../errors.js";
 import { budgetService, type BudgetServiceHooks } from "./budgets.js";
+import { getCostPipelineHealth } from "./cost-pipeline-health.js";
 
 export interface CostDateRange {
   from?: Date;
@@ -127,11 +128,14 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
           ? (spendCents / company.budgetMonthlyCents) * 100
           : 0;
 
+      const pipelineHealth = await getCostPipelineHealth(db, companyId);
+
       return {
         companyId,
         spendCents,
         budgetCents: company.budgetMonthlyCents,
         utilizationPercent: Number(utilization.toFixed(2)),
+        pipelineHealth,
       };
     },
 

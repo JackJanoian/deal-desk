@@ -4,8 +4,8 @@
 // Uses INSERT ... ON CONFLICT (slug) DO UPDATE so re-running is safe and edits
 // to role-templates.ts propagate without a manual migration.
 
-import type { Db } from "@paperclipai/db";
-import { ddRoleTemplates } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddRoleTemplates } from "@dealdesk/db";
 import { eq, sql } from "drizzle-orm";
 import { dealDeskRoleTemplates } from "./role-templates.js";
 

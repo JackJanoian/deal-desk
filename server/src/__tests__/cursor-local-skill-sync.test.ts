@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listCursorSkills,
   syncCursorSkills,
-} from "@paperclipai/adapter-cursor-local/server";
+} from "@dealdesk/adapter-cursor-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const dealdeskKey = "dealdesk/dealdesk/dealdesk";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -27,13 +27,13 @@ describe("cursor local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("installs converted Deal Desk skills that keep Paperclip-compatible keys", async () => {
-    const home = await makeTempDir("paperclip-cursor-skill-sync-");
-    const runtimeSkills = await makeTempDir("paperclip-cursor-skill-src-");
+  it("installs converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+    const home = await makeTempDir("dealdesk-cursor-skill-sync-");
+    const runtimeSkills = await makeTempDir("dealdesk-cursor-skill-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const ctx = {
       agentId: "agent-1",
@@ -43,12 +43,12 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
@@ -57,22 +57,22 @@ describe("cursor local skill sync", () => {
 
     const before = await listCursorSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(dealdeskKey);
+    expect(before.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("missing");
 
-    const after = await syncCursorSkills(ctx, [paperclipKey]);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    const after = await syncCursorSkills(ctx, [dealdeskKey]);
+    expect(after.desiredSkills).toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("installed");
+    expect((await fs.lstat(path.join(home, ".cursor", "skills", "dealdesk"))).isSymbolicLink()).toBe(true);
   });
 
-  it("recognizes company-library runtime skills supplied outside the bundled Paperclip directory", async () => {
-    const home = await makeTempDir("paperclip-cursor-runtime-skills-home-");
-    const runtimeSkills = await makeTempDir("paperclip-cursor-runtime-skills-src-");
+  it("recognizes company-library runtime skills supplied outside the bundled DealDesk directory", async () => {
+    const home = await makeTempDir("dealdesk-cursor-runtime-skills-home-");
+    const runtimeSkills = await makeTempDir("dealdesk-cursor-runtime-skills-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
     const asciiHeartDir = await createSkillDir(runtimeSkills, "ascii-heart");
 
     const ctx = {
@@ -83,14 +83,14 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipRuntimeSkills: [
+        dealDeskRuntimeSkills: [
           {
-            key: "paperclip",
-            runtimeName: "paperclip",
+            key: "dealdesk",
+            runtimeName: "dealdesk",
             source: paperclipDir,
             required: true,
-            requiredReason: "Bundled Paperclip skills are always available for local adapters.",
-            sourceKind: "paperclip_bundled",
+            requiredReason: "Bundled DealDesk skills are always available for local adapters.",
+            sourceKind: "dealdesk_bundled",
           },
           {
             key: "ascii-heart",
@@ -98,7 +98,7 @@ describe("cursor local skill sync", () => {
             source: asciiHeartDir,
           },
         ],
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: ["ascii-heart"],
         },
       },
@@ -107,7 +107,7 @@ describe("cursor local skill sync", () => {
     const before = await listCursorSkills(ctx);
     expect(before.warnings).toEqual([]);
     expect(before.desiredSkills).toEqual(["ascii-heart"]);
-    expect(before.entries.find((entry) => entry.key === "paperclip")).toBeUndefined();
+    expect(before.entries.find((entry) => entry.key === "dealdesk")).toBeUndefined();
     expect(before.entries.find((entry) => entry.key === "ascii-heart")?.state).toBe("missing");
 
     const after = await syncCursorSkills(ctx, ["ascii-heart"]);
@@ -117,11 +117,11 @@ describe("cursor local skill sync", () => {
   });
 
   it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclip-cursor-skill-prune-");
-    const runtimeSkills = await makeTempDir("paperclip-cursor-skill-prune-src-");
+    const home = await makeTempDir("dealdesk-cursor-skill-prune-");
+    const runtimeSkills = await makeTempDir("dealdesk-cursor-skill-prune-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -131,19 +131,19 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
       },
     } as const;
 
-    await syncCursorSkills(configuredCtx, [paperclipKey]);
+    await syncCursorSkills(configuredCtx, [dealdeskKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -151,17 +151,17 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: [],
         },
-        paperclipRuntimeSkills: configuredCtx.config.paperclipRuntimeSkills,
+        dealDeskRuntimeSkills: configuredCtx.config.dealDeskRuntimeSkills,
       },
     } as const;
 
     const after = await syncCursorSkills(clearedCtx, []);
-    expect(after.desiredSkills).not.toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("available");
-    await expect(fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).rejects.toMatchObject({
+    expect(after.desiredSkills).not.toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("available");
+    await expect(fs.lstat(path.join(home, ".cursor", "skills", "dealdesk"))).rejects.toMatchObject({
       code: "ENOENT",
     });
   });

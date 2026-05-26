@@ -20,7 +20,7 @@ export function IssueGroupHeader({
   className,
 }: IssueGroupHeaderProps) {
   return (
-    <div className={cn("flex items-center py-1.5 pl-1 pr-3", className)}>
+    <div className={cn("flex items-center rounded-md bg-muted/25 px-2 py-1.5", className)}>
       {collapsible ? (
         <button
           type="button"
@@ -31,13 +31,13 @@ export function IssueGroupHeader({
           <ChevronRight
             className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", !collapsed && "rotate-90")}
           />
-          <span className="truncate text-sm font-semibold uppercase tracking-wide">
+          <span className="dd-kicker truncate">
             {label}
           </span>
         </button>
       ) : (
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-sm font-semibold uppercase tracking-wide">
+          <span className="dd-kicker truncate">
             {label}
           </span>
         </div>

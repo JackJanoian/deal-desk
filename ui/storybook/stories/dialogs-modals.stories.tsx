@@ -3,23 +3,21 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type {
   DocumentRevision,
   ExecutionWorkspaceCloseReadiness,
-  Goal,
   IssueAttachment,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { DocumentDiffModal } from "@/components/DocumentDiffModal";
 import { ExecutionWorkspaceCloseDialog } from "@/components/ExecutionWorkspaceCloseDialog";
 import { ImageGalleryModal } from "@/components/ImageGalleryModal";
 import { NewAgentDialog } from "@/components/NewAgentDialog";
-import { NewGoalDialog } from "@/components/NewGoalDialog";
 import { NewIssueDialog } from "@/components/NewIssueDialog";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { PathInstructionsModal } from "@/components/PathInstructionsModal";
 import { useCompany } from "@/context/CompanyContext";
 import { useDialog } from "@/context/DialogContext";
 import { queryKeys } from "@/lib/queryKeys";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@dealdesk/shared";
 import {
   storybookAgents,
   storybookAuthSession,
@@ -29,50 +27,11 @@ import {
   storybookIssueLabels,
   storybookIssues,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/dealDeskData";
 
 const COMPANY_ID = "company-storybook";
-const SELECTED_COMPANY_STORAGE_KEY = "paperclip.selectedCompanyId";
+const SELECTED_COMPANY_STORAGE_KEY = "dealdesk.selectedCompanyId";
 const ISSUE_DRAFT_STORAGE_KEY = "paperclip:issue-draft";
-
-const storybookGoals: Goal[] = [
-  {
-    id: "goal-company",
-    companyId: COMPANY_ID,
-    title: "Build Paperclip",
-    description: "Make autonomous companies easier to run and govern.",
-    level: "company",
-    status: "active",
-    parentId: null,
-    ownerAgentId: "agent-cto",
-    createdAt: new Date("2026-04-01T09:00:00.000Z"),
-    updatedAt: new Date("2026-04-20T11:00:00.000Z"),
-  },
-  {
-    id: "goal-storybook",
-    companyId: COMPANY_ID,
-    title: "Complete Storybook coverage",
-    description: "Expose dense board UI states for review before release.",
-    level: "team",
-    status: "active",
-    parentId: "goal-company",
-    ownerAgentId: "agent-codex",
-    createdAt: new Date("2026-04-17T09:00:00.000Z"),
-    updatedAt: new Date("2026-04-20T11:10:00.000Z"),
-  },
-  {
-    id: "goal-governance",
-    companyId: COMPANY_ID,
-    title: "Tighten governance review",
-    description: "Make review and approval gates visible in every operator flow.",
-    level: "team",
-    status: "planned",
-    parentId: "goal-company",
-    ownerAgentId: "agent-cto",
-    createdAt: new Date("2026-04-18T09:00:00.000Z"),
-    updatedAt: new Date("2026-04-20T11:15:00.000Z"),
-  },
-];
 
 const documentRevisions: DocumentRevision[] = [
   {
@@ -170,7 +129,7 @@ const closeReadinessReady: ExecutionWorkspaceCloseReadiness = {
       kind: "git_worktree_remove",
       label: "Remove git worktree",
       description: "Removes the issue worktree from the local worktree parent directory.",
-      command: "git worktree remove .paperclip/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
+      command: "git worktree remove .dealdesk/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
     },
     {
       kind: "archive_record",
@@ -184,7 +143,7 @@ const closeReadinessReady: ExecutionWorkspaceCloseReadiness = {
   isProjectPrimaryWorkspace: false,
   git: {
     repoRoot: "/Users/dotta/paperclip",
-    workspacePath: "/Users/dotta/paperclip/.paperclip/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
+    workspacePath: "/Users/dotta/paperclip/.dealdesk/worktrees/PAP-1641-create-super-detailed-storybooks-for-our-project",
     branchName: "PAP-1641-create-super-detailed-storybooks-for-our-project",
     baseRef: "master",
     hasDirtyTrackedFiles: true,
@@ -333,7 +292,6 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.setQueryData(queryKeys.auth.session, storybookAuthSession);
   queryClient.setQueryData(queryKeys.agents.list(COMPANY_ID), storybookAgents);
   queryClient.setQueryData(queryKeys.projects.list(COMPANY_ID), storybookProjects);
-  queryClient.setQueryData(queryKeys.goals.list(COMPANY_ID), storybookGoals);
   queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
   queryClient.setQueryData(queryKeys.issues.labels(COMPANY_ID), storybookIssueLabels);
   queryClient.setQueryData(queryKeys.issues.documents("issue-storybook-1"), storybookIssueDocuments);
@@ -359,7 +317,7 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
         status: "active",
         user: {
           id: "user-board",
-          email: "riley@paperclip.local",
+          email: "riley@dealdesk.local",
           name: "Riley Board",
           image: null,
         },
@@ -579,24 +537,6 @@ function AgentDialogOpener({ advanced }: { advanced?: boolean }) {
   return <NewAgentDialog />;
 }
 
-function GoalDialogOpener({ populated }: { populated?: boolean }) {
-  const { openNewGoal } = useDialog();
-
-  useOpenWhenCompanyReady(() => {
-    openNewGoal(populated ? { parentId: "goal-company" } : {});
-  });
-
-  useEffect(() => {
-    if (!populated) return undefined;
-    const timer = window.setTimeout(() => {
-      fillFirstField("input[placeholder='Goal title']", "Add modal review coverage");
-    }, 250);
-    return () => window.clearTimeout(timer);
-  }, [populated]);
-
-  return <NewGoalDialog />;
-}
-
 function ProjectDialogOpener({ populated }: { populated?: boolean }) {
   const { openNewProject } = useDialog();
 
@@ -608,7 +548,7 @@ function ProjectDialogOpener({ populated }: { populated?: boolean }) {
     if (!populated) return undefined;
     const timer = window.setTimeout(() => {
       fillFirstField("input[placeholder='Project name']", "Storybook review workspace");
-      fillFirstField("input[placeholder='https://github.com/org/repo']", "https://github.com/paperclipai/paperclip");
+      fillFirstField("input[placeholder='https://github.com/org/repo']", "https://github.com/dealdesk/paperclip");
       fillFirstField("input[placeholder='/absolute/path/to/workspace']", "/Users/dotta/paperclip/ui");
       fillFirstField("input[type='date']", "2026-04-30");
     }, 250);
@@ -832,7 +772,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Open-state stories for Paperclip creation dialogs, workspace confirmations, document diffing, image attachments, and path helper modals.",
+          "Open-state stories for DealDesk creation dialogs, workspace confirmations, document diffing, image attachments, and path helper modals.",
       },
     },
   },
@@ -964,34 +904,6 @@ export const NewAgentAdapterSelection: Story = {
       badges={["populated", "adapters", "advanced"]}
     >
       <AgentDialogOpener advanced />
-    </DialogStory>
-  ),
-};
-
-export const NewGoalEmpty: Story = {
-  name: "New Goal - Empty",
-  render: () => (
-    <DialogStory
-      eyebrow="NewGoalDialog"
-      title="Empty goal form"
-      description="Default goal creation state with status, level, and parent-goal controls available."
-      badges={["empty", "goal", "parent picker"]}
-    >
-      <GoalDialogOpener />
-    </DialogStory>
-  ),
-};
-
-export const NewGoalWithParent: Story = {
-  name: "New Goal - Parent Selected",
-  render: () => (
-    <DialogStory
-      eyebrow="NewGoalDialog"
-      title="Goal creation with parent context"
-      description="Populated goal creation state with a seeded title and company-level parent goal selected."
-      badges={["populated", "sub-goal", "parent selected"]}
-    >
-      <GoalDialogOpener populated />
     </DialogStory>
   ),
 };

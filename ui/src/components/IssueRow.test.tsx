@@ -2,7 +2,7 @@
 
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@dealdesk/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueRow } from "./IssueRow";
 
@@ -94,7 +94,7 @@ describe("IssueRow", () => {
 
     const link = container.querySelector("[data-inbox-issue-link]") as HTMLAnchorElement | null;
     expect(link).not.toBeNull();
-    expect(link?.className).toContain("hover:bg-transparent");
+    expect(link?.className).toContain("hover:bg-primary/10");
     expect(link?.className).not.toContain("hover:bg-accent/50");
 
     act(() => {

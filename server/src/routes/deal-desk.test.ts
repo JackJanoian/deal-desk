@@ -16,7 +16,7 @@ import {
   expect,
   it,
 } from "vitest";
-import { companies, createDb, ddTheses } from "@paperclipai/db";
+import { companies, createDb, ddTargets, ddTheses } from "@dealdesk/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -48,7 +48,7 @@ describeEmbeddedPostgres(
 
     beforeAll(async () => {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-deal-desk-routes-",
+        "dealdesk-deal-desk-routes-",
       );
       db = createDb(tempDb.connectionString);
     }, 30_000);
@@ -110,7 +110,7 @@ describeEmbeddedPostgres(
       const [thesis] = await db
         .insert(ddTheses)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: "Original",
           sector: "Original sector",
         })
@@ -137,7 +137,7 @@ describeEmbeddedPostgres(
       const [thesis] = await db
         .insert(ddTheses)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: "T",
           sector: "S",
         })
@@ -163,7 +163,7 @@ describeEmbeddedPostgres(
       const [thesis] = await db
         .insert(ddTheses)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: "T",
           sector: "S",
         })
@@ -191,7 +191,7 @@ describeEmbeddedPostgres(
       const [thesis] = await db
         .insert(ddTheses)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: "T",
           sector: "S",
         })
@@ -212,3 +212,145 @@ describeEmbeddedPostgres(
     });
   },
 );
+
+describeEmbeddedPostgres("Deal Desk target routes", () => {
+  let db!: ReturnType<typeof createDb>;
+  let tempDb: Awaited<
+    ReturnType<typeof startEmbeddedPostgresTestDatabase>
+  > | null = null;
+  let companyId!: string;
+
+  beforeAll(async () => {
+    tempDb = await startEmbeddedPostgresTestDatabase(
+      "dealdesk-deal-desk-targets-",
+    );
+    db = createDb(tempDb.connectionString);
+  }, 30_000);
+
+  beforeEach(async () => {
+    companyId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Target Co",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+  });
+
+  afterEach(async () => {
+    await db.delete(ddTargets);
+    await db.delete(ddTheses);
+    await db.delete(companies);
+  });
+
+  afterAll(async () => {
+    await tempDb?.cleanup();
+  });
+
+  function createApp(currentCompanyId: string) {
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      (req as { actor: unknown }).actor = {
+        type: "board",
+        source: "session",
+        userId: "test-user",
+        isInstanceAdmin: false,
+        companyIds: [currentCompanyId],
+        memberships: [
+          {
+            companyId: currentCompanyId,
+            status: "active",
+            membershipRole: "admin",
+          },
+        ],
+      };
+      next();
+    });
+    app.use("/api/companies", dealDeskRoutes(db));
+    app.use(errorHandler);
+    return app;
+  }
+
+  async function seedThesis() {
+    const [thesis] = await db
+      .insert(ddTheses)
+      .values({
+        dealDeskCompanyId: companyId,
+        name: "HVAC SE",
+        sector: "HVAC",
+      })
+      .returning();
+    return thesis!;
+  }
+
+  function makeTargetBody(thesisId: string) {
+    return {
+      thesisId,
+      companyName: "Acme HVAC",
+      fitScore: 72,
+      fitRationale: "Strong thesis fit with recurring revenue profile.",
+      sources: [{ url: "https://acme.example.com", description: "Site" }],
+    };
+  }
+
+  it("POST /deal-desk/targets creates a target", async () => {
+    const thesis = await seedThesis();
+    const app = createApp(companyId);
+    const res = await request(app)
+      .post(`/api/companies/${companyId}/deal-desk/targets`)
+      .send(makeTargetBody(thesis.id))
+      .expect(201);
+
+    expect(res.body.companyName).toBe("Acme HVAC");
+    expect(res.body.status).toBe("sourced");
+  });
+
+  it("GET /deal-desk/targets/:targetId returns a single target", async () => {
+    const thesis = await seedThesis();
+    const app = createApp(companyId);
+    const created = await request(app)
+      .post(`/api/companies/${companyId}/deal-desk/targets`)
+      .send(makeTargetBody(thesis.id));
+
+    const res = await request(app)
+      .get(`/api/companies/${companyId}/deal-desk/targets/${created.body.id}`)
+      .expect(200);
+
+    expect(res.body.id).toBe(created.body.id);
+  });
+
+  it("PATCH /deal-desk/targets/:targetId updates status and notes", async () => {
+    const thesis = await seedThesis();
+    const app = createApp(companyId);
+    const created = await request(app)
+      .post(`/api/companies/${companyId}/deal-desk/targets`)
+      .send(makeTargetBody(thesis.id));
+
+    const res = await request(app)
+      .patch(`/api/companies/${companyId}/deal-desk/targets/${created.body.id}`)
+      .send({ status: "qualified", notes: "Partner review scheduled" })
+      .expect(200);
+
+    expect(res.body.status).toBe("qualified");
+    expect(res.body.notes).toBe("Partner review scheduled");
+    expect(res.body.statusChangedAt).toBeTruthy();
+  });
+
+  it("GET /deal-desk/pipeline/summary returns counts by status", async () => {
+    const thesis = await seedThesis();
+    const app = createApp(companyId);
+    await request(app)
+      .post(`/api/companies/${companyId}/deal-desk/targets`)
+      .send(makeTargetBody(thesis.id));
+
+    const res = await request(app)
+      .get(`/api/companies/${companyId}/deal-desk/pipeline/summary`)
+      .query({ thesisId: thesis.id })
+      .expect(200);
+
+    expect(res.body.total).toBe(1);
+    expect(res.body.byStatus.sourced).toBe(1);
+    expect(res.body.byStatus.qualified).toBe(0);
+  });
+});

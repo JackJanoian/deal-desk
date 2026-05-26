@@ -185,7 +185,7 @@ describe("SidebarSection", () => {
 
     expect(sectionMenuTrigger?.textContent).toContain("Projects");
     expect(sectionMenuTrigger?.querySelector("svg")).toBeNull();
-    expect(sectionMenuTrigger?.getAttribute("class")).toContain("hover:bg-accent/50");
+    expect(sectionMenuTrigger?.getAttribute("class")).toContain("hover:bg-sidebar-accent/60");
     expect(newProjectButton).toBeTruthy();
 
     await act(async () => {

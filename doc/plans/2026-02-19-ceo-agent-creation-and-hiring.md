@@ -204,7 +204,7 @@ Add plain-text reflection routes:
 
 Index file includes:
 
-- installed adapter list for this Paperclip instance
+- installed adapter list for this DealDesk instance
 - per-adapter doc URLs
 - brief "how to hire" API sequence links
 
@@ -288,8 +288,8 @@ Provide board-only destructive action in approval detail:
 
 Create new skill directory:
 
-- `skills/paperclip-create-agent/SKILL.md`
-- `skills/paperclip-create-agent/references/api-reference.md`
+- `skills/dealdesk-create-agent/SKILL.md`
+- `skills/dealdesk-create-agent/references/api-reference.md`
 
 Skill responsibilities:
 
@@ -301,7 +301,7 @@ Skill responsibilities:
 - Execute hire API flow
 - Handle revision loop with board comments
 
-Also update `skills/paperclip/SKILL.md` to reference this skill for hiring workflows.
+Also update `skills/dealdesk/SKILL.md` to reference this skill for hiring workflows.
 
 ## 9. Enforcement and Invariants
 

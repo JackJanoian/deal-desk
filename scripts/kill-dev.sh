@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Kill all local Paperclip dev server processes (across all worktrees).
+# Kill all local DealDesk dev server processes (across all worktrees).
 #
 # Usage:
-#   scripts/kill-dev.sh        # kill all paperclip dev processes
+#   scripts/kill-dev.sh        # kill all dealdesk dev processes
 #   scripts/kill-dev.sh --dry  # preview what would be killed
 #
 
@@ -99,16 +99,16 @@ done < <(ps aux | grep -E 'agent-browser/browsers/chrome-.*/Google Chrome for Te
 
 candidate_pidfiles=()
 candidate_pidfiles+=(
-  "$HOME"/.paperclip/instances/*/db/postmaster.pid
-  "$REPO_ROOT"/.paperclip/instances/*/db/postmaster.pid
-  "$REPO_ROOT"/.paperclip/runtime-services/instances/*/db/postmaster.pid
+  "$HOME"/.dealdesk/instances/*/db/postmaster.pid
+  "$REPO_ROOT"/.dealdesk/instances/*/db/postmaster.pid
+  "$REPO_ROOT"/.dealdesk/runtime-services/instances/*/db/postmaster.pid
 )
 
 for sibling_root in "$REPO_PARENT"/paperclip*; do
   [[ -d "$sibling_root" ]] || continue
   candidate_pidfiles+=(
-    "$sibling_root"/.paperclip/instances/*/db/postmaster.pid
-    "$sibling_root"/.paperclip/runtime-services/instances/*/db/postmaster.pid
+    "$sibling_root"/.dealdesk/instances/*/db/postmaster.pid
+    "$sibling_root"/.dealdesk/runtime-services/instances/*/db/postmaster.pid
   )
 done
 
@@ -118,12 +118,12 @@ for pidfile in "${candidate_pidfiles[@]:-}"; do
 done
 
 if [[ ${#node_pids[@]} -eq 0 && ${#pg_pids[@]} -eq 0 && ${#browser_pids[@]} -eq 0 ]]; then
-  echo "No Paperclip dev processes found."
+  echo "No DealDesk dev processes found."
   exit 0
 fi
 
 if [[ ${#node_pids[@]} -gt 0 ]]; then
-  echo "Found ${#node_pids[@]} Paperclip dev node process(es):"
+  echo "Found ${#node_pids[@]} DealDesk dev node process(es):"
   echo ""
 
   for i in "${!node_pids[@]:-}"; do
@@ -176,7 +176,7 @@ if [[ "$DRY_RUN" == true ]]; then
 fi
 
 if [[ ${#node_pids[@]} -gt 0 ]]; then
-  echo "Sending SIGTERM to Paperclip node processes..."
+  echo "Sending SIGTERM to DealDesk node processes..."
   for pid in "${node_pids[@]}"; do
     kill -TERM "$pid" 2>/dev/null && echo "  signaled $pid" || echo "  $pid already gone"
   done

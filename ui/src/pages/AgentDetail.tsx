@@ -27,7 +27,7 @@ import { PageTabBar } from "../components/PageTabBar";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
-import { redactCommandText as redactCommandSecretText } from "@paperclipai/adapter-utils";
+import { redactCommandText as redactCommandSecretText } from "@dealdesk/adapter-utils";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { assetsApi } from "../api/assets";
 import { getUIAdapter, buildTranscript, onAdapterChange } from "../adapters";
@@ -92,8 +92,8 @@ import {
   type AgentRuntimeState,
   type LiveEvent,
   type WorkspaceOperation,
-} from "@paperclipai/shared";
-import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@paperclipai/adapter-utils";
+} from "@dealdesk/shared";
+import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@dealdesk/adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 import {
   applyAgentSkillSnapshot,
@@ -116,7 +116,7 @@ const RUN_LOG_PAGE_BYTES = 256_000;
 const REDACTED_ENV_VALUE = "***REDACTED***";
 const SECRET_ENV_KEY_RE =
   /(api[-_]?key|access[-_]?token|auth(?:_?token)?|authorization|bearer|secret|passwd|password|credential|jwt|private[-_]?key|cookie|connectionstring)/i;
-const COMMAND_ENV_KEY_RE = /(^command$|^cmd$|command[-_]?line|resolved[-_]?command|PAPERCLIP_RESOLVED_COMMAND)/i;
+const COMMAND_ENV_KEY_RE = /(^command$|^cmd$|command[-_]?line|resolved[-_]?command|DEALDESK_RESOLVED_COMMAND)/i;
 const JWT_VALUE_RE = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?$/;
 
 function redactPathText(value: string, censorUsernameInLogs: boolean) {
@@ -915,21 +915,22 @@ export function AgentDetail() {
   const showConfigActionBar = (activeView === "configuration" || activeView === "instructions") && (configDirty || configSaving);
 
   return (
-    <div className={cn("space-y-6", isMobile && showConfigActionBar && "pb-24")}>
+    <div className={cn("space-y-4 overflow-hidden sm:space-y-6", isMobile && showConfigActionBar && "pb-24")}>
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <AgentIconPicker
             value={agent.icon}
             onChange={(icon) => updateIcon.mutate(icon)}
           >
-            <button className="shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
-              <AgentIcon icon={agent.icon} className="h-6 w-6" />
+            <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-card/45 transition-colors hover:bg-accent/35">
+              <AgentIcon icon={agent.icon} className="h-5 w-5" />
             </button>
           </AgentIconPicker>
-          <div className="min-w-0">
-            <h2 className="text-2xl font-bold truncate">{agent.name}</h2>
-            <p className="text-sm text-muted-foreground truncate">
+          <div className="min-w-0 space-y-1">
+            <div className="dd-kicker">Agent</div>
+            <h2 className="truncate text-xl font-semibold sm:text-2xl">{agent.name}</h2>
+            <p className="truncate text-sm text-muted-foreground">
               {roleLabels[agent.role] ?? agent.role}
               {agent.title ? ` - ${agent.title}` : ""}
             </p>
@@ -959,13 +960,13 @@ export function AgentDetail() {
           {mobileLiveRun && (
             <Link
               to={`/agents/${canonicalAgentRef}/runs/${mobileLiveRun.id}`}
-              className="sm:hidden flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 transition-colors no-underline"
+              className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 transition-colors no-underline hover:bg-primary/15 sm:hidden"
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
-              <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">Live</span>
+              <span className="text-[11px] font-medium text-primary">Live</span>
             </Link>
           )}
 
@@ -1016,19 +1017,23 @@ export function AgentDetail() {
         <Tabs
           value={activeView}
           onValueChange={(value) => navigate(`/agents/${canonicalAgentRef}/${value}`)}
+          className="space-y-4"
         >
-          <PageTabBar
-            items={[
-              { value: "dashboard", label: "Dashboard" },
-              { value: "instructions", label: "Instructions" },
-              { value: "skills", label: "Skills" },
-              { value: "configuration", label: "Configuration" },
-              { value: "runs", label: "Runs" },
-              { value: "budget", label: "Budget" },
-            ]}
-            value={activeView}
-            onValueChange={(value) => navigate(`/agents/${canonicalAgentRef}/${value}`)}
-          />
+          <div className="border-b border-border/70">
+            <PageTabBar
+              items={[
+                { value: "dashboard", label: "Dashboard" },
+                { value: "instructions", label: "Instructions" },
+                { value: "skills", label: "Skills" },
+                { value: "configuration", label: "Configuration" },
+                { value: "runs", label: "Runs" },
+                { value: "budget", label: "Budget" },
+              ]}
+              align="start"
+              value={activeView}
+              onValueChange={(value) => navigate(`/agents/${canonicalAgentRef}/${value}`)}
+            />
+          </div>
         </Tabs>
       )}
 
@@ -1051,7 +1056,7 @@ export function AgentDetail() {
       {/* Floating Save/Cancel (desktop) */}
       {!isMobile && showConfigActionBar && (
         <div className="fixed bottom-6 right-6 z-30">
-          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-lg">
+          <div className="dd-panel-subtle flex items-center gap-2 rounded-lg px-3 py-1.5 shadow-lg backdrop-blur-sm">
             <Button
               variant="ghost"
               size="sm"
@@ -1234,8 +1239,8 @@ function LatestRunCard({ runs, agentId }: { runs: HeartbeatRun[]; agentId: strin
       <Link
         to={`/agents/${agentId}/runs/${run.id}`}
         className={cn(
-          "block border rounded-lg p-4 space-y-2 w-full no-underline transition-colors hover:bg-muted/50 cursor-pointer",
-          isLive ? "border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.08)]" : "border-border"
+          "dd-panel-subtle block w-full cursor-pointer space-y-2 rounded-lg p-4 no-underline transition-colors hover:bg-accent/20",
+          isLive && "border-primary/30 shadow-[0_0_12px_color-mix(in_oklab,var(--primary)_12%,transparent)]"
         )}
       >
         <div className="flex items-center gap-2">
@@ -1282,7 +1287,7 @@ function AgentOverview({
   agentRouteId: string;
 }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Latest Run */}
       <LatestRunCard runs={runs} agentId={agentRouteId} />
 
@@ -1316,7 +1321,7 @@ function AgentOverview({
         {assignedIssues.length === 0 ? (
           <p className="text-sm text-muted-foreground">No recent issues.</p>
         ) : (
-          <div className="border border-border rounded-lg">
+          <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45">
             {assignedIssues.slice(0, 10).map((issue) => (
               <EntityRow
                 key={issue.id}
@@ -1327,7 +1332,7 @@ function AgentOverview({
               />
             ))}
             {assignedIssues.length > 10 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t border-border">
+              <div className="border-t border-border/60 px-3 py-2 text-center text-xs text-muted-foreground">
                 +{assignedIssues.length - 10} more issues
               </div>
             )}
@@ -1363,7 +1368,7 @@ function CostsSection({
   return (
     <div className="space-y-4">
       {runtimeState && (
-        <div className="border border-border rounded-lg p-4">
+        <div className="dd-panel-subtle rounded-lg p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 tabular-nums">
             <div>
               <span className="text-xs text-muted-foreground block">Input tokens</span>
@@ -1385,10 +1390,10 @@ function CostsSection({
         </div>
       )}
       {runsWithCost.length > 0 && (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-border bg-accent/20">
+              <tr className="border-b border-border/60 bg-muted/40">
                 <th className="text-left px-3 py-2 font-medium text-muted-foreground">Date</th>
                 <th className="text-left px-3 py-2 font-medium text-muted-foreground">Run</th>
                 <th className="text-right px-3 py-2 font-medium text-muted-foreground">Input</th>
@@ -1400,7 +1405,7 @@ function CostsSection({
               {runsWithCost.slice(0, 10).map((run) => {
                 const metrics = runMetrics(run);
                 return (
-                  <tr key={run.id} className="border-b border-border last:border-b-0">
+                  <tr key={run.id} className="border-b border-border/60 last:border-b-0">
                     <td className="px-3 py-2">{formatDate(run.createdAt)}</td>
                     <td className="px-3 py-2 font-mono">{run.id.slice(0, 8)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{formatTokens(metrics.input)}</td>
@@ -2049,7 +2054,7 @@ function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
+                      Managed: DealDesk stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -2104,7 +2109,7 @@ function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.
+                      The absolute directory on disk where the instructions bundle lives. In managed mode this is set by DealDesk automatically.
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -2662,12 +2667,12 @@ export function AgentSkillsTab({
       typeof agent.adapterConfig.agent === "string" &&
       agent.adapterConfig.agent === "custom"
     ) {
-      return "Paperclip cannot manage skills for custom ACP commands yet.";
+      return "DealDesk cannot manage skills for custom ACP commands yet.";
     }
     if (agent.adapterType === "openclaw_gateway") {
-      return "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.";
+      return "DealDesk cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.";
     }
-    return "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.";
+    return "DealDesk cannot manage skills for this adapter yet. Manage them in the adapter directly.";
   }, [agent.adapterConfig.agent, agent.adapterType, skillSnapshot?.mode]);
   const hasUnsavedChanges = !arraysEqual(skillDraft, lastSavedSkills);
   const saveStatusLabel = syncSkills.isPending
@@ -2825,7 +2830,7 @@ export function AgentSkillsTab({
                   <section className="border-y border-border">
                     <div className="border-b border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Required by Paperclip
+                        Required by DealDesk
                       </span>
                     </div>
                     {requiredSkillRows.map(renderSkillRow)}
@@ -2842,7 +2847,7 @@ export function AgentSkillsTab({
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnmanagedOpen((v) => !v); } }}
                     >
                       <span className="text-xs font-medium text-muted-foreground">
-                        ({unmanagedSkillRows.length}) User-installed skills, not managed by Paperclip
+                        ({unmanagedSkillRows.length}) User-installed skills, not managed by DealDesk
                       </span>
                       {unmanagedOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                     </div>
@@ -4155,7 +4160,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           Create API Key
         </h3>
         <p className="text-xs text-muted-foreground">
-          API keys allow this agent to authenticate calls to the Paperclip server.
+          API keys allow this agent to authenticate calls to the DealDesk server.
         </p>
         <div className="flex items-center gap-2">
           <Input

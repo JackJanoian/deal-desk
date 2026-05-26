@@ -1,6 +1,6 @@
 # Plugin Authoring Guide
 
-This guide describes the current, implemented way to create a Paperclip plugin in this repo.
+This guide describes the current, implemented way to create a DealDesk plugin in this repo.
 
 It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec includes future ideas; this guide only covers the alpha surface that exists now.
 
@@ -9,14 +9,14 @@ It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec i
 ## Current reality
 
 - Treat plugin workers and plugin UI as trusted code.
-- Plugin UI runs as same-origin JavaScript inside the main Paperclip app.
+- Plugin UI runs as same-origin JavaScript inside the main DealDesk app.
 - Worker-side host APIs are capability-gated.
 - Plugin UI is not sandboxed by manifest capabilities.
 - Plugin database migrations are restricted to a host-derived plugin namespace.
 - Plugin-owned JSON API routes must be declared in the manifest and are mounted
   only under `/api/plugins/:pluginId/api/*`.
 - The host provides a small shared React component kit through
-  `@paperclipai/plugin-sdk/ui`; use it for common Paperclip controls before
+  `@dealdesk/plugin-sdk/ui`; use it for common DealDesk controls before
   building custom versions.
 - `ctx.assets` is not supported in the current runtime.
 
@@ -25,7 +25,7 @@ It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec i
 Use the CLI scaffold command:
 
 ```bash
-paperclipai plugin init @yourscope/plugin-name --output /absolute/path/to/plugin-repos
+dealdesk plugin init @yourscope/plugin-name --output /absolute/path/to/plugin-repos
 ```
 
 That creates `<output>/plugin-name/` with:
@@ -37,13 +37,13 @@ That creates `<output>/plugin-name/` with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@paperclipai/plugin-sdk`.
+Inside this monorepo, the scaffold uses `workspace:*` for `@dealdesk/plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@paperclipai/plugin-sdk` from the local Paperclip checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Paperclip checkout.
+Outside this monorepo, the scaffold snapshots `@dealdesk/plugin-sdk` from the local DealDesk checkout into a `.dealdesk-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one DealDesk checkout.
 
 ## Local development workflow
 
-See the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) for the full happy path (`pnpm dev` → `paperclipai plugin install <absolute-path>` → `paperclipai plugin list`) and reload semantics.
+See the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) for the full happy path (`pnpm dev` → `dealdesk plugin install <absolute-path>` → `dealdesk plugin list`) and reload semantics.
 
 Minimum verification from the generated plugin folder:
 
@@ -130,21 +130,21 @@ handler. The worker receives sanitized headers, route params, query, parsed JSON
 body, actor context, and company id. Do not use plugin routes to claim core
 paths; they always remain under `/api/plugins/:pluginId/api/*`.
 
-## Managed Paperclip resources
+## Managed DealDesk resources
 
-Plugins that provide durable Paperclip business objects should declare them in
+Plugins that provide durable DealDesk business objects should declare them in
 the manifest and let the host create or relink the actual records per company.
 Do this for plugin-owned agents, plugin-owned projects, and recurring automation.
 Do not hide long-lived work behind private plugin state when it should be visible
 to the board, scoped to a company, audited, budgeted, and assigned like normal
-Paperclip work.
+DealDesk work.
 
 Use these surfaces:
 
 - Managed agents: declare top-level `agents[]` and require
   `agents.managed`. Use this when the plugin provides a named worker the board
   should see in the org, budget, pause, invoke, and inspect. Managed agents are
-  normal Paperclip agents with plugin ownership metadata, not background plugin
+  normal DealDesk agents with plugin ownership metadata, not background plugin
   workers.
 - Managed projects: declare top-level `projects[]` and require
   `projects.managed`. Use this when the plugin needs a stable company-scoped
@@ -152,7 +152,7 @@ Use these surfaces:
   in a project instead of scattering generated issues across unrelated projects.
 - Managed routines: declare top-level `routines[]` and require
   `routines.managed`. Use this for scheduled, webhook, or manually triggered
-  jobs that should create visible Paperclip issues. Prefer managed routines over
+  jobs that should create visible DealDesk issues. Prefer managed routines over
   plugin `jobs[]` for recurring business work; plugin jobs are for plugin
   runtime maintenance that does not need a board-visible task trail.
 
@@ -171,9 +171,9 @@ routine; if a ref is still missing, the routine resolution reports
 `missing_refs` instead of guessing.
 
 ```ts
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/plugin-sdk";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: DealDeskPluginManifestV1 = {
   id: "example.research-plugin",
   apiVersion: 1,
   version: "0.1.0",
@@ -200,7 +200,7 @@ const manifest: PaperclipPluginManifestV1 = {
       capabilities: "Runs recurring research briefs for this company.",
       adapterPreference: ["codex_local", "claude_local", "process"],
       instructions: {
-        content: "Follow the Paperclip heartbeat and produce concise research briefs.",
+        content: "Follow the DealDesk heartbeat and produce concise research briefs.",
       },
     },
   ],
@@ -250,7 +250,7 @@ In the worker, expose a small setup action or settings-page action that
 reconciles the resources for the selected company:
 
 ```ts
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@dealdesk/plugin-sdk";
 
 export default definePlugin({
   setup(ctx) {
@@ -277,12 +277,12 @@ Authoring rules:
   the operator or resolved from `ctx.agents.managed`.
 - Use managed routines for recurring or externally triggered work that should
   produce tasks. Schedule, webhook, and API triggers are visible routine
-  triggers, and each run has the normal Paperclip issue/audit trail.
+  triggers, and each run has the normal DealDesk issue/audit trail.
 - Use managed projects to keep plugin-generated work organized and to give
   project-scoped plugin UI a stable home. For filesystem access inside a
   project, still resolve project workspaces through `ctx.projects`.
 - Keep defaults conservative. Managed declarations are suggestions owned by the
-  plugin, but the resulting resources are normal Paperclip records that the
+  plugin, but the resulting resources are normal DealDesk records that the
   operator can inspect, pause, and adjust.
 
 UI:
@@ -292,7 +292,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@paperclipai/plugin-sdk/ui`
+- typed slot props from `@dealdesk/plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 
@@ -312,8 +312,8 @@ Mount surfaces currently wired in the host include:
 
 ## Shared host components
 
-Use shared components from `@paperclipai/plugin-sdk/ui` when the plugin needs a
-Paperclip-native control. The host owns the implementation, so plugins inherit
+Use shared components from `@dealdesk/plugin-sdk/ui` when the plugin needs a
+DealDesk-native control. The host owns the implementation, so plugins inherit
 the board's current styling, ordering, recent selections, and dark-mode behavior
 without importing `ui/src` internals.
 
@@ -329,7 +329,7 @@ Currently exposed components include:
 - `ManagedRoutinesList` for plugin-owned routine settings pages.
 
 ```tsx
-import { AssigneePicker, ProjectPicker } from "@paperclipai/plugin-sdk/ui";
+import { AssigneePicker, ProjectPicker } from "@dealdesk/plugin-sdk/ui";
 
 export function PluginAssignmentControls({ companyId }: { companyId: string }) {
   const [assignee, setAssignee] = useState("");
@@ -361,7 +361,7 @@ data the plugin actually has.
 
 ### When to use the shared `FileTree`
 
-Use `FileTree` from `@paperclipai/plugin-sdk/ui` whenever the plugin only needs
+Use `FileTree` from `@dealdesk/plugin-sdk/ui` whenever the plugin only needs
 to render a serializable file/directory list and react to selection or
 expand/collapse. The host owns the implementation, so plugin UI inherits the
 board's icons, indent, focus ring, and dark-mode styling without importing host
@@ -371,7 +371,7 @@ internals.
 import {
   FileTree,
   type FileTreeNode,
-} from "@paperclipai/plugin-sdk/ui";
+} from "@dealdesk/plugin-sdk/ui";
 
 const nodes: FileTreeNode[] = [
   { name: "AGENTS.md", path: "AGENTS.md", kind: "file", children: [] },

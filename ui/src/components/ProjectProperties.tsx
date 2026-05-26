@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Link } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@paperclipai/shared";
+import type { Project } from "@dealdesk/shared";
 import { StatusBadge } from "./StatusBadge";
 import { cn, formatDate } from "../lib/utils";
 import { environmentsApi } from "../api/environments";
-import { goalsApi } from "../api/goals";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { projectsApi } from "../api/projects";
 import { secretsApi } from "../api/secrets";
@@ -45,7 +43,6 @@ export type ProjectConfigFieldKey =
   | "name"
   | "description"
   | "status"
-  | "goals"
   | "env"
   | "execution_workspace_enabled"
   | "execution_workspace_default_mode"
@@ -224,7 +221,6 @@ function ArchiveDangerZone({
 export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSaveState, onArchive, archivePending }: ProjectPropertiesProps) {
   const { selectedCompanyId } = useCompany();
   const queryClient = useQueryClient();
-  const [goalOpen, setGoalOpen] = useState(false);
   const [executionWorkspaceAdvancedOpen, setExecutionWorkspaceAdvancedOpen] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState<"local" | "repo" | null>(null);
   const [workspaceCwd, setWorkspaceCwd] = useState("");
@@ -240,11 +236,6 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
   };
   const fieldState = (field: ProjectConfigFieldKey): ProjectFieldSaveState => getFieldSaveState?.(field) ?? "idle";
 
-  const { data: allGoals } = useQuery({
-    queryKey: queryKeys.goals.list(selectedCompanyId!),
-    queryFn: () => goalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
-  });
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
@@ -272,20 +263,6 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
     enabled: !!selectedCompanyId && environmentsEnabled,
   });
 
-  const linkedGoalIds = project.goalIds.length > 0
-    ? project.goalIds
-    : project.goalId
-      ? [project.goalId]
-      : [];
-
-  const linkedGoals = project.goals.length > 0
-    ? project.goals
-    : linkedGoalIds.map((id) => ({
-        id,
-        title: allGoals?.find((g) => g.id === id)?.title ?? id.slice(0, 8),
-      }));
-
-  const availableGoals = (allGoals ?? []).filter((g) => !linkedGoalIds.includes(g.id));
   const workspaces = project.workspaces ?? [];
   const codebase = project.codebase;
   const primaryCodebaseWorkspace = project.primaryWorkspace ?? null;
@@ -351,17 +328,6 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
       invalidateProject();
     },
   });
-
-  const removeGoal = (goalId: string) => {
-    if (!onUpdate && !onFieldUpdate) return;
-    commitField("goals", { goalIds: linkedGoalIds.filter((id) => id !== goalId) });
-  };
-
-  const addGoal = (goalId: string) => {
-    if ((!onUpdate && !onFieldUpdate) || linkedGoalIds.includes(goalId)) return;
-    commitField("goals", { goalIds: [...linkedGoalIds, goalId] });
-    setGoalOpen(false);
-  };
 
   const updateExecutionWorkspacePolicy = (patch: Record<string, unknown>) => {
     if (!onUpdate && !onFieldUpdate) return;
@@ -555,68 +521,6 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
           </PropertyRow>
         )}
         <PropertyRow
-          label={<FieldLabel label="Goals" state={fieldState("goals")} />}
-          alignStart
-          valueClassName="space-y-2"
-        >
-          {linkedGoals.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {linkedGoals.map((goal) => (
-                <span
-                  key={goal.id}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs"
-                >
-                  <Link to={`/goals/${goal.id}`} className="hover:underline break-words min-w-0">
-                    {goal.title}
-                  </Link>
-                  {(onUpdate || onFieldUpdate) && (
-                    <button
-                      className="text-muted-foreground hover:text-foreground"
-                      type="button"
-                      onClick={() => removeGoal(goal.id)}
-                      aria-label={`Remove goal ${goal.title}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </span>
-              ))}
-            </div>
-          )}
-          {(onUpdate || onFieldUpdate) && (
-            <Popover open={goalOpen} onOpenChange={setGoalOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className={cn("h-6 w-fit px-2", linkedGoals.length > 0 && "ml-1")}
-                  disabled={availableGoals.length === 0}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Goal
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56 p-1" align="start">
-                {availableGoals.length === 0 ? (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    All goals linked.
-                  </div>
-                ) : (
-                  availableGoals.map((goal) => (
-                    <button
-                      key={goal.id}
-                      className="flex items-center w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
-                      onClick={() => addGoal(goal.id)}
-                    >
-                      {goal.title}
-                    </button>
-                  ))
-                )}
-              </PopoverContent>
-            </Popover>
-          )}
-        </PropertyRow>
-        <PropertyRow
           label={<FieldLabel label="Env" state={fieldState("env")} />}
           alignStart
           valueClassName="space-y-2"
@@ -742,7 +646,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                     {codebase.effectiveLocalFolder}
                   </div>
                   {codebase.origin === "managed_checkout" && (
-                    <div className="text-[11px] text-muted-foreground">Paperclip-managed folder.</div>
+                    <div className="text-[11px] text-muted-foreground">DealDesk-managed folder.</div>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -774,7 +678,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
 
             {hasAdditionalLegacyWorkspaces && (
               <div className="text-[11px] text-muted-foreground">
-                Additional legacy workspace records exist on this project. Paperclip is using the primary workspace as the codebase view.
+                Additional legacy workspace records exist on this project. DealDesk is using the primary workspace as the codebase view.
               </div>
             )}
 
@@ -1097,7 +1001,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                               })}
                             immediate
                             className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
-                            placeholder=".paperclip/worktrees"
+                            placeholder=".dealdesk/worktrees"
                           />
                         </div>
                         <div>

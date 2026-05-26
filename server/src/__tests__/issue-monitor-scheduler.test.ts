@@ -18,7 +18,7 @@ import {
   issueDocuments,
   issues,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -157,7 +157,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
     });

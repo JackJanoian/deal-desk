@@ -1,7 +1,7 @@
 ---
 name: deal-with-security-advisory
 description: >
-  Handle a GitHub Security Advisory response for Paperclip, including
+  Handle a GitHub Security Advisory response for DealDesk, including
   confidential fix development in a temporary private fork, human coordination
   on advisory-thread comments, CVE request, synchronized advisory publication,
   and immediate security release steps.
@@ -29,7 +29,7 @@ A security vulnerability has been reported via GitHub Security Advisory:
 Pull the full advisory so you understand the vulnerability before doing anything else:
 
 ```
-gh api repos/paperclipai/paperclip/security-advisories/{{ghsaId}}
+gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}}
 
 ```
 
@@ -51,7 +51,7 @@ This is where all fix development happens. Never push to the public repo.
 
 ```
 gh api --method POST \
-  repos/paperclipai/paperclip/security-advisories/{{ghsaId}}/forks
+  repos/dealdesk/paperclip/security-advisories/{{ghsaId}}/forks
 
 ```
 
@@ -115,7 +115,7 @@ This makes vulnerability scanners (npm audit, Snyk, Dependabot) warn users to up
 
 ```
 gh api --method POST \
-  repos/paperclipai/paperclip/security-advisories/{{ghsaId}}/cve
+  repos/dealdesk/paperclip/security-advisories/{{ghsaId}}/cve
 
 ```
 
@@ -128,7 +128,7 @@ This all happens at once — do not stagger these steps. The goal is **zero wind
 ### 6a. Verify reporter credit before publishing
 
 ```
-gh api repos/paperclipai/paperclip/security-advisories/{{ghsaId}} --jq '.credits'
+gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}} --jq '.credits'
 
 ```
 
@@ -136,7 +136,7 @@ If the reporter is not credited, add them:
 
 ```
 gh api --method PATCH \
-  repos/paperclipai/paperclip/security-advisories/{{ghsaId}} \
+  repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
   --input - << 'EOF'
 {
   "credits": [
@@ -154,7 +154,7 @@ EOF
 
 ```
 gh api --method PATCH \
-  repos/paperclipai/paperclip/security-advisories/{{ghsaId}} \
+  repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
   --input - << 'EOF'
 {
   "state": "published",
@@ -162,7 +162,7 @@ gh api --method PATCH \
     {
       "package": {
         "ecosystem": "npm",
-        "name": "paperclip"
+        "name": "dealdesk"
       },
       "vulnerable_version_range": "< {{patchedVersion}}",
       "patched_versions": "{{patchedVersion}}"
@@ -186,7 +186,7 @@ cd ~/paperclip
 git pull origin master
 
 gh release create v{{patchedVersion}} \
-  --repo paperclipai/paperclip \
+  --repo dealdesk/paperclip \
   --title "v{{patchedVersion}} — Security Release" \
   --notes "## Security Release
 
@@ -196,7 +196,7 @@ This release fixes a critical security vulnerability.
 {{briefDescription}} (e.g., Remote code execution via DNS rebinding in \`local_trusted\` mode)
 
 ### Advisory
-https://github.com/paperclipai/paperclip/security/advisories/{{ghsaId}}
+https://github.com/dealdesk/paperclip/security/advisories/{{ghsaId}}
 
 ### Credit
 Thanks to @{{reporterHandle}} for responsibly disclosing this vulnerability.
@@ -210,11 +210,11 @@ All users running versions prior to {{patchedVersion}} should upgrade immediatel
 
 ```
 # Verify the advisory is published and CVE is assigned
-gh api repos/paperclipai/paperclip/security-advisories/{{ghsaId}} \
+gh api repos/dealdesk/paperclip/security-advisories/{{ghsaId}} \
   --jq '{state: .state, cve_id: .cve_id, published_at: .published_at}'
 
 # Verify the release exists
-gh release view v{{patchedVersion}} --repo paperclipai/paperclip
+gh release view v{{patchedVersion}} --repo dealdesk/paperclip
 
 ```
 
@@ -224,7 +224,7 @@ If the CVE hasn't been assigned yet, that's normal — it can take a few hours.
 
 Tell the human operator what you did by posting a comment to this task, including:
 
-* The published advisory URL: `https://github.com/paperclipai/paperclip/security/advisories/{{ghsaId}}`
+* The published advisory URL: `https://github.com/dealdesk/paperclip/security/advisories/{{ghsaId}}`
 * The release URL
 * Whether the CVE has been assigned yet
 * All URLs to any pull requests or branches

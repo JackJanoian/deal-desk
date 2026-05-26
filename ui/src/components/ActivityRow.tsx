@@ -5,7 +5,7 @@ import { IssueReferenceActivitySummary } from "./IssueReferenceActivitySummary";
 import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
 import { formatActivityVerb } from "../lib/activity-format";
-import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@paperclipai/shared";
+import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@dealdesk/shared";
 import type { CompanyUserProfile } from "../lib/company-members";
 
 function entityLink(entityType: string, entityId: string, name?: string | null): string | null {
@@ -13,7 +13,6 @@ function entityLink(entityType: string, entityId: string, name?: string | null):
     case "issue": return `/issues/${name ?? entityId}`;
     case "agent": return `/agents/${entityId}`;
     case "project": return `/projects/${deriveProjectUrlKey(name, entityId)}`;
-    case "goal": return `/goals/${entityId}`;
     case "approval": return `/approvals/${entityId}`;
     default: return null;
   }

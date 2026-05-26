@@ -1,9 +1,18 @@
+/* DEAL DESK: premium minimal type stack — Geist (Vercel's sans) + Geist Mono.
+   Loaded from Google Fonts CDN; same pattern as the onboarding font import below. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+/* DEAL DESK: Onboarding design system — dark financial terminal aesthetic.
+   Loaded only for the onboarding wizard; scoped via .dd-onboarding root. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -36,48 +45,59 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 }
 
 :root {
   color-scheme: light;
-  --radius: 0;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* DEAL DESK: primary accent recolored from near-black to teal-600 (#0d9488) */
-  --primary: oklch(0.55 0.11 184);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.004 230);
+  --foreground: oklch(0.16 0.01 235);
+  --card: oklch(0.998 0.002 230);
+  --card-foreground: oklch(0.16 0.01 235);
+  --popover: oklch(0.998 0.002 230);
+  --popover-foreground: oklch(0.16 0.01 235);
+  /* DealDesk signature: restrained teal for action, selection, and focus only. */
+  --primary: oklch(0.53 0.12 184);
+  --primary-foreground: oklch(0.985 0.004 230);
+  --secondary: oklch(0.955 0.006 235);
+  --secondary-foreground: oklch(0.21 0.012 235);
+  --muted: oklch(0.945 0.006 235);
+  --muted-foreground: oklch(0.46 0.014 235);
+  --accent: oklch(0.935 0.01 232);
+  --accent-foreground: oklch(0.18 0.012 235);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: oklch(0.875 0.012 235);
+  --input: oklch(0.875 0.012 235);
+  --ring: oklch(0.58 0.13 184);
+  --chart-1: oklch(0.58 0.13 184);
+  --chart-2: oklch(0.66 0.14 162);
+  --chart-3: oklch(0.72 0.13 72);
+  --chart-4: oklch(0.62 0.17 304);
+  --chart-5: oklch(0.62 0.18 22);
+  --sidebar: oklch(0.955 0.008 235);
+  --sidebar-foreground: oklch(0.17 0.012 235);
+  --sidebar-primary: oklch(0.53 0.12 184);
+  --sidebar-primary-foreground: oklch(0.985 0.004 230);
+  --sidebar-accent: oklch(0.925 0.012 235);
+  --sidebar-accent-foreground: oklch(0.17 0.012 235);
+  --sidebar-border: oklch(0.86 0.012 235);
+  --sidebar-ring: oklch(0.58 0.13 184);
+  --surface-canvas: oklch(0.972 0.006 235);
+  --surface-panel: oklch(0.992 0.003 235);
+  --surface-raised: oklch(1 0.002 235);
+  --surface-sunken: oklch(0.94 0.008 235);
+  --control-hover: color-mix(in oklab, var(--accent) 72%, var(--background));
+  --control-selected: color-mix(in oklab, var(--primary) 11%, var(--accent));
+  --focus-halo: color-mix(in oklab, var(--primary) 24%, transparent);
+  --accent-warm: oklch(0.72 0.14 73);
+  --accent-warm-foreground: oklch(0.25 0.06 70);
+  --gridline: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --shadow-panel: 0 16px 42px color-mix(in oklab, var(--foreground) 9%, transparent);
   --chip-match-title-bg: oklch(0.97 0.02 265);
   --chip-match-title-fg: oklch(0.4 0.13 265);
   --chip-match-title-border: oklch(0.85 0.05 265);
@@ -93,38 +113,52 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.637 0.237 25.331);
+  /* Controlled refresh: blue-black canvas, lifted panels, and teal as a precise
+     operating accent. The surface stack keeps dense screens readable without
+     relying on heavy shadows or decorative gradients. */
+  --background: oklch(0.135 0.012 235);
+  --foreground: oklch(0.955 0.006 235);
+  --card: oklch(0.18 0.014 235);
+  --card-foreground: oklch(0.955 0.006 235);
+  --popover: oklch(0.195 0.016 235);
+  --popover-foreground: oklch(0.955 0.006 235);
+  --primary: oklch(0.66 0.13 184);
+  --primary-foreground: oklch(0.11 0.014 235);
+  --secondary: oklch(0.225 0.014 235);
+  --secondary-foreground: oklch(0.955 0.006 235);
+  --muted: oklch(0.225 0.014 235);
+  --muted-foreground: oklch(0.675 0.014 235);
+  --accent: oklch(0.245 0.018 235);
+  --accent-foreground: oklch(0.965 0.006 235);
+  --destructive: oklch(0.60 0.20 25.5);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --border: oklch(0.285 0.018 235);
+  --input: oklch(0.29 0.018 235);
+  --ring: oklch(0.66 0.13 184);
+  --chart-1: oklch(0.66 0.13 184);
+  --chart-2: oklch(0.72 0.15 162);
+  --chart-3: oklch(0.78 0.16 72);
+  --chart-4: oklch(0.68 0.18 304);
+  --chart-5: oklch(0.68 0.19 22);
+  --sidebar: oklch(0.115 0.014 235);
+  --sidebar-foreground: oklch(0.94 0.006 235);
+  --sidebar-primary: oklch(0.66 0.13 184);
+  --sidebar-primary-foreground: oklch(0.11 0.014 235);
+  --sidebar-accent: oklch(0.19 0.016 235);
+  --sidebar-accent-foreground: oklch(0.955 0.006 235);
+  --sidebar-border: oklch(0.24 0.018 235);
+  --sidebar-ring: oklch(0.66 0.13 184);
+  --surface-canvas: oklch(0.125 0.012 235);
+  --surface-panel: oklch(0.162 0.014 235);
+  --surface-raised: oklch(0.205 0.016 235);
+  --surface-sunken: oklch(0.105 0.012 235);
+  --control-hover: color-mix(in oklab, var(--accent) 72%, var(--background));
+  --control-selected: color-mix(in oklab, var(--primary) 15%, var(--accent));
+  --focus-halo: color-mix(in oklab, var(--primary) 32%, transparent);
+  --accent-warm: oklch(0.76 0.15 73);
+  --accent-warm-foreground: oklch(0.96 0.035 78);
+  --gridline: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --shadow-panel: 0 20px 60px color-mix(in oklab, black 44%, transparent);
   --chip-match-title-bg: oklch(0.27 0.04 265 / 0.5);
   --chip-match-title-fg: oklch(0.78 0.10 265);
   --chip-match-title-border: oklch(0.4 0.06 265);
@@ -148,14 +182,29 @@
     -webkit-tap-highlight-color: color-mix(in oklab, var(--foreground) 20%, transparent);
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-sans;
     height: 100%;
     overflow: hidden;
+    font-feature-settings: "ss01", "cv11", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background:
+      radial-gradient(circle at 18% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 28rem),
+      radial-gradient(circle at 85% 12%, color-mix(in oklab, var(--accent-warm) 7%, transparent), transparent 24rem),
+      var(--background);
   }
   h1,
   h2,
   h3 {
     text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  /* Tabular figures for any data-dense surface (tables, metric cards, code).
+     Apply via the .tabular-nums utility or to all numeric-heavy containers. */
+  .tabular-nums,
+  table,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
   /* Prevent double-tap-to-zoom on interactive elements for mobile */
   a,
@@ -172,6 +221,74 @@
   .dealdesk-mdxeditor-content {
     font-family: inherit;
   }
+}
+
+/* DealDesk controlled refresh primitives. These are intentionally few and
+   semantic so product screens share the same distinctive surface language. */
+.dd-shell {
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--sidebar) 94%, var(--primary) 6%), var(--sidebar)),
+    var(--sidebar);
+}
+
+.dd-main-surface {
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--surface-canvas) 96%, var(--primary) 4%), var(--surface-canvas) 18rem),
+    var(--surface-canvas);
+}
+
+.dd-panel {
+  border: 1px solid color-mix(in oklab, var(--border) 82%, var(--foreground) 18%);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--surface-raised) 92%, var(--foreground) 3%), var(--surface-panel)),
+    var(--surface-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.dd-panel-subtle {
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  background: color-mix(in oklab, var(--surface-panel) 86%, transparent);
+}
+
+.dd-interactive {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 170ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dd-interactive:hover {
+  border-color: color-mix(in oklab, var(--border) 72%, var(--primary) 28%);
+  background-color: var(--control-hover);
+}
+
+.dd-selected {
+  border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+  background: var(--control-selected);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
+.dd-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--muted-foreground) 84%, var(--primary));
+}
+
+.dd-grid-surface {
+  background-image:
+    linear-gradient(to right, var(--gridline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gridline) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+
+.dd-code-surface {
+  --dd-code-bg: color-mix(in oklab, var(--surface-sunken) 82%, black 18%);
+  --dd-code-fg: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
+  --dd-code-gutter: color-mix(in oklab, var(--surface-sunken) 92%, black 8%);
+  --dd-code-border: color-mix(in oklab, var(--border) 74%, var(--primary) 12%);
 }
 
 @media (pointer: coarse) {
@@ -293,6 +410,12 @@
   }
 }
 
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .activity-row-enter {
   animation:
     dashboard-activity-enter 520ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -300,6 +423,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-slot="skeleton"]::before {
+    animation: none;
+  }
+
   .activity-row-enter {
     animation: none;
   }
@@ -465,14 +592,14 @@
 }
 
 .dealdesk-mdxeditor-content a:not(.dealdesk-mention-chip):not(.dealdesk-project-mention-chip) {
-  color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
+  color: color-mix(in oklab, var(--foreground) 76%, var(--primary) 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
 .dark .dealdesk-mdxeditor-content a:not(.dealdesk-mention-chip):not(.dealdesk-project-mention-chip) {
-  color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
+  color: color-mix(in oklab, var(--foreground) 80%, var(--primary) 20%);
 }
 
 .dealdesk-mdxeditor-content a.dealdesk-mention-chip,
@@ -599,50 +726,50 @@ a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
 .dealdesk-mdxeditor-content pre {
   margin: 0.4rem 0;
   padding: 0;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 74%, var(--primary) 12%);
   border-radius: calc(var(--radius) - 3px);
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: color-mix(in oklab, var(--surface-sunken) 82%, black 18%);
+  color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
   overflow-x: auto;
 }
 
 /* Dark theme for CodeMirror code blocks inside the MDXEditor.
    Overrides the default cm6-theme-basic-light that MDXEditor bundles. */
 .dealdesk-mdxeditor .cm-editor {
-  background-color: #1e1e2e !important;
-  color: #cdd6f4 !important;
+  background-color: color-mix(in oklab, var(--surface-sunken) 82%, black 18%) !important;
+  color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%) !important;
   font-size: 1em;
 }
 
 .dealdesk-mdxeditor .cm-gutters {
-  background-color: #181825 !important;
-  color: #585b70 !important;
-  border-right: 1px solid #313244 !important;
+  background-color: color-mix(in oklab, var(--surface-sunken) 92%, black 8%) !important;
+  color: var(--muted-foreground) !important;
+  border-right: 1px solid color-mix(in oklab, var(--border) 74%, var(--primary) 12%) !important;
 }
 
 .dealdesk-mdxeditor .cm-activeLineGutter {
-  background-color: #1e1e2e !important;
+  background-color: color-mix(in oklab, var(--surface-sunken) 82%, black 18%) !important;
 }
 
 .dealdesk-mdxeditor .cm-activeLine {
-  background-color: color-mix(in oklab, #cdd6f4 5%, transparent) !important;
+  background-color: color-mix(in oklab, var(--foreground) 5%, transparent) !important;
 }
 
 .dealdesk-mdxeditor .cm-cursor,
 .dealdesk-mdxeditor .cm-dropCursor {
-  border-left-color: #cdd6f4 !important;
+  border-left-color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%) !important;
 }
 
 .dealdesk-mdxeditor .cm-selectionBackground {
-  background-color: color-mix(in oklab, #89b4fa 25%, transparent) !important;
+  background-color: color-mix(in oklab, var(--primary) 25%, transparent) !important;
 }
 
 .dealdesk-mdxeditor .cm-focused .cm-selectionBackground {
-  background-color: color-mix(in oklab, #89b4fa 30%, transparent) !important;
+  background-color: color-mix(in oklab, var(--primary) 30%, transparent) !important;
 }
 
 .dealdesk-mdxeditor .cm-content {
-  caret-color: #cdd6f4;
+  caret-color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
 }
 
 /* MDXEditor code block language selector – show on hover only */
@@ -662,9 +789,9 @@ a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
 
 .dealdesk-mdxeditor-content [class*="_codeMirrorToolbar_"] select,
 .dealdesk-mdxeditor-content [class*="_codeBlockToolbar_"] select {
-  background-color: #313244;
-  color: #cdd6f4;
-  border-color: #45475a;
+  background-color: color-mix(in oklab, var(--surface-raised) 82%, var(--primary) 5%);
+  color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
+  border-color: color-mix(in oklab, var(--border) 74%, var(--primary) 12%);
 }
 
 .dealdesk-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeMirrorToolbar_"],
@@ -678,17 +805,17 @@ a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
    Dark theme code blocks with compact sizing.
    Override prose CSS variables so prose-invert can't revert to defaults. */
 .dealdesk-markdown {
-  --tw-prose-pre-bg: #1e1e2e;
-  --tw-prose-pre-code: #cdd6f4;
-  --tw-prose-invert-pre-bg: #1e1e2e;
-  --tw-prose-invert-pre-code: #cdd6f4;
+  --tw-prose-pre-bg: color-mix(in oklab, var(--surface-sunken) 82%, black 18%);
+  --tw-prose-pre-code: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
+  --tw-prose-invert-pre-bg: color-mix(in oklab, var(--surface-sunken) 82%, black 18%);
+  --tw-prose-invert-pre-code: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%);
 }
 
 .dealdesk-markdown pre {
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent) !important;
+  border: 1px solid color-mix(in oklab, var(--border) 74%, var(--primary) 12%) !important;
   border-radius: calc(var(--radius) - 3px) !important;
-  background-color: #1e1e2e !important;
-  color: #cdd6f4 !important;
+  background-color: color-mix(in oklab, var(--surface-sunken) 82%, black 18%) !important;
+  color: color-mix(in oklab, var(--foreground) 92%, var(--primary) 8%) !important;
   padding: 0.5rem 0.65rem !important;
   margin: 0.4rem 0 !important;
   font-size: 1em !important;
@@ -851,7 +978,7 @@ a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .dealdesk-markdown a {
-  color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
+  color: color-mix(in oklab, var(--foreground) 76%, var(--primary) 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
@@ -874,7 +1001,7 @@ a.dealdesk-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .dark .dealdesk-markdown a {
-  color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
+  color: color-mix(in oklab, var(--foreground) 80%, var(--primary) 20%);
 }
 
 .dealdesk-markdown blockquote {
@@ -1013,10 +1140,6 @@ span.dealdesk-project-mention-chip {
 [class*="_toolbarNodeKindSelectContainer_"] {
   z-index: 81 !important;
 }
-
-/* DEAL DESK: Onboarding design system — dark financial terminal aesthetic.
-   Loaded only for the onboarding wizard; scoped via .dd-onboarding root. */
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
 .dd-onboarding {
   --dd-font-display: 'DM Serif Display', Georgia, serif;

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, companySkills, createDb } from "@paperclipai/db";
+import { agents, companies, companySkills, createDb } from "@dealdesk/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -38,7 +38,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
   const cleanupDirs = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-detail-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-company-skills-detail-");
     db = createDb(tempDb.connectionString);
     svc = companySkillService(db);
   }, 20_000);
@@ -108,7 +108,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -134,7 +134,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
       role: "engineer",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -165,7 +165,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -208,7 +208,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
       role: "engineer",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: ["reflection-coach"],
         },
       },

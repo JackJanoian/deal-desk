@@ -6,30 +6,27 @@
 import { Router } from "express";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   ddTheses,
   ddTargets,
   ddIntermediaries,
   ddRoleTemplates,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 
 import { validate } from "../middleware/validate.js";
 import { assertCompanyAccess } from "./authz.js";
 import { dealDeskToolsRouter } from "../deal-desk/tools/index.js";
+import {
+  createTarget,
+  createTargetInputSchema,
+  getTarget,
+  getPipelineSummary,
+  targetStatusValues,
+  updateTarget,
+  updateTargetInputSchema,
+} from "../deal-desk/target-service.js";
 
-// Mirror dd_target_status enum values (server/db enum is the source of truth).
-const targetStatusValues = [
-  "sourced",
-  "qualified",
-  "contacted",
-  "replied",
-  "meeting_booked",
-  "in_diligence",
-  "passed",
-  "closed_won",
-  "closed_lost",
-] as const;
 const targetStatusEnum = z.enum(targetStatusValues);
 
 const decimalString = z
@@ -107,7 +104,7 @@ export function dealDeskRoutes(db: Db) {
       const [row] = await db
         .insert(ddTheses)
         .values({
-          paperclipCompanyId: companyId,
+          dealDeskCompanyId: companyId,
           name: body.name,
           sector: body.sector,
           subSectors: body.subSectors ?? [],
@@ -136,7 +133,7 @@ export function dealDeskRoutes(db: Db) {
     const rows = await db
       .select()
       .from(ddTheses)
-      .where(eq(ddTheses.paperclipCompanyId, companyId))
+      .where(eq(ddTheses.dealDeskCompanyId, companyId))
       .orderBy(desc(ddTheses.createdAt));
     res.json(rows);
   });
@@ -152,7 +149,7 @@ export function dealDeskRoutes(db: Db) {
         .from(ddTheses)
         .where(
           and(
-            eq(ddTheses.paperclipCompanyId, companyId),
+            eq(ddTheses.dealDeskCompanyId, companyId),
             eq(ddTheses.id, thesisId),
           ),
         )
@@ -187,7 +184,7 @@ export function dealDeskRoutes(db: Db) {
         .set(updateValues)
         .where(
           and(
-            eq(ddTheses.paperclipCompanyId, companyId),
+            eq(ddTheses.dealDeskCompanyId, companyId),
             eq(ddTheses.id, thesisId),
           ),
         )
@@ -212,7 +209,7 @@ export function dealDeskRoutes(db: Db) {
         .from(ddTargets)
         .where(
           and(
-            eq(ddTargets.paperclipCompanyId, companyId),
+            eq(ddTargets.dealDeskCompanyId, companyId),
             eq(ddTargets.thesisId, thesisId),
           ),
         )
@@ -222,6 +219,55 @@ export function dealDeskRoutes(db: Db) {
   );
 
   // ── Targets ───────────────────────────────────────────────────────────────
+  router.post(
+    "/:companyId/deal-desk/targets",
+    validate(createTargetInputSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      const body = req.body as z.infer<typeof createTargetInputSchema>;
+      const result = await createTarget(db, companyId, body);
+      if (!result.ok) {
+        res.status(422).json({ error: result.reason });
+        return;
+      }
+      const target = await getTarget(db, companyId, result.targetId);
+      res.status(result.action === "created" ? 201 : 200).json(target);
+    },
+  );
+
+  router.get(
+    "/:companyId/deal-desk/targets/:targetId",
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      const targetId = req.params.targetId as string;
+      assertCompanyAccess(req, companyId);
+      const target = await getTarget(db, companyId, targetId);
+      if (!target) {
+        res.status(404).json({ error: "Target not found" });
+        return;
+      }
+      res.json(target);
+    },
+  );
+
+  router.patch(
+    "/:companyId/deal-desk/targets/:targetId",
+    validate(updateTargetInputSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      const targetId = req.params.targetId as string;
+      assertCompanyAccess(req, companyId);
+      const body = req.body as z.infer<typeof updateTargetInputSchema>;
+      const result = await updateTarget(db, companyId, targetId, body);
+      if (!result.ok) {
+        res.status(result.status ?? 400).json({ error: result.reason });
+        return;
+      }
+      res.json(result.target);
+    },
+  );
+
   router.patch(
     "/:companyId/deal-desk/targets/:targetId/status",
     validate(updateTargetStatusSchema),
@@ -230,25 +276,27 @@ export function dealDeskRoutes(db: Db) {
       const targetId = req.params.targetId as string;
       assertCompanyAccess(req, companyId);
       const { status } = req.body as z.infer<typeof updateTargetStatusSchema>;
-      const [row] = await db
-        .update(ddTargets)
-        .set({
-          status,
-          statusChangedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(ddTargets.paperclipCompanyId, companyId),
-            eq(ddTargets.id, targetId),
-          ),
-        )
-        .returning();
-      if (!row) {
-        res.status(404).json({ error: "Target not found" });
+      const result = await updateTarget(db, companyId, targetId, { status });
+      if (!result.ok) {
+        res.status(result.status ?? 400).json({ error: result.reason });
         return;
       }
-      res.json(row);
+      res.json(result.target);
+    },
+  );
+
+  router.get(
+    "/:companyId/deal-desk/pipeline/summary",
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      const thesisId = req.query.thesisId;
+      if (typeof thesisId !== "string" || thesisId.length === 0) {
+        res.status(400).json({ error: "thesisId query parameter is required" });
+        return;
+      }
+      const summary = await getPipelineSummary(db, companyId, thesisId);
+      res.json(summary);
     },
   );
 
@@ -261,7 +309,7 @@ export function dealDeskRoutes(db: Db) {
       const rows = await db
         .select()
         .from(ddIntermediaries)
-        .where(eq(ddIntermediaries.paperclipCompanyId, companyId))
+        .where(eq(ddIntermediaries.dealDeskCompanyId, companyId))
         .orderBy(ddIntermediaries.nextTouchDue);
       res.json(rows);
     },

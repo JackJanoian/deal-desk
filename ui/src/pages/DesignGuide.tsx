@@ -132,7 +132,7 @@ import { IssueReferencePill } from "@/components/IssueReferencePill";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+      <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">
         {title}
       </h3>
       <Separator />
@@ -144,7 +144,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium">{title}</h4>
+      <h4 className="text-[13px] font-semibold tracking-[-0.005em]">{title}</h4>
       {children}
     </div>
   );
@@ -193,9 +193,9 @@ export function DesignGuide() {
     <div className="space-y-10 max-w-4xl">
       {/* Page header */}
       <div>
-        <h2 className="text-xl font-bold">Design Guide</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Every component, style, and pattern used across Paperclip.
+        <h2 className="text-[20px] font-semibold tracking-[-0.01em]">Design Guide</h2>
+        <p className="text-[13px] text-muted-foreground mt-1.5 leading-[1.5]">
+          Every component, style, and pattern used across DealDesk. Dense dark control plane, layered blue-black surfaces, restrained teal accent, compact radius, and quiet motion.
         </p>
       </div>
 
@@ -254,6 +254,10 @@ export function DesignGuide() {
             <Swatch name="Destructive" cssVar="--destructive" />
             <Swatch name="Border" cssVar="--border" />
             <Swatch name="Ring" cssVar="--ring" />
+            <Swatch name="Canvas surface" cssVar="--surface-canvas" />
+            <Swatch name="Panel surface" cssVar="--surface-panel" />
+            <Swatch name="Raised surface" cssVar="--surface-raised" />
+            <Swatch name="Warm accent" cssVar="--accent-warm" />
           </div>
         </SubSection>
 
@@ -276,29 +280,51 @@ export function DesignGuide() {
       </Section>
 
       {/* ============================================================ */}
+      {/*  SURFACES & ELEVATION                                         */}
+      {/* ============================================================ */}
+      <Section title="Surfaces & Elevation">
+        <p className="text-[12.5px] text-muted-foreground">
+          Three stacked surfaces with no shadows. Elevation is conveyed by a small lift in lightness and a 1px border at 70% opacity. Popovers and dialogs add a soft outer shadow only.
+        </p>
+        <div className="bg-background border border-border/60 p-6 rounded-md">
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground mb-3">
+            background · base canvas
+          </p>
+          <div className="bg-card border border-border/60 p-5 rounded-md">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground mb-3">
+              card · primary content
+            </p>
+            <div className="bg-popover border border-border/70 p-4 rounded-md shadow-xl shadow-black/30">
+              <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground mb-1">
+                popover · floating
+              </p>
+              <p className="text-[13px]">Tooltips, dropdowns, dialogs, and sheets ride on this surface.</p>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ============================================================ */}
       {/*  TYPOGRAPHY                                                   */}
       {/* ============================================================ */}
       <Section title="Typography">
+        <p className="text-[12.5px] text-muted-foreground">
+          Geist (sans) for UI and body, Geist Mono for identifiers, code, and logs. Tight tracking on display text, tabular figures throughout.
+        </p>
         <div className="space-y-3">
-          <h2 className="text-xl font-bold">Page Title — text-xl font-bold</h2>
-          <h2 className="text-lg font-semibold">Section Title — text-lg font-semibold</h2>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Section Heading — text-sm font-semibold uppercase tracking-wide
+          <h2 className="text-[20px] font-semibold tracking-[-0.01em]">Page Title — 20px / 600 / -0.01em</h2>
+          <h2 className="text-[15px] font-semibold tracking-[-0.005em]">Section Title — 15px / 600</h2>
+          <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">
+            Section Heading — 11px uppercase / 0.08em tracking
           </h3>
-          <p className="text-sm font-medium">Card Title — text-sm font-medium</p>
-          <p className="text-sm font-semibold">Card Title Alt — text-sm font-semibold</p>
-          <p className="text-sm">Body text — text-sm</p>
-          <p className="text-sm text-muted-foreground">
-            Muted description — text-sm text-muted-foreground
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Tiny label — text-xs text-muted-foreground
-          </p>
-          <p className="text-sm font-mono text-muted-foreground">
-            Mono identifier — text-sm font-mono text-muted-foreground
-          </p>
-          <p className="text-2xl font-bold">Large stat — text-2xl font-bold</p>
-          <p className="font-mono text-xs">Log/code text — font-mono text-xs</p>
+          <p className="text-[14px] font-semibold tracking-[-0.005em]">Card Title — 14px / 600</p>
+          <p className="text-[13px] font-medium">Card Title alt — 13px / 500</p>
+          <p className="text-[13px] leading-[1.55]">Body text — 13px / 1.55 line-height. The quick brown fox jumps over the lazy dog. 0123456789.</p>
+          <p className="text-[12.5px] text-muted-foreground">Muted description — 12.5px muted</p>
+          <p className="text-[11px] text-muted-foreground">Tiny label — 11px muted</p>
+          <p className="text-[12px] font-mono text-muted-foreground">PAP-001 · mono identifier — Geist Mono</p>
+          <p className="text-[24px] font-semibold tracking-[-0.015em] tabular-nums leading-none">$1,284,503 — large stat</p>
+          <p className="font-mono text-[11px] text-muted-foreground">[INFO] 2026-05-24 18:42:01 — log/code text</p>
         </div>
       </Section>
 
@@ -752,7 +778,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Paperclip App</BreadcrumbLink>
+              <BreadcrumbLink href="#">DealDesk App</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

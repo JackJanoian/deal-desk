@@ -67,7 +67,7 @@ import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
 import { statusBadge } from "../lib/status-colors";
 import { workflowSort } from "../lib/workflow-sort";
 import { isSuccessfulRunHandoffRequired } from "../lib/successful-run-handoff";
-import { ISSUE_STATUSES, type Issue, type IssueStatus, type Project } from "@paperclipai/shared";
+import { ISSUE_STATUSES, type Issue, type IssueStatus, type Project } from "@dealdesk/shared";
 const ISSUE_SEARCH_DEBOUNCE_MS = 250;
 const ISSUE_SEARCH_RESULT_LIMIT = 200;
 const ISSUE_BOARD_COLUMN_RESULT_LIMIT = 200;
@@ -475,7 +475,7 @@ function SubIssueProgressSummaryStrip({
   const showCostSummary = !!costSummary && (costSummary.runCount > 0 || totalTokens > 0);
 
   return (
-    <div className="border border-border bg-background p-3">
+    <div className="dd-panel-subtle rounded-lg p-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -526,7 +526,7 @@ function SubIssueProgressSummaryStrip({
           </div>
         </div>
 
-        <div className="min-w-0 border border-border bg-background px-3 py-2 text-sm lg:w-72">
+        <div className="min-w-0 rounded-md border border-border/70 bg-card/55 px-3 py-2 text-sm lg:w-72">
           {target && targetIssue ? (
             <>
               <div className="text-xs font-medium text-muted-foreground">
@@ -1294,16 +1294,16 @@ export function IssuesList({
 
         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {/* View mode toggle */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1">
+          <div className="mr-1 flex items-center overflow-hidden rounded-md border border-border/70 bg-card/45">
             <button
-              className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "list" })}
               title="List view"
             >
               <List className="h-3.5 w-3.5" />
             </button>
             <button
-              className={`p-1.5 transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`p-1.5 transition-colors ${viewState.viewMode === "board" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
               title="Board view"
             >

@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
-import { execute } from "@paperclipai/adapter-cursor-local/server";
+import { runChildProcess } from "@dealdesk/adapter-utils/server-utils";
+import { execute } from "@dealdesk/adapter-cursor-local/server";
 
 async function writeFakeCursorCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
+const capturePath = process.env.DEALDESK_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
-  paperclipEnvKeys: Object.keys(process.env)
-    .filter((key) => key.startsWith("PAPERCLIP_"))
+  dealDeskEnvKeys: Object.keys(process.env)
+    .filter((key) => key.startsWith("DEALDESK_"))
     .sort(),
 };
 if (capturePath) {
@@ -106,7 +106,7 @@ function createLocalSandboxRunner() {
 type CapturePayload = {
   argv: string[];
   prompt: string;
-  paperclipEnvKeys: string[];
+  dealDeskEnvKeys: string[];
 };
 
 async function createSkillDir(root: string, name: string) {
@@ -117,8 +117,8 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor execute", () => {
-  it("injects paperclip env vars and prompt note by default", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-"));
+  it("injects dealdesk env vars and prompt note by default", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-cursor-execute-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -150,9 +150,9 @@ describe("cursor execute", () => {
           cwd: workspace,
           model: "auto",
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
+            DEALDESK_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the dealdesk heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -166,22 +166,22 @@ describe("cursor execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.argv).not.toContain("Follow the paperclip heartbeat.");
+      expect(capture.argv).not.toContain("Follow the dealdesk heartbeat.");
       expect(capture.argv).not.toContain("--mode");
       expect(capture.argv).not.toContain("ask");
-      expect(capture.paperclipEnvKeys).toEqual(
+      expect(capture.dealDeskEnvKeys).toEqual(
         expect.arrayContaining([
-          "PAPERCLIP_AGENT_ID",
-          "PAPERCLIP_API_KEY",
-          "PAPERCLIP_API_URL",
-          "PAPERCLIP_COMPANY_ID",
-          "PAPERCLIP_RUN_ID",
+          "DEALDESK_AGENT_ID",
+          "DEALDESK_API_KEY",
+          "DEALDESK_API_URL",
+          "DEALDESK_COMPANY_ID",
+          "DEALDESK_RUN_ID",
         ]),
       );
-      expect(capture.prompt).toContain("Paperclip runtime note:");
-      expect(capture.prompt).toContain("PAPERCLIP_API_KEY");
-      expect(invocationPrompt).toContain("Paperclip runtime note:");
-      expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
+      expect(capture.prompt).toContain("DealDesk runtime note:");
+      expect(capture.prompt).toContain("DEALDESK_API_KEY");
+      expect(invocationPrompt).toContain("DealDesk runtime note:");
+      expect(invocationPrompt).toContain("DEALDESK_API_URL");
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -193,7 +193,7 @@ describe("cursor execute", () => {
   });
 
   it("passes --mode when explicitly configured", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-cursor-execute-mode-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -225,9 +225,9 @@ describe("cursor execute", () => {
           model: "auto",
           mode: "ask",
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
+            DEALDESK_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the dealdesk heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -251,14 +251,14 @@ describe("cursor execute", () => {
   });
 
   it("injects company-library runtime skills into the Cursor skills home before execution", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-runtime-skill-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-cursor-execute-runtime-skill-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
     await fs.mkdir(workspace, { recursive: true });
     await writeFakeCursorCommand(commandPath);
 
-    const paperclipDir = await createSkillDir(runtimeSkillsRoot, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkillsRoot, "dealdesk");
     const asciiHeartDir = await createSkillDir(runtimeSkillsRoot, "ascii-heart");
 
     const previousHome = process.env.HOME;
@@ -284,22 +284,22 @@ describe("cursor execute", () => {
           command: commandPath,
           cwd: workspace,
           model: "auto",
-          paperclipRuntimeSkills: [
+          dealDeskRuntimeSkills: [
             {
-              name: "paperclip",
+              name: "dealdesk",
               source: paperclipDir,
               required: true,
-              requiredReason: "Bundled Paperclip skills are always available for local adapters.",
+              requiredReason: "Bundled DealDesk skills are always available for local adapters.",
             },
             {
               name: "ascii-heart",
               source: asciiHeartDir,
             },
           ],
-          paperclipSkillSync: {
+          dealdeskSkillSync: {
             desiredSkills: ["ascii-heart"],
           },
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the dealdesk heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -324,7 +324,7 @@ describe("cursor execute", () => {
   });
 
   it("prefers ~/.local/bin/cursor-agent for remote sandbox execution when using the default command", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-execute-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-cursor-sandbox-execute-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
     const remoteWorkspace = path.join(root, "remote-workspace");
@@ -363,7 +363,7 @@ describe("cursor execute", () => {
         config: {
           command: "agent",
           cwd: workspace,
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the dealdesk heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -379,7 +379,7 @@ describe("cursor execute", () => {
       };
       expect(capture.command).toBe(cursorAgentPath);
       expect(capture.path.split(":")[0]).toBe(path.join(homeDir, ".local", "bin"));
-      expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
+      expect(capture.prompt).toContain("Follow the dealdesk heartbeat.");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -388,7 +388,7 @@ describe("cursor execute", () => {
   }, 10_000);
 
   it("keeps explicit command overrides for remote sandbox execution", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-explicit-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-cursor-sandbox-explicit-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
     const remoteWorkspace = path.join(root, "remote-workspace");
@@ -429,7 +429,7 @@ describe("cursor execute", () => {
         config: {
           command: customCommandPath,
           cwd: workspace,
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the dealdesk heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",

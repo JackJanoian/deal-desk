@@ -11,11 +11,11 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, message, action, onAction }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="bg-muted/50 p-4 mb-4">
-        <Icon className="h-10 w-10 text-muted-foreground/50" />
+    <div className="dd-grid-surface flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-card/25 px-6 py-16 text-center">
+      <div className="mb-4 rounded-xl border border-border/70 bg-card/70 p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_5%,transparent)]">
+        <Icon className="h-9 w-9 text-primary/75" />
       </div>
-      <p className="text-sm text-muted-foreground mb-4">{message}</p>
+      <p className="mb-4 max-w-md text-sm leading-6 text-muted-foreground">{message}</p>
       {action && onAction && (
         <Button onClick={onAction}>
           <Plus className="h-4 w-4 mr-1.5" />

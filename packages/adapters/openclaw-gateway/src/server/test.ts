@@ -2,8 +2,8 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@paperclipai/adapter-utils";
-import { asString, parseObject } from "@paperclipai/adapter-utils/server-utils";
+} from "@dealdesk/adapter-utils";
+import { asString, parseObject } from "@dealdesk/adapter-utils/server-utils";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 
@@ -149,7 +149,7 @@ async function probeGateway(input: {
               maxProtocol: 3,
               client: {
                 id: "gateway-client",
-                version: "paperclip-probe",
+                version: "dealdesk-probe",
                 platform: process.platform,
                 mode: "probe",
               },
@@ -296,7 +296,7 @@ export async function testEnvironment(
           code: "openclaw_gateway_probe_failed",
           level: "warn",
           message: "Gateway probe failed.",
-          hint: "Verify network reachability and gateway URL from the Paperclip server host.",
+          hint: "Verify network reachability and gateway URL from the DealDesk server host.",
         });
       }
     } catch (err) {

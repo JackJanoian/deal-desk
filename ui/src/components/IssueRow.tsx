@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Issue, IssueRecoveryAction } from "@paperclipai/shared";
+import type { Issue, IssueRecoveryAction } from "@dealdesk/shared";
 import { Link } from "@/lib/router";
 import { Eye, Flag, X } from "lucide-react";
 import {
@@ -117,9 +117,9 @@ export function IssueRow({
       aria-current={checklistCurrentStep ? "step" : undefined}
       onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
       className={cn(
-        "group flex items-start gap-2 border-b border-border py-2.5 pl-2 pr-3 text-sm no-underline text-inherit transition-colors last:border-b-0 sm:items-center sm:py-2 sm:pl-1",
-        selected ? "hover:bg-transparent" : "hover:bg-accent/50",
-        checklistCurrentStep ? "border-l-2 border-l-primary bg-primary/5 pl-[calc(theme(spacing.2)-2px)] sm:pl-[calc(theme(spacing.1)-2px)]" : null,
+        "group flex items-start gap-2 border-b border-border/65 py-2.5 pl-2 pr-3 text-sm no-underline text-inherit transition-[background-color,border-color,box-shadow] last:border-b-0 sm:items-center sm:py-2 sm:pl-1",
+        selected ? "bg-primary/10 shadow-[inset_2px_0_0_var(--primary)] hover:bg-primary/10" : "hover:bg-accent/40",
+        checklistCurrentStep ? "border-l-2 border-l-primary bg-primary/10 pl-[calc(theme(spacing.2)-2px)] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--primary)_12%,transparent)] sm:pl-[calc(theme(spacing.1)-2px)]" : null,
         className,
       )}
     >
@@ -131,7 +131,7 @@ export function IssueRow({
         {recoveryIndicator}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-        <span className={cn("line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none", titleClassName)}>
+        <span className={cn("line-clamp-2 text-sm text-foreground/92 sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none", titleClassName)}>
           {issue.title}{titleSuffix}
         </span>
         {checklistDependencyChips ? (

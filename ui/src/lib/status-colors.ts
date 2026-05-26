@@ -39,44 +39,47 @@ export const issueStatusTextDefault = "text-muted-foreground";
 // Badge colors — used by StatusBadge for all entity types
 // ---------------------------------------------------------------------------
 
+// Desaturated, premium-minimal palette:
+// light mode uses -50 bg + -700 text, dark mode uses -500/10 bg + -300 text
+// (tinted-text on subtle wash, no heavy color blocks).
 export const statusBadge: Record<string, string> = {
   // Agent statuses
-  active: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-  running: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300",
-  scheduled_retry: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
-  paused: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
-  idle: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300",
+  active: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
+  running: "bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300",
+  scheduled_retry: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  paused: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  idle: "bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-300",
   archived: "bg-muted text-muted-foreground",
 
   // Goal statuses
   planned: "bg-muted text-muted-foreground",
-  achieved: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-  completed: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+  achieved: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
+  completed: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
 
   // Run statuses
-  failed: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-  timed_out: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
-  succeeded: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-  ok: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-  warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
-  error: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-  info: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
-  terminated: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-  pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300",
+  failed: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  timed_out: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+  succeeded: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
+  ok: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
+  warning: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  error: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  info: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  terminated: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  pending: "bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-300",
 
   // Approval statuses
-  pending_approval: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
-  revision_requested: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
-  approved: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-  rejected: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
+  pending_approval: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  revision_requested: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  approved: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
+  rejected: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
 
   // Issue statuses — consistent hues with issueStatusIcon above
   backlog: "bg-muted text-muted-foreground",
-  todo: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
-  in_progress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300",
-  in_review: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
-  blocked: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+  todo: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
+  in_progress: "bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-300",
+  in_review: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  blocked: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  done: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300",
   cancelled: "bg-muted text-muted-foreground",
 };
 

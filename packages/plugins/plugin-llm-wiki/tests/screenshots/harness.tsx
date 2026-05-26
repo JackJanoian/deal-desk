@@ -5,7 +5,7 @@ import type {
   FileTreeBadge,
   FileTreeProps,
   IssuesListProps,
-} from "@paperclipai/plugin-sdk/ui";
+} from "@dealdesk/plugin-sdk/ui";
 
 // ---------------------------------------------------------------------------
 // Bridge mocks. The real SDK runtime hooks read from a global registry; we
@@ -35,21 +35,21 @@ const FOLDER_HEALTHY = {
 const MANAGED_AGENT = {
   status: "active",
   agentId: "agt-c14a-7b2f-4e90",
-  resourceKey: "paperclipai.plugin-llm-wiki:agent:wiki-maintainer",
+  resourceKey: "dealdesk.plugin-llm-wiki:agent:wiki-maintainer",
   details: { name: "Wiki Maintainer", status: "active", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" },
 };
 
 const MANAGED_PROJECT = {
   status: "active",
   projectId: "prj-llmw-7e1a",
-  resourceKey: "paperclipai.plugin-llm-wiki:project:llm-wiki",
+  resourceKey: "dealdesk.plugin-llm-wiki:project:llm-wiki",
   details: { name: "LLM Wiki Operations", status: "in_progress" },
 };
 
 const MANAGED_ROUTINE = {
   status: "active",
   routineId: "rtn-llmw-night",
-  resourceKey: "paperclipai.plugin-llm-wiki:routine:nightly-wiki-lint",
+  resourceKey: "dealdesk.plugin-llm-wiki:routine:nightly-wiki-lint",
   routine: {
     id: "rtn-llmw-night",
     title: "Run LLM Wiki lint",
@@ -76,7 +76,7 @@ const MANAGED_ROUTINES = [
   {
     status: "active",
     routineId: "rtn-llmw-cursor",
-    resourceKey: "paperclipai.plugin-llm-wiki:routine:cursor-window-processing",
+    resourceKey: "dealdesk.plugin-llm-wiki:routine:cursor-window-processing",
     routine: {
       id: "rtn-llmw-cursor",
       title: "Process LLM Wiki updates",
@@ -98,7 +98,7 @@ const MANAGED_ROUTINES = [
   {
     status: "active",
     routineId: "rtn-llmw-index",
-    resourceKey: "paperclipai.plugin-llm-wiki:routine:index-refresh",
+    resourceKey: "dealdesk.plugin-llm-wiki:routine:index-refresh",
     routine: {
       id: "rtn-llmw-index",
       title: "Refresh LLM Wiki index",
@@ -124,17 +124,17 @@ const MANAGED_SKILL = {
   resourceKey: "wiki-maintainer",
   details: {
     name: "LLM Wiki Maintainer",
-    key: "plugin/paperclipai-plugin-llm-wiki/wiki-maintainer",
+    key: "plugin/dealdesk-plugin-llm-wiki/wiki-maintainer",
     description: "Use the LLM Wiki plugin tools to maintain a cited local company wiki.",
   },
 };
 const MANAGED_SKILLS = [
   MANAGED_SKILL,
-  { status: "resolved", skillId: "skl-llmw-ingest", resourceKey: "wiki-ingest", details: { name: "Wiki Ingest", key: "plugin/paperclipai-plugin-llm-wiki/wiki-ingest", description: null } },
-  { status: "resolved", skillId: "skl-llmw-query", resourceKey: "wiki-query", details: { name: "Wiki Query", key: "plugin/paperclipai-plugin-llm-wiki/wiki-query", description: null } },
-  { status: "resolved", skillId: "skl-llmw-lint", resourceKey: "wiki-lint", details: { name: "Wiki Lint", key: "plugin/paperclipai-plugin-llm-wiki/wiki-lint", description: null } },
-  { status: "resolved", skillId: "skl-llmw-distill", resourceKey: "paperclip-distill", details: { name: "Paperclip Distill", key: "plugin/paperclipai-plugin-llm-wiki/paperclip-distill", description: null } },
-  { status: "resolved", skillId: "skl-llmw-index", resourceKey: "index-refresh", details: { name: "Index Refresh", key: "plugin/paperclipai-plugin-llm-wiki/index-refresh", description: null } },
+  { status: "resolved", skillId: "skl-llmw-ingest", resourceKey: "wiki-ingest", details: { name: "Wiki Ingest", key: "plugin/dealdesk-plugin-llm-wiki/wiki-ingest", description: null } },
+  { status: "resolved", skillId: "skl-llmw-query", resourceKey: "wiki-query", details: { name: "Wiki Query", key: "plugin/dealdesk-plugin-llm-wiki/wiki-query", description: null } },
+  { status: "resolved", skillId: "skl-llmw-lint", resourceKey: "wiki-lint", details: { name: "Wiki Lint", key: "plugin/dealdesk-plugin-llm-wiki/wiki-lint", description: null } },
+  { status: "resolved", skillId: "skl-llmw-distill", resourceKey: "dealdesk-distill", details: { name: "DealDesk Distill", key: "plugin/dealdesk-plugin-llm-wiki/dealdesk-distill", description: null } },
+  { status: "resolved", skillId: "skl-llmw-index", resourceKey: "index-refresh", details: { name: "Index Refresh", key: "plugin/dealdesk-plugin-llm-wiki/index-refresh", description: null } },
 ];
 
 const OVERVIEW = {
@@ -195,7 +195,7 @@ const PAGES = {
   ],
   sources: [
     { rawPath: "raw/karpathy-llm-wiki.md", title: "Karpathy LLM Wiki gist", sourceType: "url", url: "https://gist.github.com/karpathy/.../llm-wiki", status: "captured", createdAt: "2026-05-01T19:00:00Z" },
-    { rawPath: "raw/paperclip-v1-spec.md", title: "Paperclip V1 spec", sourceType: "file", url: null, status: "captured", createdAt: "2026-05-01T18:30:00Z" },
+    { rawPath: "raw/paperclip-v1-spec.md", title: "DealDesk V1 spec", sourceType: "file", url: null, status: "captured", createdAt: "2026-05-01T18:30:00Z" },
     { rawPath: "raw/design-doc-2026-04.md", title: "Design doc — April 2026", sourceType: "file", url: null, status: "captured", createdAt: "2026-04-28T14:00:00Z" },
   ],
 };
@@ -205,7 +205,7 @@ const PAGE_CONTENT = {
   path: "wiki/concepts/managed-resources.md",
   contents: `# Managed Resources
 
-A **plugin-managed resource** is a normal Paperclip resource (agent, routine, project) that a plugin has seeded with suggested defaults. The plugin marks ownership via a stable \`resourceKey\` so that installs, imports, and upgrades can find the resource even when UUIDs differ.
+A **plugin-managed resource** is a normal DealDesk resource (agent, routine, project) that a plugin has seeded with suggested defaults. The plugin marks ownership via a stable \`resourceKey\` so that installs, imports, and upgrades can find the resource even when UUIDs differ.
 
 The host treats managed resources as fully editable. The operator can rename, change adapter config, edit instructions, change schedule, etc. The plugin can offer a *reset to plugin defaults* action that re-applies the suggested values.
 
@@ -259,7 +259,7 @@ const TEMPLATE_AGENTS = {
   hash: "def456",
   contents: `# LLM Wiki Maintainer
 
-You maintain this wiki through Paperclip plugin tools.
+You maintain this wiki through DealDesk plugin tools.
 
 Before answering or editing:
 
@@ -1010,7 +1010,7 @@ const sdkUi: Record<string, unknown> = {
   ManagedRoutinesList: MockManagedRoutinesList,
 };
 
-(globalThis as { __paperclipPluginBridge__?: { sdkUi?: Record<string, unknown> } }).__paperclipPluginBridge__ = { sdkUi };
+(globalThis as { __dealDeskPluginBridge__?: { sdkUi?: Record<string, unknown> } }).__dealDeskPluginBridge__ = { sdkUi };
 
 // ---------------------------------------------------------------------------
 // Harness app: chooses which view to render based on a global hash. Playwright

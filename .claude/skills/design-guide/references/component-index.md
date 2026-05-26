@@ -1,4 +1,4 @@
-# Paperclip Component Index
+# DealDesk Component Index
 
 Complete inventory of all UI components. Update this file when adding new reusable components.
 
@@ -24,8 +24,8 @@ These are shadcn/ui base components. Do not modify directly — extend via compo
 
 | Component | File | Key Props | Notes |
 |-----------|------|-----------|-------|
-| Button | `button.tsx` | `variant` (default, secondary, outline, ghost, destructive, link), `size` (xs, sm, default, lg, icon, icon-xs, icon-sm, icon-lg) | Primary interactive element. Uses CVA. |
-| Card | `card.tsx` | CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter | Compound component. `py-6` default padding. |
+| Button | `button.tsx` | `variant` (default, secondary, outline, ghost, destructive, link), `size` (xs, sm, default, lg, icon, icon-xs, icon-sm, icon-lg) | Primary interactive element. Uses CVA with the refreshed teal focus/action treatment. |
+| Card | `card.tsx` | CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter | Compound component using the shared `dd-panel` surface language. |
 | Input | `input.tsx` | `disabled` | Standard text input. |
 | Badge | `badge.tsx` | `variant` (default, secondary, outline, destructive, ghost) | Generic label/tag. For status, use StatusBadge instead. |
 | Label | `label.tsx` | — | Form label, wraps Radix Label. |
@@ -43,7 +43,7 @@ These are shadcn/ui base components. Do not modify directly — extend via compo
 | Tooltip | `tooltip.tsx` | TooltipTrigger, TooltipContent | Hover tooltips. App is wrapped in TooltipProvider. |
 | ScrollArea | `scroll-area.tsx` | — | Custom scrollable container. |
 | Collapsible | `collapsible.tsx` | CollapsibleTrigger, CollapsibleContent | Expand/collapse sections. |
-| Skeleton | `skeleton.tsx` | className for sizing | Loading placeholder with shimmer. |
+| Skeleton | `skeleton.tsx` | className for sizing | Loading placeholder with reduced-motion-aware shimmer. |
 | Sheet | `sheet.tsx` | SheetTrigger, SheetContent, SheetHeader, etc. | Side panel overlay. |
 
 ---

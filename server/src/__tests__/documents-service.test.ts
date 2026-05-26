@@ -7,8 +7,8 @@ import {
   documents,
   issueDocuments,
   issues,
-} from "@paperclipai/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
+} from "@dealdesk/db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@dealdesk/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -53,7 +53,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

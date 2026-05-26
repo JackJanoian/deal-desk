@@ -8,7 +8,6 @@ import { useLocation, useNavigate, useParams } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { companiesApi } from "../api/companies";
-import { goalsApi } from "../api/goals";
 import { dealDeskApi } from "../api/dealDesk";
 import { agentsApi } from "../api/agents";
 import { approvalsApi } from "../api/approvals";
@@ -33,11 +32,9 @@ import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
 import { getAdapterDisplay } from "../adapters/adapter-display-registry";
 import { defaultCreateValues } from "./agent-config-defaults";
-import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import {
   buildOnboardingIssuePayload,
   buildOnboardingProjectPayload,
-  selectDefaultCompanyGoalId
 } from "../lib/onboarding-launch";
 import { buildNewAgentRuntimeConfig } from "../lib/new-agent-runtime-config";
 import {
@@ -127,7 +124,6 @@ export function OnboardingWizard() {
 
   // Step 1 — Fund
   const [companyName, setCompanyName] = useState("");
-  const [companyGoal, setCompanyGoal] = useState("");
 
   // Step 2 — Thesis
   const [thesisName, setThesisName] = useState("");
@@ -179,9 +175,6 @@ export function OnboardingWizard() {
   const [createdCompanyPrefix, setCreatedCompanyPrefix] = useState<
     string | null
   >(null);
-  const [createdCompanyGoalId, setCreatedCompanyGoalId] = useState<string | null>(
-    null
-  );
   const [createdAgentId, setCreatedAgentId] = useState<string | null>(null);
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
   const [createdIssueRef, setCreatedIssueRef] = useState<string | null>(null);
@@ -196,7 +189,6 @@ export function OnboardingWizard() {
     setStep(effectiveOnboardingOptions.initialStep ?? 1);
     setCreatedCompanyId(cId);
     setCreatedCompanyPrefix(null);
-    setCreatedCompanyGoalId(null);
     setCreatedProjectId(null);
     setCreatedAgentId(null);
     setCreatedIssueRef(null);
@@ -316,7 +308,6 @@ export function OnboardingWizard() {
     setLoading(false);
     setError(null);
     setCompanyName("");
-    setCompanyGoal("");
     setAgentName("Managing Partner");
     setAdapterType("claude_local");
     setModel("");
@@ -332,7 +323,6 @@ export function OnboardingWizard() {
     setTaskDescription(DEFAULT_TASK_DESCRIPTION);
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
-    setCreatedCompanyGoalId(null);
     setCreatedAgentId(null);
     setCreatedProjectId(null);
     setCreatedIssueRef(null);
@@ -421,24 +411,6 @@ export function OnboardingWizard() {
       setCreatedCompanyPrefix(company.issuePrefix);
       setSelectedCompanyId(company.id);
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-
-      if (companyGoal.trim()) {
-        const parsedGoal = parseOnboardingGoalInput(companyGoal);
-        const goal = await goalsApi.create(company.id, {
-          title: parsedGoal.title,
-          ...(parsedGoal.description
-            ? { description: parsedGoal.description }
-            : {}),
-          level: "company",
-          status: "active"
-        });
-        setCreatedCompanyGoalId(goal.id);
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.goals.list(company.id)
-        });
-      } else {
-        setCreatedCompanyGoalId(null);
-      }
 
       setStep(2);
     } catch (err) {
@@ -639,18 +611,11 @@ export function OnboardingWizard() {
     setLoading(true);
     setError(null);
     try {
-      let goalId = createdCompanyGoalId;
-      if (!goalId) {
-        const goals = await goalsApi.list(createdCompanyId);
-        goalId = selectDefaultCompanyGoalId(goals);
-        setCreatedCompanyGoalId(goalId);
-      }
-
       let projectId = createdProjectId;
       if (!projectId) {
         const project = await projectsApi.create(
           createdCompanyId,
-          buildOnboardingProjectPayload(goalId)
+          buildOnboardingProjectPayload()
         );
         projectId = project.id;
         setCreatedProjectId(projectId);
@@ -668,7 +633,6 @@ export function OnboardingWizard() {
             description: taskDescription,
             assigneeAgentId: createdAgentId,
             projectId,
-            goalId
           })
         );
         issueRef = issue.identifier ?? issue.id;
@@ -905,15 +869,6 @@ export function OnboardingWizard() {
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       autoFocus
-                    />
-                  </Field>
-                  <Field label="Investment strategy (optional)">
-                    <textarea
-                      className="dd-input"
-                      style={{ minHeight: 80, resize: "vertical" }}
-                      placeholder="Describe your investment strategy"
-                      value={companyGoal}
-                      onChange={(e) => setCompanyGoal(e.target.value)}
                     />
                   </Field>
                 </div>

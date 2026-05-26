@@ -13,7 +13,7 @@ import {
   issues,
   projectWorkspaces,
   projects,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -134,8 +134,8 @@ async function runGit(cwd: string, args: string[]) {
 async function createTempRepo() {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-execution-workspace-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
-  await runGit(repoRoot, ["config", "user.email", "test@paperclip.local"]);
+  await runGit(repoRoot, ["config", "user.name", "DealDesk Test"]);
+  await runGit(repoRoot, ["config", "user.email", "test@dealdesk.local"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "# Test repo\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
   await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -255,7 +255,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -346,7 +346,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
   it("warns about dirty and unmerged git worktrees and reports cleanup actions", async () => {
     const repoRoot = await createTempRepo();
     tempDirs.add(repoRoot);
-    const worktreePath = path.join(path.dirname(repoRoot), `paperclip-worktree-${randomUUID()}`);
+    const worktreePath = path.join(path.dirname(repoRoot), `dealdesk-worktree-${randomUUID()}`);
     tempDirs.add(worktreePath);
 
     await runGit(repoRoot, ["branch", "paperclip-close-check"]);
@@ -363,7 +363,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });

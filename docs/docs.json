@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Paperclip",
+  "name": "DealDesk",
   "description": "The control plane for autonomous AI companies",
   "theme": "mint",
   "colors": {
@@ -27,7 +27,7 @@
           {
             "group": "Introduction",
             "pages": [
-              "start/what-is-paperclip",
+              "start/what-is-dealdesk",
               "start/quickstart",
               "start/core-concepts",
               "start/architecture"

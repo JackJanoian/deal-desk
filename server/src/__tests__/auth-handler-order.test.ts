@@ -33,17 +33,17 @@ describe("Better Auth handler middleware order", () => {
 
     const res = await request(app)
       .post("/api/auth/sign-in/email")
-      .send({ email: "jane@example.com", password: "paperclip-password" });
+      .send({ email: "jane@example.com", password: "dealdesk-password" });
 
     expect(res.status).toBe(200);
     expect(JSON.parse(res.body.rawBody)).toEqual({
       email: "jane@example.com",
-      password: "paperclip-password",
+      password: "dealdesk-password",
     });
     expect(authHandlerCalls).toBe(1);
   });
 
-  it("leaves Paperclip-managed auth routes on the authenticated app path", async () => {
+  it("leaves DealDesk-managed auth routes on the authenticated app path", async () => {
     let authHandlerCalls = 0;
     const app = await createApp({} as any, {
       uiMode: "none",

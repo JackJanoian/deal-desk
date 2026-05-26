@@ -16,7 +16,7 @@ import {
   projectWorkspaces,
   projects,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import { eq } from "drizzle-orm";
 import {
   buildWorkspaceRuntimeDesiredStatePatch,
@@ -38,8 +38,8 @@ import {
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
 import { writeLocalServiceRegistryRecord } from "../services/local-service-supervisor.ts";
-import { resolvePaperclipConfigPath } from "../paths.ts";
-import type { WorkspaceOperation } from "@paperclipai/shared";
+import { resolveDealDeskConfigPath } from "../paths.ts";
+import type { WorkspaceOperation } from "@dealdesk/shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import {
   getEmbeddedPostgresTestSupport,
@@ -67,10 +67,10 @@ async function runPnpm(cwd: string, args: string[]) {
 }
 
 async function createTempRepo(defaultBranch = "main") {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repo-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-repo-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
-  await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
+  await runGit(repoRoot, ["config", "user.email", "dealdesk@example.com"]);
+  await runGit(repoRoot, ["config", "user.name", "DealDesk Test"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
   await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
@@ -164,28 +164,28 @@ afterEach(async () => {
       leasedRunIds.delete(runId);
     }),
   );
-  delete process.env.PAPERCLIP_CONFIG;
-  delete process.env.PAPERCLIP_HOME;
-  delete process.env.PAPERCLIP_INSTANCE_ID;
-  delete process.env.PAPERCLIP_WORKTREES_DIR;
+  delete process.env.DEALDESK_CONFIG;
+  delete process.env.DEALDESK_HOME;
+  delete process.env.DEALDESK_INSTANCE_ID;
+  delete process.env.DEALDESK_WORKTREES_DIR;
   delete process.env.DATABASE_URL;
   await resetRuntimeServicesForTests();
 });
 
 describe("sanitizeRuntimeServiceBaseEnv", () => {
-  it("removes inherited Paperclip and pnpm auth flags before spawning runtime services", () => {
+  it("removes inherited DealDesk and pnpm auth flags before spawning runtime services", () => {
     const sanitized = sanitizeRuntimeServiceBaseEnv({
       PATH: process.env.PATH,
       DATABASE_URL: "postgres://example.test/paperclip",
-      PAPERCLIP_HOME: "/tmp/paperclip-home",
-      PAPERCLIP_INSTANCE_ID: "runtime-instance",
+      DEALDESK_HOME: "/tmp/paperclip-home",
+      DEALDESK_INSTANCE_ID: "runtime-instance",
       npm_config_tailscale_auth: "true",
       npm_config_authenticated_private: "true",
       HOST: "0.0.0.0",
     });
 
-    expect(sanitized.PAPERCLIP_HOME).toBeUndefined();
-    expect(sanitized.PAPERCLIP_INSTANCE_ID).toBeUndefined();
+    expect(sanitized.DEALDESK_HOME).toBeUndefined();
+    expect(sanitized.DEALDESK_INSTANCE_ID).toBeUndefined();
     expect(sanitized.DATABASE_URL).toBeUndefined();
     expect(sanitized.npm_config_tailscale_auth).toBeUndefined();
     expect(sanitized.npm_config_authenticated_private).toBeUndefined();
@@ -195,9 +195,9 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
 
 describe("ensureServerWorkspaceLinksCurrent", () => {
   it("relinks stale server workspace dependencies inside the current repo root", async () => {
-    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-"));
-    const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-stale-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-links-"));
+    const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-links-stale-"));
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@dealdesk");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
     const stalePackageDir = path.join(staleRoot, "db");
 
@@ -210,21 +210,21 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@dealdesk/server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@dealdesk/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@dealdesk/db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@dealdesk/db" }),
       "utf8",
     );
     await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));
@@ -234,8 +234,8 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
   });
 
   it("skips relinking when server workspace dependencies already point at the repo", async () => {
-    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-current-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-links-current-"));
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@dealdesk");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
 
     await fs.mkdir(path.join(repoRoot, "server"), { recursive: true });
@@ -246,16 +246,16 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@dealdesk/server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@dealdesk/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@dealdesk/db" }),
       "utf8",
     );
     await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "db"));
@@ -264,9 +264,9 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
   });
 
   it("skips relinking outside linked git worktrees", async () => {
-    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-non-worktree-"));
-    const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-non-worktree-stale-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-links-non-worktree-"));
+    const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-links-non-worktree-stale-"));
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@dealdesk");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
     const stalePackageDir = path.join(staleRoot, "db");
 
@@ -279,21 +279,21 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@dealdesk/server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@dealdesk/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@dealdesk/db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@dealdesk/db" }),
       "utf8",
     );
     await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));
@@ -337,7 +337,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(first.strategy).toBe("git_worktree");
     expect(first.created).toBe(true);
     expect(first.branchName).toBe("PAP-447-add-worktree-support");
-    expect(first.cwd).toContain(path.join(".paperclip", "worktrees"));
+    expect(first.cwd).toContain(path.join(".dealdesk", "worktrees"));
     await expect(fs.stat(path.join(first.cwd, ".git"))).resolves.toBeTruthy();
 
     const second = await realizeExecutionWorkspace({
@@ -375,7 +375,7 @@ describe("realizeExecutionWorkspace", () => {
   it("rejects reusing an empty directory that only looks like a worktree because it sits inside the repo", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-447-add-worktree-support";
-    const poisonedPath = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const poisonedPath = path.join(repoRoot, ".dealdesk", "worktrees", branchName);
     await fs.mkdir(poisonedPath, { recursive: true });
 
     await expect(
@@ -411,7 +411,7 @@ describe("realizeExecutionWorkspace", () => {
   it("reuses the current linked worktree instead of nesting another worktree inside it", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-1355-worktree-reuse";
-    const currentWorktree = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const currentWorktree = path.join(repoRoot, ".dealdesk", "worktrees", branchName);
 
     await fs.mkdir(path.dirname(currentWorktree), { recursive: true });
     await execFileAsync("git", ["worktree", "add", "-b", branchName, currentWorktree, "HEAD"], { cwd: repoRoot });
@@ -514,7 +514,7 @@ describe("realizeExecutionWorkspace", () => {
   it("reuses an already checked out branch from git worktree metadata even when the target path differs", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-1355-worktree-reuse";
-    const existingWorktree = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const existingWorktree = path.join(repoRoot, ".dealdesk", "worktrees", branchName);
     const { recorder, operations } = createWorkspaceOperationRecorderDouble();
 
     await fs.mkdir(path.dirname(existingWorktree), { recursive: true });
@@ -533,7 +533,7 @@ describe("realizeExecutionWorkspace", () => {
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          worktreeParentDir: ".paperclip/other-worktrees",
+          worktreeParentDir: ".dealdesk/other-worktrees",
         },
       },
       issue: {
@@ -642,9 +642,9 @@ describe("realizeExecutionWorkspace", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_BRANCH\" > .paperclip-provision-branch",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_BASE_CWD\" > .paperclip-provision-base",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_CREATED\" > .paperclip-provision-created",
+        "printf '%s\\n' \"$DEALDESK_WORKSPACE_BRANCH\" > .dealdesk-provision-branch",
+        "printf '%s\\n' \"$DEALDESK_WORKSPACE_BASE_CWD\" > .dealdesk-provision-base",
+        "printf '%s\\n' \"$DEALDESK_WORKSPACE_CREATED\" > .dealdesk-provision-created",
       ].join("\n"),
       "utf8",
     );
@@ -679,13 +679,13 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-branch"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".dealdesk-provision-branch"), "utf8")).resolves.toBe(
       "PAP-448-run-provision-command\n",
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-base"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".dealdesk-provision-base"), "utf8")).resolves.toBe(
       `${repoRoot}\n`,
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".dealdesk-provision-created"), "utf8")).resolves.toBe(
       "true\n",
     );
 
@@ -717,7 +717,7 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(reused.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe("false\n");
+    await expect(fs.readFile(path.join(reused.cwd, ".dealdesk-provision-created"), "utf8")).resolves.toBe("false\n");
   });
 
   it("uses the latest repo-managed provision script when reusing an existing worktree", async () => {
@@ -728,7 +728,7 @@ describe("realizeExecutionWorkspace", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'v1\\n' > .paperclip-provision-version",
+        "printf 'v1\\n' > .dealdesk-provision-version",
       ].join("\n"),
       "utf8",
     );
@@ -763,14 +763,14 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-provision-version"), "utf8")).resolves.toBe("v1\n");
+    await expect(fs.readFile(path.join(initial.cwd, ".dealdesk-provision-version"), "utf8")).resolves.toBe("v1\n");
 
     await fs.writeFile(
       path.join(repoRoot, "scripts", "provision.sh"),
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'v2\\n' > .paperclip-provision-version",
+        "printf 'v2\\n' > .dealdesk-provision-version",
       ].join("\n"),
       "utf8",
     );
@@ -807,24 +807,24 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(reused.cwd, ".paperclip-provision-version"), "utf8")).resolves.toBe("v2\n");
+    await expect(fs.readFile(path.join(reused.cwd, ".dealdesk-provision-version"), "utf8")).resolves.toBe("v2\n");
   }, 30_000);
 
-  it("writes an isolated repo-local Paperclip config and worktree branding when provisioning", async () => {
+  it("writes an isolated repo-local DealDesk config and worktree branding when provisioning", async () => {
     const repoRoot = await createTempRepo();
     const previousCwd = process.cwd();
     const previousPath = process.env.PATH;
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-home-"));
-    const isolatedWorktreeHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktrees-"));
-    const isolatedBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bin-"));
+    const dealDeskHome = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-home-"));
+    const isolatedWorktreeHome = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktrees-"));
+    const isolatedBin = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-bin-"));
     const instanceId = "worktree-base";
-    const sharedConfigDir = path.join(paperclipHome, "instances", instanceId);
+    const sharedConfigDir = path.join(dealDeskHome, "instances", instanceId);
     const sharedConfigPath = path.join(sharedConfigDir, "config.json");
     const sharedEnvPath = path.join(sharedConfigDir, ".env");
 
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    process.env.PAPERCLIP_INSTANCE_ID = instanceId;
-    process.env.PAPERCLIP_WORKTREES_DIR = isolatedWorktreeHome;
+    process.env.DEALDESK_HOME = dealDeskHome;
+    process.env.DEALDESK_INSTANCE_ID = instanceId;
+    process.env.DEALDESK_WORKTREES_DIR = isolatedWorktreeHome;
     // Keep this server-side fixture on provision-worktree.sh's config writer path;
     // CLI/database seeding is covered by the CLI worktree tests.
     await fs.symlink(process.execPath, path.join(isolatedBin, "node"));
@@ -873,7 +873,7 @@ describe("realizeExecutionWorkspace", () => {
               baseDir: path.join(sharedConfigDir, "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "dealdesk",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,
@@ -932,8 +932,8 @@ describe("realizeExecutionWorkspace", () => {
       } satisfies Parameters<typeof realizeExecutionWorkspace>[0];
       const workspace = await realizeExecutionWorkspace(workspaceInput);
 
-      const configPath = path.join(workspace.cwd, ".paperclip", "config.json");
-      const envPath = path.join(workspace.cwd, ".paperclip", ".env");
+      const configPath = path.join(workspace.cwd, ".dealdesk", "config.json");
+      const envPath = path.join(workspace.cwd, ".dealdesk", ".env");
       const envContents = await fs.readFile(envPath, "utf8");
       const configContents = JSON.parse(await fs.readFile(configPath, "utf8"));
       const configStats = await fs.lstat(configPath);
@@ -953,14 +953,14 @@ describe("realizeExecutionWorkspace", () => {
       );
       expect(envContents).not.toContain("DATABASE_URL=");
       const envVars = parseEnvContents(envContents);
-      expect(envVars.PAPERCLIP_HOME).toBe(isolatedWorktreeHome);
-      expect(envVars.PAPERCLIP_INSTANCE_ID).toBe(expectedInstanceId);
-      expect(await fs.realpath(envVars.PAPERCLIP_CONFIG!)).toBe(await fs.realpath(configPath));
-      expect(envVars.PAPERCLIP_IN_WORKTREE).toBe("true");
-      expect(envVars.PAPERCLIP_WORKTREE_NAME).toBe("PAP-885-show-worktree-banner");
+      expect(envVars.DEALDESK_HOME).toBe(isolatedWorktreeHome);
+      expect(envVars.DEALDESK_INSTANCE_ID).toBe(expectedInstanceId);
+      expect(await fs.realpath(envVars.DEALDESK_CONFIG!)).toBe(await fs.realpath(configPath));
+      expect(envVars.DEALDESK_IN_WORKTREE).toBe("true");
+      expect(envVars.DEALDESK_WORKTREE_NAME).toBe("PAP-885-show-worktree-banner");
 
       process.chdir(workspace.cwd);
-      expect(resolvePaperclipConfigPath()).toBe(configPath);
+      expect(resolveDealDeskConfigPath()).toBe(configPath);
 
       const preservedPort = 39999;
       await fs.writeFile(
@@ -978,7 +978,7 @@ describe("realizeExecutionWorkspace", () => {
         ) + "\n",
         "utf8",
       );
-      await fs.writeFile(envPath, `${envContents}PAPERCLIP_WORKTREE_COLOR="#112233"\n`, "utf8");
+      await fs.writeFile(envPath, `${envContents}DEALDESK_WORKTREE_COLOR="#112233"\n`, "utf8");
 
       const reusedWorkspace = await realizeExecutionWorkspace(workspaceInput);
       const reusedConfigContents = JSON.parse(await fs.readFile(configPath, "utf8"));
@@ -988,7 +988,7 @@ describe("realizeExecutionWorkspace", () => {
       expect(reusedWorkspace.created).toBe(false);
       expect(reusedConfigContents.server.port).toBe(preservedPort);
       expect(reusedConfigContents.database.embeddedPostgresDataDir).toBe(path.join(expectedInstanceRoot, "db"));
-      expect(reusedEnvContents).toContain('PAPERCLIP_WORKTREE_COLOR="#112233"');
+      expect(reusedEnvContents).toContain('DEALDESK_WORKTREE_COLOR="#112233"');
     } finally {
       process.chdir(previousCwd);
       if (previousPath === undefined) {
@@ -1171,13 +1171,13 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip", "config.json"), "utf8")).resolves.toContain(
+    await expect(fs.readFile(path.join(workspace.cwd, ".dealdesk", "config.json"), "utf8")).resolves.toContain(
       "\"database\"",
     );
   }, 30_000);
 
   it("fails instead of writing an unseeded fallback config when worktree init errors after CLI detection succeeds", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-provision-fail-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-provision-fail-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -1194,10 +1194,10 @@ describe("realizeExecutionWorkspace", () => {
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"dealdesk\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 0",
           "fi",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
+          "if [ \"$1\" = \"dealdesk\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  echo \"simulated init failure\" >&2",
           "  exit 42",
           "fi",
@@ -1215,8 +1215,8 @@ describe("realizeExecutionWorkspace", () => {
           env: {
             ...process.env,
             PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
-            PAPERCLIP_WORKSPACE_BASE_CWD: baseRoot,
-            PAPERCLIP_WORKSPACE_CWD: worktreeRoot,
+            DEALDESK_WORKSPACE_BASE_CWD: baseRoot,
+            DEALDESK_WORKSPACE_CWD: worktreeRoot,
           },
         });
       } catch (error) {
@@ -1225,15 +1225,15 @@ describe("realizeExecutionWorkspace", () => {
 
       expect(caught).toBeTruthy();
       expect(String(caught)).toContain("simulated init failure");
-      await expect(fs.stat(path.join(worktreeRoot, ".paperclip", "config.json"))).rejects.toThrow();
-      await expect(fs.stat(path.join(worktreeRoot, ".paperclip", ".env"))).rejects.toThrow();
+      await expect(fs.stat(path.join(worktreeRoot, ".dealdesk", "config.json"))).rejects.toThrow();
+      await expect(fs.stat(path.join(worktreeRoot, ".dealdesk", ".env"))).rejects.toThrow();
     } finally {
       await fs.rm(tempRoot, { recursive: true, force: true });
     }
   });
 
   it("retries worktree-local pnpm install without a frozen lockfile when the lockfile is outdated", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-outdated-lockfile-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-outdated-lockfile-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -1268,7 +1268,7 @@ describe("realizeExecutionWorkspace", () => {
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"dealdesk\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 1",
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--frozen-lockfile\" ]; then",
@@ -1292,14 +1292,14 @@ describe("realizeExecutionWorkspace", () => {
         env: {
           ...process.env,
           PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
-          PAPERCLIP_WORKSPACE_BASE_CWD: baseRoot,
-          PAPERCLIP_WORKSPACE_CWD: worktreeRoot,
+          DEALDESK_WORKSPACE_BASE_CWD: baseRoot,
+          DEALDESK_WORKSPACE_CWD: worktreeRoot,
         },
       });
 
       expect(result.stderr).toContain("retrying install without --frozen-lockfile");
       await expect(fs.readFile(path.join(worktreeRoot, "node_modules", ".retry-success"), "utf8")).resolves.toBe("");
-      await expect(fs.readFile(path.join(worktreeRoot, ".paperclip", "config.json"), "utf8")).resolves.toContain(
+      await expect(fs.readFile(path.join(worktreeRoot, ".dealdesk", "config.json"), "utf8")).resolves.toContain(
         "\"database\"",
       );
     } finally {
@@ -1573,7 +1573,7 @@ describe("realizeExecutionWorkspace", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_BRANCH\" > .paperclip-restored-branch",
+        "printf '%s\\n' \"$DEALDESK_WORKSPACE_BRANCH\" > .dealdesk-restored-branch",
       ].join("\n"),
       "utf8",
     );
@@ -1656,7 +1656,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(restored).not.toBeNull();
     expect(restored?.cwd).toBe(initial.cwd);
     await expect(fs.readFile(path.join(initial.cwd, "feature.txt"), "utf8")).resolves.toBe("persisted\n");
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-restored-branch"), "utf8")).resolves.toBe(`${branchName}\n`);
+    await expect(fs.readFile(path.join(initial.cwd, ".dealdesk-restored-branch"), "utf8")).resolves.toBe(`${branchName}\n`);
     const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: initial.cwd })).stdout.trim();
     expect(actualHead).toBe(expectedHead);
   }, 15_000);
@@ -1669,7 +1669,7 @@ describe("realizeExecutionWorkspace", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'reprovisioned\\n' > .paperclip-restored-state",
+        "printf 'reprovisioned\\n' > .dealdesk-restored-state",
       ].join("\n"),
       "utf8",
     );
@@ -1705,7 +1705,7 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await fs.rm(path.join(initial.cwd, ".paperclip-restored-state"), { force: true });
+    await fs.rm(path.join(initial.cwd, ".dealdesk-restored-state"), { force: true });
 
     await ensurePersistedExecutionWorkspaceAvailable({
       base: {
@@ -1742,7 +1742,7 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-restored-state"), "utf8")).resolves.toBe("reprovisioned\n");
+    await expect(fs.readFile(path.join(initial.cwd, ".dealdesk-restored-state"), "utf8")).resolves.toBe("reprovisioned\n");
   }, 15_000);
 
   it("auto-detects the default branch when baseRef is not configured", async () => {
@@ -1753,7 +1753,7 @@ describe("realizeExecutionWorkspace", () => {
     // exists locally. Note: refs/remotes/origin/HEAD is NOT set by a manual
     // fetch — that requires git clone or git remote set-head. This test
     // exercises the heuristic fallback path in detectDefaultBranch.
-    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-"));
+    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-bare-"));
     await runGit(bareRemote, ["init", "--bare"]);
     await runGit(repoRoot, ["remote", "add", "origin", bareRemote]);
     await runGit(repoRoot, ["push", "-u", "origin", "master"]);
@@ -1802,7 +1802,7 @@ describe("realizeExecutionWorkspace", () => {
     const repoRoot = await createTempRepo("master");
 
     // Set up a bare remote and push
-    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-symref-"));
+    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-worktree-bare-symref-"));
     await runGit(bareRemote, ["init", "--bare"]);
     await runGit(repoRoot, ["remote", "add", "origin", bareRemote]);
     await runGit(repoRoot, ["push", "-u", "origin", "master"]);
@@ -2047,7 +2047,7 @@ describe("realizeExecutionWorkspace", () => {
 
 describe("ensureRuntimeServicesForRun", () => {
   it("leaves manual runtime services untouched during agent runs", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-manual-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-manual-"));
     const workspace = buildWorkspace(workspaceRoot);
 
     const services = await ensureRuntimeServicesForRun({
@@ -2078,7 +2078,7 @@ describe("ensureRuntimeServicesForRun", () => {
   });
 
   it("reuses shared runtime services across runs and starts a new service after release", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-workspace-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-workspace-"));
     const workspace = buildWorkspace(workspaceRoot);
     const serviceCommand =
       "node -e \"require('node:http').createServer((req,res)=>res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1')\"";
@@ -2177,8 +2177,8 @@ describe("ensureRuntimeServicesForRun", () => {
   }, 10_000);
 
   it("does not reuse project-scoped shared services across different workspace launch contexts", async () => {
-    const primaryWorkspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-primary-"));
-    const worktreeWorkspaceRoot = path.join(primaryWorkspaceRoot, ".paperclip", "worktrees", "PAP-874-chat-speed-issues");
+    const primaryWorkspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-primary-"));
+    const worktreeWorkspaceRoot = path.join(primaryWorkspaceRoot, ".dealdesk", "worktrees", "PAP-874-chat-speed-issues");
     await fs.mkdir(worktreeWorkspaceRoot, { recursive: true });
 
     const primaryWorkspace = buildWorkspace(primaryWorkspaceRoot);
@@ -2191,16 +2191,16 @@ describe("ensureRuntimeServicesForRun", () => {
       worktreePath: worktreeWorkspaceRoot,
     };
     const serviceCommand =
-      "node -e \"require('node:http').createServer((req,res)=>res.end(process.env.PAPERCLIP_HOME)).listen(Number(process.env.PORT), '127.0.0.1')\"";
+      "node -e \"require('node:http').createServer((req,res)=>res.end(process.env.DEALDESK_HOME)).listen(Number(process.env.PORT), '127.0.0.1')\"";
     const config = {
       workspaceRuntime: {
         services: [
           {
-            name: "paperclip-dev",
+            name: "dealdesk-dev",
             command: serviceCommand,
             cwd: ".",
             env: {
-              PAPERCLIP_HOME: "{{workspace.cwd}}/.paperclip/runtime-services",
+              DEALDESK_HOME: "{{workspace.cwd}}/.dealdesk/runtime-services",
             },
             port: { type: "auto" },
             readiness: {
@@ -2265,14 +2265,14 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(executionServices[0]?.url).not.toBe(primaryServices[0]?.url);
 
     const primaryResponse = await fetch(primaryServices[0]!.url!);
-    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".dealdesk", "runtime-services"));
 
     const executionResponse = await fetch(executionServices[0]!.url!);
-    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".dealdesk", "runtime-services"));
   });
 
-  it("does not leak parent Paperclip instance env into runtime service commands", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-env-"));
+  it("does not leak parent DealDesk instance env into runtime service commands", async () => {
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-env-"));
     const workspace = buildWorkspace(workspaceRoot);
     const envCapturePath = path.join(workspaceRoot, "captured-env.json");
     const serviceCommand = [
@@ -2281,9 +2281,9 @@ describe("ensureRuntimeServicesForRun", () => {
         [
           "const fs = require('node:fs');",
           `fs.writeFileSync(${JSON.stringify(envCapturePath)}, JSON.stringify({`,
-          "paperclipConfig: process.env.PAPERCLIP_CONFIG ?? null,",
-          "paperclipHome: process.env.PAPERCLIP_HOME ?? null,",
-          "paperclipInstanceId: process.env.PAPERCLIP_INSTANCE_ID ?? null,",
+          "dealDeskConfig: process.env.DEALDESK_CONFIG ?? null,",
+          "dealDeskHome: process.env.DEALDESK_HOME ?? null,",
+          "dealDeskInstanceId: process.env.DEALDESK_INSTANCE_ID ?? null,",
           "databaseUrl: process.env.DATABASE_URL ?? null,",
           "customEnv: process.env.RUNTIME_CUSTOM_ENV ?? null,",
           "port: process.env.PORT ?? null,",
@@ -2293,9 +2293,9 @@ describe("ensureRuntimeServicesForRun", () => {
       ),
     ].join(" ");
 
-    process.env.PAPERCLIP_CONFIG = "/tmp/base-paperclip-config.json";
-    process.env.PAPERCLIP_HOME = "/tmp/base-paperclip-home";
-    process.env.PAPERCLIP_INSTANCE_ID = "base-instance";
+    process.env.DEALDESK_CONFIG = "/tmp/base-paperclip-config.json";
+    process.env.DEALDESK_HOME = "/tmp/base-paperclip-home";
+    process.env.DEALDESK_INSTANCE_ID = "base-instance";
     process.env.DATABASE_URL = "postgres://shared-db.example.com/paperclip";
 
     const runId = "run-env";
@@ -2340,9 +2340,9 @@ describe("ensureRuntimeServicesForRun", () => {
 
     expect(services).toHaveLength(1);
     const captured = JSON.parse(await fs.readFile(envCapturePath, "utf8")) as Record<string, string | null>;
-    expect(captured.paperclipConfig).toBeNull();
-    expect(captured.paperclipHome).toBeNull();
-    expect(captured.paperclipInstanceId).toBeNull();
+    expect(captured.dealDeskConfig).toBeNull();
+    expect(captured.dealDeskHome).toBeNull();
+    expect(captured.dealDeskInstanceId).toBeNull();
     expect(captured.databaseUrl).toBeNull();
     expect(captured.customEnv).toBe("from-adapter");
     expect(captured.port).toMatch(/^\d+$/);
@@ -2352,7 +2352,7 @@ describe("ensureRuntimeServicesForRun", () => {
   });
 
   it("stops execution workspace runtime services by executionWorkspaceId", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-stop-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-stop-"));
     const workspace = buildWorkspace(workspaceRoot);
     const runId = "run-stop";
     leasedRunIds.add(runId);
@@ -2406,7 +2406,7 @@ describe("ensureRuntimeServicesForRun", () => {
   });
 
   it("does not stop services in sibling directories when matching by workspace cwd", async () => {
-    const workspaceParent = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-sibling-"));
+    const workspaceParent = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-sibling-"));
     const targetWorkspaceRoot = path.join(workspaceParent, "project");
     const siblingWorkspaceRoot = path.join(workspaceParent, "project-extended", "service");
     await fs.mkdir(targetWorkspaceRoot, { recursive: true });
@@ -2465,7 +2465,7 @@ describe("ensureRuntimeServicesForRun", () => {
   });
 
   it("starts only the selected workspace-controlled runtime service", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-control-start-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-control-start-"));
     const workspace = buildWorkspace(workspaceRoot);
 
     const services = await startRuntimeServicesForWorkspaceControl({
@@ -2526,7 +2526,7 @@ describe("ensureRuntimeServicesForRun", () => {
   });
 
   it("stops only the selected execution workspace runtime service", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-control-stop-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-control-stop-"));
     const workspace = buildWorkspace(workspaceRoot);
 
     const services = await startRuntimeServicesForWorkspaceControl({
@@ -2798,7 +2798,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-workspace-runtime-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -2817,10 +2817,10 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   });
 
   it("adopts a live auto-port shared service after runtime state is reset", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-reconcile-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    process.env.PAPERCLIP_INSTANCE_ID = `runtime-reconcile-${randomUUID()}`;
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-reconcile-"));
+    const dealDeskHome = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-home-"));
+    process.env.DEALDESK_HOME = dealDeskHome;
+    process.env.DEALDESK_INSTANCE_ID = `runtime-reconcile-${randomUUID()}`;
 
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -2829,7 +2829,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -2934,7 +2934,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -2962,10 +2962,10 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       issueId: null,
       scopeType: "project_workspace",
       scopeId: projectWorkspaceId,
-      serviceName: "paperclip-dev",
+      serviceName: "dealdesk-dev",
       status: "running",
       lifecycle: "shared",
-      reuseKey: `project_workspace:${projectWorkspaceId}:paperclip-dev`,
+      reuseKey: `project_workspace:${projectWorkspaceId}:dealdesk-dev`,
       command: "pnpm dev",
       cwd: "/tmp/paperclip-primary",
       port: 49195,
@@ -2984,9 +2984,9 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     });
     await writeLocalServiceRegistryRecord({
       version: 1,
-      serviceKey: "workspace-runtime-paperclip-dev-stale",
+      serviceKey: "workspace-runtime-dealdesk-dev-stale",
       profileKind: "workspace-runtime",
-      serviceName: "paperclip-dev",
+      serviceName: "dealdesk-dev",
       command: "pnpm dev",
       cwd: "/tmp/paperclip-primary",
       envFingerprint: "fingerprint",
@@ -2996,7 +2996,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       processGroupId: 999999,
       provider: "local_process",
       runtimeServiceId,
-      reuseKey: `project_workspace:${projectWorkspaceId}:paperclip-dev`,
+      reuseKey: `project_workspace:${projectWorkspaceId}:dealdesk-dev`,
       startedAt: startedAt.toISOString(),
       lastSeenAt: updatedAt.toISOString(),
       metadata: null,
@@ -3015,7 +3015,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   });
 
   it("persists controlled execution workspace stops as stopped", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-stop-persisted-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-stop-persisted-"));
     const companyId = randomUUID();
     const agentId = randomUUID();
     const projectId = randomUUID();
@@ -3024,7 +3024,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -3136,7 +3136,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   });
 
   it("restarts a stopped auto-port service on the same port when it is available", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-port-reuse-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-runtime-port-reuse-"));
     const companyId = randomUUID();
     const agentId = randomUUID();
     const projectId = randomUUID();
@@ -3144,7 +3144,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

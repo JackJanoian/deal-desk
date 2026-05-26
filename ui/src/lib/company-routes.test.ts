@@ -43,7 +43,7 @@ describe("company routes", () => {
     expect(extractCompanyPrefixFromPath("/deal-desk/targets")).toBeNull();
     expect(extractCompanyPrefixFromPath("/deal-desk/hire")).toBeNull();
     expect(applyCompanyPrefix("/deal-desk/targets", "ACME")).toBe("/ACME/deal-desk/targets");
-    expect(applyCompanyPrefix("/deal-desk/intermediaries", "ACME")).toBe("/ACME/deal-desk/intermediaries");
+    expect(applyCompanyPrefix("/deal-desk/pipeline", "ACME")).toBe("/ACME/deal-desk/pipeline");
     expect(applyCompanyPrefix("/deal-desk/hire", "ACME")).toBe("/ACME/deal-desk/hire");
     expect(toCompanyRelativePath("/ACME/deal-desk/targets")).toBe("/deal-desk/targets");
   });

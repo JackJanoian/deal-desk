@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, FeedbackVote, IssueComment } from "@paperclipai/shared";
+import type { Agent, FeedbackVote, IssueComment } from "@dealdesk/shared";
 import type { TranscriptEntry } from "@/adapters";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 import { CommentThread } from "@/components/CommentThread";
@@ -15,7 +15,7 @@ import type {
   IssueChatTranscriptEntry,
 } from "@/lib/issue-chat-messages";
 import type { IssueTimelineEvent } from "@/lib/issue-timeline-events";
-import { storybookAgentMap, storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgentMap, storybookAgents } from "../fixtures/dealDeskData";
 
 const companyId = "company-storybook";
 const projectId = "project-board-ui";
@@ -106,7 +106,7 @@ function createSystemEvent(overrides: Partial<IssueTimelineEvent>): IssueTimelin
     id: "event-default",
     createdAt: new Date("2026-04-20T14:00:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "dealdesk",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -244,7 +244,7 @@ const commentTimelineEvents: IssueTimelineEvent[] = [
     id: "event-system-checkout",
     createdAt: new Date("2026-04-20T13:04:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "dealdesk",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -383,7 +383,7 @@ const issueChatComments: IssueChatComment[] = [
     id: "comment-issue-agent",
     authorAgentId: codexAgent.id,
     authorUserId: null,
-    body: "I kept the existing component contracts and added fixtures with realistic Paperclip work: checkout, comments, linked runs, and review feedback.",
+    body: "I kept the existing component contracts and added fixtures with realistic DealDesk work: checkout, comments, linked runs, and review feedback.",
     createdAt: new Date("2026-04-20T13:50:00.000Z"),
     runId: "run-issue-chat-01",
     runAgentId: codexAgent.id,
@@ -395,7 +395,7 @@ const issueChatComments: IssueChatComment[] = [
     authorUserId: null,
     runId: "run-issue-chat-01",
     runAgentId: codexAgent.id,
-    body: "Paperclip needs a disposition before this issue can continue.",
+    body: "DealDesk needs a disposition before this issue can continue.",
     presentation: {
       kind: "system_notice",
       tone: "warning",
@@ -441,7 +441,7 @@ const issueTimelineEvents: IssueTimelineEvent[] = [
     id: "event-issue-checkout",
     createdAt: new Date("2026-04-20T13:42:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "dealdesk",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -473,7 +473,7 @@ const issueThreadNoticeReviewComments: IssueChatComment[] = [
     authorUserId: null,
     runId: "run-notice-source",
     runAgentId: codexAgent.id,
-    body: "Paperclip needs a disposition before this issue can continue.",
+    body: "DealDesk needs a disposition before this issue can continue.",
     presentation: {
       kind: "system_notice",
       tone: "warning",
@@ -745,7 +745,7 @@ function IssueChatMatrix() {
           </ScenarioCard>
           <ScenarioCard
             title="Planning mode composer"
-            description="Issue is in planning mode. The composer turns amber and surfaces a Planning chip next to the paperclip — clicking it stages a Standard submission without immediately changing the issue mode."
+            description="Issue is in planning mode. The composer turns amber and surfaces a Planning chip next to the dealdesk — clicking it stages a Standard submission without immediately changing the issue mode."
           >
             <IssueChatThread
               comments={[]}
@@ -815,7 +815,7 @@ function ChatCommentsStories() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Threaded work conversations</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Fixture-backed coverage for classic issue comments, embedded run chat, and the assistant-style issue chat
-            surface. The scenarios use Paperclip operational content with mixed authors, system timeline events,
+            surface. The scenarios use DealDesk operational content with mixed authors, system timeline events,
             markdown, code blocks, @mentions, links, queued comments, tool calls, and streaming run output.
           </p>
         </section>

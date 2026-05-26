@@ -4,13 +4,13 @@ Status: Current implementation guide
 Date: 2026-04-26
 Audience: Product and engineering
 
-This document explains how Paperclip interprets issue assignment, issue status, execution runs, wakeups, parent/sub-issue structure, and blocker relationships.
+This document explains how DealDesk interprets issue assignment, issue status, execution runs, wakeups, parent/sub-issue structure, and blocker relationships.
 
 `doc/SPEC-implementation.md` remains the V1 contract. This document is the detailed execution model behind that contract.
 
 ## 1. Core Model
 
-Paperclip separates four concepts that are easy to blur together:
+DealDesk separates four concepts that are easy to blur together:
 
 1. structure: parent/sub-issue relationships
 2. dependency: blocker relationships
@@ -27,11 +27,11 @@ An issue has at most one assignee.
 - `assigneeUserId` means the issue is owned by a human board user
 - both cannot be set at the same time
 
-This is a hard invariant. Paperclip is single-assignee by design.
+This is a hard invariant. DealDesk is single-assignee by design.
 
 ## 3. Status Semantics
 
-Paperclip issue statuses are not just UI labels. They imply different expectations about ownership and execution.
+DealDesk issue statuses are not just UI labels. They imply different expectations about ownership and execution.
 
 ### `backlog`
 
@@ -47,7 +47,7 @@ The issue is actionable but not actively claimed.
 
 - it may be assigned or unassigned
 - no checkout/execution lock is required yet
-- for agent-assigned work, Paperclip may still need a wake path to ensure the assignee actually sees it
+- for agent-assigned work, DealDesk may still need a wake path to ensure the assignee actually sees it
 
 ### `in_progress`
 
@@ -67,7 +67,7 @@ This is the right state for:
 
 - waiting on another issue
 - waiting on a human decision
-- waiting on an external dependency or system when Paperclip does not own a scheduled re-check
+- waiting on an external dependency or system when DealDesk does not own a scheduled re-check
 - work that automatic recovery could not safely continue
 
 ### `in_review`
@@ -92,16 +92,16 @@ The execution model differs depending on assignee type.
 
 Agent-owned issues are part of the control plane's execution loop.
 
-- Paperclip can wake the assignee
-- Paperclip can track runs linked to the issue
-- Paperclip can recover some lost execution state after crashes/restarts
+- DealDesk can wake the assignee
+- DealDesk can track runs linked to the issue
+- DealDesk can recover some lost execution state after crashes/restarts
 
 ### User-owned issues
 
 User-owned issues are not executed by the heartbeat scheduler.
 
-- Paperclip can track the ownership and status
-- Paperclip cannot rely on heartbeat/run semantics to keep them moving
+- DealDesk can track the ownership and status
+- DealDesk cannot rely on heartbeat/run semantics to keep them moving
 - stranded-work reconciliation does not apply to them
 
 This is why `in_progress` can be strict for agents without forcing the same runtime rules onto human-held work.
@@ -119,11 +119,11 @@ These are related but not identical:
 - `checkoutRunId` answers who currently owns execution rights for the issue
 - `executionRunId` answers which run is actually live right now
 
-Paperclip already clears stale execution locks and can adopt some stale checkout locks when the original run is gone.
+DealDesk already clears stale execution locks and can adopt some stale checkout locks when the original run is gone.
 
 ## 6. Parent/Sub-Issue vs Blockers
 
-Paperclip uses two different relationships for different jobs.
+DealDesk uses two different relationships for different jobs.
 
 ### Parent/Sub-Issue (`parentId`)
 
@@ -148,15 +148,15 @@ Use it for:
 - explicit waiting relationships
 - automatic wakeups when all blockers resolve
 
-Blocked issues should stay idle while blockers remain unresolved. Paperclip should not create a queued heartbeat run for that issue until the final blocker is done and the `issue_blockers_resolved` wake can start real work.
+Blocked issues should stay idle while blockers remain unresolved. DealDesk should not create a queued heartbeat run for that issue until the final blocker is done and the `issue_blockers_resolved` wake can start real work.
 
 If a parent is truly waiting on a child, model that with blockers. Do not rely on the parent/child relationship alone.
 
 ## 7. Non-Terminal Issue Liveness Contract
 
-For agent-owned, non-terminal issues, Paperclip should never leave work in a state where nobody is responsible for the next move and nothing will wake or surface it.
+For agent-owned, non-terminal issues, DealDesk should never leave work in a state where nobody is responsible for the next move and nothing will wake or surface it.
 
-This is a visibility contract, not an auto-completion contract. If Paperclip cannot safely infer the next action, it should surface the ambiguity with a blocked state, a visible notice, or an explicit recovery action. It must not silently mark work done from prose comments or guess that a dependency is complete.
+This is a visibility contract, not an auto-completion contract. If DealDesk cannot safely infer the next action, it should surface the ambiguity with a blocked state, a visible notice, or an explicit recovery action. It must not silently mark work done from prose comments or guess that a dependency is complete.
 
 An issue is healthy when the product can answer "what moves this forward next?" without requiring a human to reconstruct intent from the whole thread. An issue is stalled when it is non-terminal but has no live execution path, no explicit waiting path, and no recovery path.
 
@@ -212,9 +212,9 @@ An assigned `todo` issue is stalled when dispatch was interrupted, no wake remai
 
 This is parked state, not dispatch state.
 
-Assigning an issue normally implies executable intent. When create APIs receive an assignee and no explicit status, Paperclip defaults the issue to `todo` so the assignee has a wake path instead of silently inheriting the unassigned `backlog` default.
+Assigning an issue normally implies executable intent. When create APIs receive an assignee and no explicit status, DealDesk defaults the issue to `todo` so the assignee has a wake path instead of silently inheriting the unassigned `backlog` default.
 
-An explicit assigned `backlog` issue remains valid when the creator is deliberately parking the work. It must not wake the assignee just because it has an assignee. Paperclip should make that choice visible in activity and UI so operators can distinguish intentional parking from a missed handoff.
+An explicit assigned `backlog` issue remains valid when the creator is deliberately parking the work. It must not wake the assignee just because it has an assignee. DealDesk should make that choice visible in activity and UI so operators can distinguish intentional parking from a missed handoff.
 
 An assigned `backlog` issue becomes a liveness problem when another issue is blocked on it and there is no explicit waiting path such as a human owner, active run, queued wake, pending interaction or approval, monitor, or open recovery action. In that case the blocked parent should surface "blocked by parked work" rather than treating the dependency chain as healthy.
 
@@ -246,7 +246,7 @@ A healthy `in_review` issue has at least one valid action path:
 
 Agent-assigned `in_review` with no typed participant is only healthy when one of the other paths exists. Assignment to the same agent that produced the handoff is not, by itself, a review path.
 
-An `in_review` issue is stalled when it has no typed participant, no pending interaction or approval, no user owner, no active monitor, no active run, no queued wake, and no explicit recovery action. Paperclip should surface that state as recovery work rather than silently completing the issue or leaving blocker chains parked indefinitely.
+An `in_review` issue is stalled when it has no typed participant, no pending interaction or approval, no user owner, no active monitor, no active run, no queued wake, and no explicit recovery action. DealDesk should surface that state as recovery work rather than silently completing the issue or leaving blocker chains parked indefinitely.
 
 ### Issue monitors
 
@@ -256,19 +256,19 @@ Use a monitor when the current assignee owns a future check against an async sys
 
 Monitor policy lives under `executionPolicy.monitor` and includes:
 
-- `nextCheckAt`: when Paperclip should wake the assignee
+- `nextCheckAt`: when DealDesk should wake the assignee
 - `notes`: non-secret instructions for what the assignee should check
 - `serviceName`: optional non-secret external-service context
-- `externalRef`: optional external-service reference input; Paperclip treats it as secret-adjacent, redacts it before persistence/visibility, and omits it from activity and wake payloads
+- `externalRef`: optional external-service reference input; DealDesk treats it as secret-adjacent, redacts it before persistence/visibility, and omits it from activity and wake payloads
 - `timeoutAt`, `maxAttempts`, and `recoveryPolicy`: optional recovery hints for bounded waits
 
-Monitors are not recurring intervals. When a monitor fires, Paperclip clears the scheduled monitor and queues an `issue_monitor_due` wake for the assignee. If the external service is still pending, the assignee must explicitly re-arm the monitor with a new `nextCheckAt`. If the issue moves to `done`, `cancelled`, an invalid status, or a human/unassigned owner, the monitor is cleared.
+Monitors are not recurring intervals. When a monitor fires, DealDesk clears the scheduled monitor and queues an `issue_monitor_due` wake for the assignee. If the external service is still pending, the assignee must explicitly re-arm the monitor with a new `nextCheckAt`. If the issue moves to `done`, `cancelled`, an invalid status, or a human/unassigned owner, the monitor is cleared.
 
 Because `serviceName` and `notes` remain visible in issue activity and wake context, operators should keep them short and non-secret. Put enough context for the assignee to know what to inspect, but do not include signed URLs, bearer tokens, customer secrets, tenant-private identifiers, or provider links with embedded credentials.
 
-Monitor bounds are enforced. Paperclip rejects attempts to re-arm a monitor whose `timeoutAt` or `maxAttempts` is already exhausted. When a scheduled monitor reaches an exhausted bound at trigger time, Paperclip clears it and follows `recoveryPolicy`: `wake_owner` queues a bounded recovery wake for the assignee, `create_recovery_issue` opens visible issue-backed recovery work, and `escalate_to_board` records a board-visible escalation comment/activity.
+Monitor bounds are enforced. DealDesk rejects attempts to re-arm a monitor whose `timeoutAt` or `maxAttempts` is already exhausted. When a scheduled monitor reaches an exhausted bound at trigger time, DealDesk clears it and follows `recoveryPolicy`: `wake_owner` queues a bounded recovery wake for the assignee, `create_recovery_issue` opens visible issue-backed recovery work, and `escalate_to_board` records a board-visible escalation comment/activity.
 
-Use `blocked` instead of a monitor when no Paperclip assignee owns a responsible polling path. In that case, name the external owner/action or create first-class recovery/blocker work.
+Use `blocked` instead of a monitor when no DealDesk assignee owns a responsible polling path. In that case, name the external owner/action or create first-class recovery/blocker work.
 
 ### `blocked`
 
@@ -286,7 +286,7 @@ A `blocked` issue is stalled when the unresolved blocker leaf has no active run,
 
 ## 8. Crash and Restart Recovery
 
-Paperclip now treats crash/restart recovery as a stranded-assigned-work problem, not just a stranded-run problem.
+DealDesk now treats crash/restart recovery as a stranded-assigned-work problem, not just a stranded-run problem.
 
 There are two distinct failure modes.
 
@@ -301,8 +301,8 @@ Example:
 
 Recovery rule:
 
-- if the latest issue-linked run failed/timed out/cancelled and no live execution path remains, Paperclip queues one automatic assignment recovery wake
-- if that recovery wake also finishes and the issue is still stranded, Paperclip moves the issue to `blocked` and opens or updates an explicit recovery action when a bounded owner/action is known; the visible comment is evidence, not the recovery path by itself
+- if the latest issue-linked run failed/timed out/cancelled and no live execution path remains, DealDesk queues one automatic assignment recovery wake
+- if that recovery wake also finishes and the issue is still stranded, DealDesk moves the issue to `blocked` and opens or updates an explicit recovery action when a bounded owner/action is known; the visible comment is evidence, not the recovery path by itself
 
 This is a dispatch recovery, not a continuation recovery.
 
@@ -317,8 +317,8 @@ Example:
 
 Recovery rule:
 
-- Paperclip queues one automatic continuation wake
-- if that continuation wake also finishes and the issue is still stranded, Paperclip moves the issue to `blocked` and opens or updates an explicit recovery action when a bounded owner/action is known; the visible comment is evidence, not the recovery path by itself
+- DealDesk queues one automatic continuation wake
+- if that continuation wake also finishes and the issue is still stranded, DealDesk moves the issue to `blocked` and opens or updates an explicit recovery action when a bounded owner/action is known; the visible comment is evidence, not the recovery path by itself
 
 This is an active-work continuity recovery.
 
@@ -326,7 +326,7 @@ This is an active-work continuity recovery.
 
 Startup recovery and periodic recovery are different from normal wakeup delivery.
 
-On startup and on the periodic recovery loop, Paperclip now does four things in sequence:
+On startup and on the periodic recovery loop, DealDesk now does four things in sequence:
 
 1. reap orphaned `running` runs
 2. resume persisted `queued` runs
@@ -337,7 +337,7 @@ The stranded-work pass closes the gap where issue state survives a crash but the
 
 ## 10. Silent Active-Run Watchdog
 
-An active run can still be unhealthy even when its process is `running`. Paperclip treats prolonged output silence as a watchdog signal, not as proof that the run is failed.
+An active run can still be unhealthy even when its process is `running`. DealDesk treats prolonged output silence as a watchdog signal, not as proof that the run is failed.
 
 The recovery service owns this contract:
 
@@ -362,7 +362,7 @@ The board can record watchdog decisions. The assigned owner of an issue-backed w
 
 ## 11. Auto-Recover vs Explicit Recovery vs Human Escalation
 
-Paperclip uses three different recovery outcomes, depending on how much it can safely infer.
+DealDesk uses three different recovery outcomes, depending on how much it can safely infer.
 
 ### Auto-Recover
 
@@ -378,7 +378,7 @@ Auto-recovery preserves the existing owner. It does not choose a replacement age
 
 ### Explicit Recovery Action
 
-Paperclip opens an explicit recovery action when the system can identify a problem but cannot safely complete the work itself.
+DealDesk opens an explicit recovery action when the system can identify a problem but cannot safely complete the work itself.
 
 Examples:
 
@@ -402,13 +402,13 @@ Examples:
 - the issue is human-owned rather than agent-owned
 - the run is intentionally quiet but needs an operator decision before cancellation or continuation
 
-In these cases Paperclip should leave a visible issue/comment trail instead of silently retrying.
+In these cases DealDesk should leave a visible issue/comment trail instead of silently retrying.
 
 ## 12. What This Does Not Mean
 
 These semantics do not change V1 into an auto-reassignment system.
 
-Paperclip still does not:
+DealDesk still does not:
 
 - automatically reassign work to a different agent
 - infer dependency semantics from `parentId` alone
@@ -430,4 +430,4 @@ For a board operator, the intended meaning is:
 - parent/sub-issue explains structure
 - blockers explain waiting
 
-That is the execution contract Paperclip should present to operators.
+That is the execution contract DealDesk should present to operators.

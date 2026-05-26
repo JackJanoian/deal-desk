@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Company } from "@paperclipai/shared";
+import type { Company } from "@dealdesk/shared";
 import { companiesApi } from "../api/companies";
 import { ApiError } from "../api/client";
 import { queryKeys } from "../lib/queryKeys";
@@ -24,6 +24,7 @@ interface CompanyContextValue {
   loading: boolean;
   error: Error | null;
   setSelectedCompanyId: (companyId: string, options?: CompanySelectionOptions) => void;
+  clearSelectedCompanyId: () => void;
   reloadCompanies: () => Promise<void>;
   createCompany: (data: {
     name: string;
@@ -32,7 +33,7 @@ interface CompanyContextValue {
   }) => Promise<Company>;
 }
 
-const STORAGE_KEY = "paperclip.selectedCompanyId";
+const STORAGE_KEY = "dealdesk.selectedCompanyId";
 
 const CompanyContext = createContext<CompanyContextValue | null>(null);
 
@@ -44,9 +45,8 @@ export function resolveBootstrapCompanySelection(input: {
 }) {
   if (input.companies.length === 0) return null;
 
-  const selectableCompanies = input.sidebarCompanies.length > 0
-    ? input.sidebarCompanies
-    : input.companies;
+  const selectableCompanies = input.sidebarCompanies;
+  if (selectableCompanies.length === 0) return null;
   if (input.selectedCompanyId && selectableCompanies.some((company) => company.id === input.selectedCompanyId)) {
     return input.selectedCompanyId;
   }
@@ -121,6 +121,12 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, companyId);
   }, []);
 
+  const clearSelectedCompanyId = useCallback(() => {
+    setSelectedCompanyIdState(null);
+    setSelectionSource("manual");
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
   const reloadCompanies = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
   }, [queryClient]);
@@ -163,6 +169,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       loading: isLoading,
       error: error as Error | null,
       setSelectedCompanyId,
+      clearSelectedCompanyId,
       reloadCompanies,
       createCompany,
     }),
@@ -174,6 +181,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       isLoading,
       error,
       setSelectedCompanyId,
+      clearSelectedCompanyId,
       reloadCompanies,
       createCompany,
     ],

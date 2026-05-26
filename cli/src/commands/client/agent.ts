@@ -1,9 +1,9 @@
 import { Command } from "commander";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@dealdesk/shared";
 import {
   removeMaintainerOnlySkillSymlinks,
-  resolvePaperclipSkillsDir,
-} from "@paperclipai/adapter-utils/server-utils";
+  resolveDealDeskSkillsDir,
+} from "@dealdesk/adapter-utils/server-utils";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -149,10 +149,10 @@ function buildAgentEnvExports(input: {
 }): string {
   const escaped = (value: string) => value.replace(/'/g, "'\"'\"'");
   return [
-    `export PAPERCLIP_API_URL='${escaped(input.apiBase)}'`,
-    `export PAPERCLIP_COMPANY_ID='${escaped(input.companyId)}'`,
-    `export PAPERCLIP_AGENT_ID='${escaped(input.agentId)}'`,
-    `export PAPERCLIP_API_KEY='${escaped(input.apiKey)}'`,
+    `export DEALDESK_API_URL='${escaped(input.apiBase)}'`,
+    `export DEALDESK_COMPANY_ID='${escaped(input.companyId)}'`,
+    `export DEALDESK_AGENT_ID='${escaped(input.agentId)}'`,
+    `export DEALDESK_API_KEY='${escaped(input.apiKey)}'`,
   ].join("\n");
 }
 
@@ -219,14 +219,14 @@ export function registerAgentCommands(program: Command): void {
     agent
       .command("local-cli")
       .description(
-        "Create an agent API key, install local Paperclip skills for Codex/Claude, and print shell exports",
+        "Create an agent API key, install local DealDesk skills for Codex/Claude, and print shell exports",
       )
       .argument("<agentRef>", "Agent ID or shortname/url-key")
       .requiredOption("-C, --company-id <id>", "Company ID")
       .option("--key-name <name>", "API key label", "local-cli")
       .option(
         "--no-install-skills",
-        "Skip installing Paperclip skills into ~/.codex/skills and ~/.claude/skills",
+        "Skip installing DealDesk skills into ~/.codex/skills and ~/.claude/skills",
       )
       .action(async (agentRef: string, opts: AgentLocalCliOptions) => {
         try {
@@ -248,10 +248,10 @@ export function registerAgentCommands(program: Command): void {
 
           const installSummaries: SkillsInstallSummary[] = [];
           if (opts.installSkills !== false) {
-            const skillsDir = await resolvePaperclipSkillsDir(__moduleDir, [path.resolve(process.cwd(), "skills")]);
+            const skillsDir = await resolveDealDeskSkillsDir(__moduleDir, [path.resolve(process.cwd(), "skills")]);
             if (!skillsDir) {
               throw new Error(
-                "Could not locate local Paperclip skills directory. Expected ./skills in the repo checkout.",
+                "Could not locate local DealDesk skills directory. Expected ./skills in the repo checkout.",
               );
             }
 

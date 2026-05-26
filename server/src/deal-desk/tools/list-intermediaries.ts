@@ -2,8 +2,8 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { and, asc, eq, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { ddIntermediaries } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddIntermediaries } from "@dealdesk/db";
 
 export const listIntermediariesQuerySchema = z.object({
   overdueOnly: z
@@ -39,7 +39,7 @@ export function listIntermediariesHandler(db: Db) {
     const { overdueOnly, sector, limit } = parseResult.data;
     const today = todayDateString();
 
-    const conds = [eq(ddIntermediaries.paperclipCompanyId, companyId)];
+    const conds = [eq(ddIntermediaries.dealDeskCompanyId, companyId)];
     if (overdueOnly) {
       conds.push(sql`${ddIntermediaries.nextTouchDue} < ${today}`);
     }

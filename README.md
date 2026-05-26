@@ -6,15 +6,13 @@ Run your private equity business development team as a team of AI agents.
 Define an investment thesis, hire AI analysts, set budgets, and the system
 sources acquisition targets and maps intermediary relationships autonomously.
 
-Open source. Self-hosted. MIT licensed. Built on [Paperclip](https://github.com/paperclipai/paperclip).
+Open source. Self-hosted. MIT licensed.
 Bring your own agent.
 
 ## Quick start
 
 ```bash
 npx dealdesk onboard
-# or
-npx paperclipai onboard
 ```
 
 Then open http://localhost:3100
@@ -43,7 +41,7 @@ Then open http://localhost:3100
 ## Built on Paperclip
 
 Deal Desk is a fork of [Paperclip](https://github.com/paperclipai/paperclip),
-the open-source AI company orchestration platform. We use their heartbeat
+the open-source AI company orchestration platform. We use its heartbeat
 engine, adapter system, budget enforcement, and governance layer — and add
 PE-specific primitives on top.
 
@@ -53,5 +51,10 @@ Claude Code · OpenClaw · Codex · Cursor · Any HTTP endpoint
 
 ## License
 
-MIT © 2026 Deal Desk Contributors
-(Forked from Paperclip, MIT © 2026 Paperclip)
+MIT © 2026 DealDesk AI. See [LICENSE](LICENSE) for the full text.
+
+Portions of this software are derived from
+[Paperclip](https://github.com/paperclipai/paperclip) (MIT © 2025 Paperclip AI).
+See [NOTICE](NOTICE) for upstream attribution.
+
+Trademarks and logos are not covered by the MIT License. See [TRADEMARK.md](TRADEMARK.md).

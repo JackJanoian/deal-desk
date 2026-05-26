@@ -17,6 +17,8 @@ const mockAuthApi = vi.hoisted(() => ({
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockOpenOnboarding = vi.hoisted(() => vi.fn());
 const mockSetSelectedCompanyId = vi.hoisted(() => vi.fn());
+const mockClearSelectedCompanyId = vi.hoisted(() => vi.fn());
+const mockSignOut = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
 const mockLocation = vi.hoisted(() => ({ pathname: "/PAP/dashboard" }));
 const mockSidebarPreferencesApi = vi.hoisted(() => ({
@@ -38,6 +40,13 @@ vi.mock("@/lib/router", () => ({
   ),
   useLocation: () => mockLocation,
   useNavigate: () => mockNavigate,
+}));
+
+vi.mock("@/hooks/useSignOut", () => ({
+  useSignOut: () => ({
+    mutate: mockSignOut,
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/context/CompanyContext", () => ({
@@ -73,6 +82,7 @@ vi.mock("@/context/CompanyContext", () => ({
       status: "active",
     },
     setSelectedCompanyId: mockSetSelectedCompanyId,
+    clearSelectedCompanyId: mockClearSelectedCompanyId,
   }),
 }));
 
@@ -182,7 +192,7 @@ describe("SidebarCompanyMenu", () => {
     });
     await flushReact();
 
-    expect(mockAuthApi.signOut).toHaveBeenCalledTimes(1);
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();

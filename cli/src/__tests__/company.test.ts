@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanyPortabilityPreviewResult } from "@paperclipai/shared";
+import type { CompanyPortabilityPreviewResult } from "@dealdesk/shared";
 import {
   buildCompanyDashboardUrl,
   buildDefaultImportAdapterOverrides,
@@ -104,8 +104,8 @@ describe("resolveCompanyImportApplyConfirmationMode", () => {
 
 describe("buildCompanyDashboardUrl", () => {
   it("preserves the configured base path when building a dashboard URL", () => {
-    expect(buildCompanyDashboardUrl("https://paperclip.example/app/", "PAP")).toBe(
-      "https://paperclip.example/app/PAP/dashboard",
+    expect(buildCompanyDashboardUrl("https://dealdesk.example/app/", "PAP")).toBe(
+      "https://dealdesk.example/app/PAP/dashboard",
     );
   });
 });
@@ -281,7 +281,7 @@ describe("renderCompanyImportPreview", () => {
     };
 
     const rendered = renderCompanyImportPreview(preview, {
-      sourceLabel: "GitHub: https://github.com/paperclipai/companies/demo",
+      sourceLabel: "GitHub: https://github.com/dealdesk/companies/demo",
       targetLabel: "Imported Co (company-123)",
       infoMessages: ["Using claude-local adapter"],
     });
@@ -323,13 +323,13 @@ describe("renderCompanyImportResult", () => {
       },
       {
         targetLabel: "Imported Co (company-123)",
-        companyUrl: "https://paperclip.example/PAP/dashboard",
+        companyUrl: "https://dealdesk.example/PAP/dashboard",
         infoMessages: ["Using claude-local adapter"],
       },
     );
 
     expect(rendered).toContain("Company");
-    expect(rendered).toContain("https://paperclip.example/PAP/dashboard");
+    expect(rendered).toContain("https://dealdesk.example/PAP/dashboard");
     expect(rendered).toContain("3 agents total (1 created, 1 updated, 1 skipped)");
     expect(rendered).toContain("3 projects total (1 created, 1 updated, 1 skipped)");
     expect(rendered).toContain("Agent results");

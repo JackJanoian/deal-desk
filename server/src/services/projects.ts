@@ -1,14 +1,12 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   projects,
-  projectGoals,
-  goals,
   pluginManagedResources,
   plugins,
   projectWorkspaces,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import {
   PROJECT_COLORS,
   deriveProjectUrlKey,
@@ -24,7 +22,7 @@ import {
   type WorkspaceRuntimeService,
   type PluginManagedProjectDeclaration,
   type PluginManagedProjectResolution,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { listCurrentRuntimeServicesForProjectWorkspaces } from "./workspace-runtime-read-model.js";
 import { parseProjectExecutionWorkspacePolicy } from "./execution-workspace-policy.js";
 import { mergeProjectWorkspaceRuntimeConfig, readProjectWorkspaceRuntimeConfig } from "./project-workspace-runtime-config.js";
@@ -33,7 +31,7 @@ import { resolveManagedProjectWorkspaceDir } from "../home-paths.js";
 type ProjectRow = typeof projects.$inferSelect;
 type ProjectWorkspaceRow = typeof projectWorkspaces.$inferSelect;
 type WorkspaceRuntimeServiceRow = typeof workspaceRuntimeServices.$inferSelect;
-const REPO_ONLY_CWD_SENTINEL = "/__paperclip_repo_only__";
+const REPO_ONLY_CWD_SENTINEL = "/__dealdesk_repo_only__";
 type CreateWorkspaceInput = {
   name?: string | null;
   sourceType?: string | null;
@@ -74,42 +72,14 @@ interface ResolveProjectNameOptions {
 }
 
 /** Batch-load goal refs for a set of projects. */
-async function attachGoals(db: Db, rows: ProjectRow[]): Promise<ProjectWithGoals[]> {
-  if (rows.length === 0) return [];
-
-  const projectIds = rows.map((r) => r.id);
-
-  // Fetch join rows + goal titles in one query
-  const links = await db
-    .select({
-      projectId: projectGoals.projectId,
-      goalId: projectGoals.goalId,
-      goalTitle: goals.title,
-    })
-    .from(projectGoals)
-    .innerJoin(goals, eq(projectGoals.goalId, goals.id))
-    .where(inArray(projectGoals.projectId, projectIds));
-
-  const map = new Map<string, ProjectGoalRef[]>();
-  for (const link of links) {
-    let arr = map.get(link.projectId);
-    if (!arr) {
-      arr = [];
-      map.set(link.projectId, arr);
-    }
-    arr.push({ id: link.goalId, title: link.goalTitle });
-  }
-
-  return rows.map((r) => {
-    const g = map.get(r.id) ?? [];
-    return {
-      ...r,
-      urlKey: deriveProjectUrlKey(r.name, r.id),
-      goalIds: g.map((x) => x.id),
-      goals: g,
-      executionWorkspacePolicy: parseProjectExecutionWorkspacePolicy(r.executionWorkspacePolicy),
-    } as ProjectWithGoals;
-  });
+async function attachGoals(_db: Db, rows: ProjectRow[]): Promise<ProjectWithGoals[]> {
+  return rows.map((r) => ({
+    ...r,
+    urlKey: deriveProjectUrlKey(r.name, r.id),
+    goalIds: [],
+    goals: [],
+    executionWorkspacePolicy: parseProjectExecutionWorkspacePolicy(r.executionWorkspacePolicy),
+  } as unknown as ProjectWithGoals));
 }
 
 function toRuntimeService(row: WorkspaceRuntimeServiceRow): WorkspaceRuntimeService {
@@ -315,28 +285,6 @@ async function attachWorkspaces(db: Db, rows: ProjectWithGoals[]): Promise<Proje
   });
 }
 
-/** Sync the project_goals join table for a single project. */
-async function syncGoalLinks(db: Db, projectId: string, companyId: string, goalIds: string[]) {
-  // Delete existing links
-  await db.delete(projectGoals).where(eq(projectGoals.projectId, projectId));
-
-  // Insert new links
-  if (goalIds.length > 0) {
-    await db.insert(projectGoals).values(
-      goalIds.map((goalId) => ({ projectId, goalId, companyId })),
-    );
-  }
-}
-
-/** Resolve goalIds from input, handling the legacy goalId field. */
-function resolveGoalIds(data: { goalIds?: string[]; goalId?: string | null }): string[] | undefined {
-  if (data.goalIds !== undefined) return data.goalIds;
-  if (data.goalId !== undefined) {
-    return data.goalId ? [data.goalId] : [];
-  }
-  return undefined;
-}
-
 function readNonEmptyString(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -460,8 +408,7 @@ export function projectService(db: Db) {
     companyId: string,
     data: Omit<typeof projects.$inferInsert, "companyId"> & { goalIds?: string[] },
   ): Promise<ProjectWithGoals> => {
-    const { goalIds: inputGoalIds, ...projectData } = data;
-    const ids = resolveGoalIds({ goalIds: inputGoalIds, goalId: projectData.goalId });
+    const { goalIds: _inputGoalIds, goalId: _legacyGoalId, ...projectData } = data;
 
     // Auto-assign a color from the palette if none provided
     if (!projectData.color) {
@@ -477,18 +424,11 @@ export function projectService(db: Db) {
       .where(eq(projects.companyId, companyId));
     projectData.name = resolveProjectNameForUniqueShortname(projectData.name, existingProjects);
 
-    // Also write goalId to the legacy column (first goal or null)
-    const legacyGoalId = ids && ids.length > 0 ? ids[0] : projectData.goalId ?? null;
-
     const row = await db
       .insert(projects)
-      .values({ ...projectData, goalId: legacyGoalId, companyId })
+      .values({ ...projectData, goalId: null, companyId })
       .returning()
       .then((rows) => rows[0]);
-
-    if (ids && ids.length > 0) {
-      await syncGoalLinks(db, row.id, companyId, ids);
-    }
 
     const [withGoals] = await attachGoals(db, [row]);
     const [enriched] = withGoals ? await attachWorkspaces(db, [withGoals]) : [];
@@ -612,7 +552,7 @@ export function projectService(db: Db) {
             resourceKey: input.projectKey,
             companyId: input.companyId,
             projectId: project?.id ?? existingBinding.resourceId,
-            project: project as import("@paperclipai/shared").Project | null,
+            project: project as import("@dealdesk/shared").Project | null,
             status: input.reset ? "reset" : "resolved",
           };
         }
@@ -646,7 +586,7 @@ export function projectService(db: Db) {
           resourceKey: input.projectKey,
           companyId: input.companyId,
           projectId: hydrated?.id ?? project.id,
-          project: hydrated as import("@paperclipai/shared").Project | null,
+          project: hydrated as import("@dealdesk/shared").Project | null,
           status: "relinked",
         };
       }
@@ -685,7 +625,7 @@ export function projectService(db: Db) {
         resourceKey: input.projectKey,
         companyId: input.companyId,
         projectId: hydrated?.id ?? project.id,
-        project: hydrated as import("@paperclipai/shared").Project | null,
+        project: hydrated as import("@dealdesk/shared").Project | null,
         status: "created",
       };
     },
@@ -696,8 +636,7 @@ export function projectService(db: Db) {
       id: string,
       data: Partial<typeof projects.$inferInsert> & { goalIds?: string[] },
     ): Promise<ProjectWithGoals | null> => {
-      const { goalIds: inputGoalIds, ...projectData } = data;
-      const ids = resolveGoalIds({ goalIds: inputGoalIds, goalId: projectData.goalId });
+      const { goalIds: _inputGoalIds, goalId: _legacyGoalId, ...projectData } = data;
       const existingProject = await db
         .select({ id: projects.id, companyId: projects.companyId, name: projects.name })
         .from(projects)
@@ -719,14 +658,10 @@ export function projectService(db: Db) {
         }
       }
 
-      // Keep legacy goalId column in sync
       const updates: Partial<typeof projects.$inferInsert> = {
         ...projectData,
         updatedAt: new Date(),
       };
-      if (ids !== undefined) {
-        updates.goalId = ids.length > 0 ? ids[0] : null;
-      }
 
       const row = await db
         .update(projects)
@@ -735,10 +670,6 @@ export function projectService(db: Db) {
         .returning()
         .then((rows) => rows[0] ?? null);
       if (!row) return null;
-
-      if (ids !== undefined) {
-        await syncGoalLinks(db, id, row.companyId, ids);
-      }
 
       const [withGoals] = await attachGoals(db, [row]);
       const [enriched] = withGoals ? await attachWorkspaces(db, [withGoals]) : [];

@@ -16,7 +16,8 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const THEME_STORAGE_KEY = "paperclip.theme";
+const THEME_STORAGE_KEY = "dealdesk.theme";
+const LEGACY_THEME_STORAGE_KEY = "dealdesk.theme";
 const DARK_THEME_COLOR = "#18181b";
 const LIGHT_THEME_COLOR = "#ffffff";
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -39,7 +40,16 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => resolveThemeFromDocument());
+  const [theme, setThemeState] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY)
+        ?? localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+      if (stored === "light" || stored === "dark") return stored;
+    } catch {
+      // Ignore local storage read failures.
+    }
+    return resolveThemeFromDocument();
+  });
 
   const setTheme = useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme);

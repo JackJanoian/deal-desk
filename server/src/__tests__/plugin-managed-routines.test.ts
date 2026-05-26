@@ -14,8 +14,8 @@ import {
   routineRuns,
   routineTriggers,
   routines,
-} from "@paperclipai/db";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+} from "@dealdesk/db";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -41,14 +41,14 @@ function issuePrefix(id: string) {
   return `T${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-function manifest(): PaperclipPluginManifestV1 {
+function manifest(): DealDeskPluginManifestV1 {
   return {
     id: "paperclip.managed-routines-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Routines Test",
     description: "Test plugin",
-    author: "Paperclip",
+    author: "DealDesk",
     categories: ["automation"],
     capabilities: ["agents.managed", "projects.managed", "routines.managed"],
     entrypoints: { worker: "./dist/worker.js" },
@@ -101,7 +101,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-routines-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-plugin-managed-routines-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -128,13 +128,13 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     const pluginId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: issuePrefix(companyId),
     });
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@paperclipai/plugin-managed-routines-test",
+      packageName: "@dealdesk/plugin-managed-routines-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

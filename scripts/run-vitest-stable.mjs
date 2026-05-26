@@ -8,15 +8,15 @@ const repoRoot = process.cwd();
 const serverRoot = path.join(repoRoot, "server");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@paperclipai/shared",
-  "@paperclipai/db",
-  "@paperclipai/adapter-utils",
-  "@paperclipai/adapter-acpx-local",
-  "@paperclipai/adapter-codex-local",
-  "@paperclipai/adapter-opencode-local",
-  "@paperclipai/plugin-sdk",
-  "@paperclipai/ui",
-  "paperclipai",
+  "@dealdesk/shared",
+  "@dealdesk/db",
+  "@dealdesk/adapter-utils",
+  "@dealdesk/adapter-acpx-local",
+  "@dealdesk/adapter-codex-local",
+  "@dealdesk/adapter-opencode-local",
+  "@dealdesk/plugin-sdk",
+  "@dealdesk/ui",
+  "dealdesk",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -211,11 +211,11 @@ function runVitest(args, label) {
   const testRoot = mkdtempSync(path.join(os.tmpdir(), `paperclip-vitest-${process.pid}-${invocationIndex}-`));
   const env = {
     ...process.env,
-    PAPERCLIP_HOME: path.join(testRoot, "home"),
-    PAPERCLIP_INSTANCE_ID: `vitest-${process.pid}-${invocationIndex}`,
+    DEALDESK_HOME: path.join(testRoot, "home"),
+    DEALDESK_INSTANCE_ID: `vitest-${process.pid}-${invocationIndex}`,
     TMPDIR: path.join(testRoot, "tmp"),
   };
-  mkdirSync(env.PAPERCLIP_HOME, { recursive: true });
+  mkdirSync(env.DEALDESK_HOME, { recursive: true });
   mkdirSync(env.TMPDIR, { recursive: true });
   const result = spawnSync("pnpm", ["exec", "vitest", "run", ...args], {
     cwd: repoRoot,
@@ -238,7 +238,7 @@ function runGeneralSuites(routeTests) {
   }
 
   runVitest(
-    ["--project", "@paperclipai/server", ...excludeRouteArgs],
+    ["--project", "@dealdesk/server", ...excludeRouteArgs],
     `server suites excluding ${routeTests.length} serialized suites`,
   );
 }
@@ -253,7 +253,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@dealdesk/server",
         routeTest.repoPath,
         "--pool=forks",
         "--poolOptions.forks.isolate=true",

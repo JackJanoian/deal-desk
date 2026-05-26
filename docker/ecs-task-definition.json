@@ -22,13 +22,13 @@
         { "name": "HOST", "value": "0.0.0.0" },
         { "name": "PORT", "value": "3100" },
         { "name": "SERVE_UI", "value": "true" },
-        { "name": "PAPERCLIP_HOME", "value": "/paperclip" },
-        { "name": "PAPERCLIP_INSTANCE_ID", "value": "default" },
-        { "name": "PAPERCLIP_CONFIG", "value": "/paperclip/instances/default/config.json" },
-        { "name": "PAPERCLIP_DEPLOYMENT_MODE", "value": "authenticated" },
-        { "name": "PAPERCLIP_DEPLOYMENT_EXPOSURE", "value": "public" },
-        { "name": "PAPERCLIP_PUBLIC_URL", "value": "https://<DOMAIN>" },
-        { "name": "PAPERCLIP_MIGRATION_AUTO_APPLY", "value": "true" },
+        { "name": "DEALDESK_HOME", "value": "/dealdesk" },
+        { "name": "DEALDESK_INSTANCE_ID", "value": "default" },
+        { "name": "DEALDESK_CONFIG", "value": "/paperclip/instances/default/config.json" },
+        { "name": "DEALDESK_DEPLOYMENT_MODE", "value": "authenticated" },
+        { "name": "DEALDESK_DEPLOYMENT_EXPOSURE", "value": "public" },
+        { "name": "DEALDESK_PUBLIC_URL", "value": "https://<DOMAIN>" },
+        { "name": "DEALDESK_MIGRATION_AUTO_APPLY", "value": "true" },
         { "name": "HEARTBEAT_SCHEDULER_ENABLED", "value": "true" }
       ],
       "secrets": [
@@ -56,7 +56,7 @@
       "mountPoints": [
         {
           "sourceVolume": "paperclip-data",
-          "containerPath": "/paperclip",
+          "containerPath": "/dealdesk",
           "readOnly": false
         }
       ],

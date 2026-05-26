@@ -128,7 +128,7 @@ describe.sequential("plugin install and upgrade authz", () => {
 
     const res = await request(app)
       .post("/api/plugins/install")
-      .send({ packageName: "paperclip-plugin-example" });
+      .send({ packageName: "dealdesk-plugin-example" });
 
     expect(res.status).toBe(403);
     expect(loader.installPlugin).not.toHaveBeenCalled();
@@ -146,13 +146,13 @@ describe.sequential("plugin install and upgrade authz", () => {
     mockRegistry.getByKey.mockResolvedValue({
       id: pluginId,
       pluginKey,
-      packageName: "paperclip-plugin-example",
+      packageName: "dealdesk-plugin-example",
       version: "1.0.0",
     });
     mockRegistry.getById.mockResolvedValue({
       id: pluginId,
       pluginKey,
-      packageName: "paperclip-plugin-example",
+      packageName: "dealdesk-plugin-example",
       version: "1.0.0",
     });
     mockLifecycle.load.mockResolvedValue(undefined);
@@ -170,11 +170,11 @@ describe.sequential("plugin install and upgrade authz", () => {
 
     const res = await request(app)
       .post("/api/plugins/install")
-      .send({ packageName: "paperclip-plugin-example" });
+      .send({ packageName: "dealdesk-plugin-example" });
 
     expect(res.status).toBe(200);
     expect(loader.installPlugin).toHaveBeenCalledWith({
-      packageName: "paperclip-plugin-example",
+      packageName: "dealdesk-plugin-example",
       version: undefined,
     });
     expect(mockLifecycle.load).toHaveBeenCalledWith(pluginId);

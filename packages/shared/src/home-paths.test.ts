@@ -8,8 +8,8 @@ import {
   resolveDefaultLogsDir,
   resolveDefaultSecretsKeyFilePath,
   resolveDefaultStorageDir,
-  resolvePaperclipConfigPathForInstance,
-  resolvePaperclipInstanceRoot,
+  resolveDealDeskConfigPathForInstance,
+  resolveDealDeskInstanceRoot,
 } from "./home-paths.js";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -21,12 +21,12 @@ afterEach(() => {
 describe("home path resolution", () => {
   it("resolves config and runtime data directly under the instance root", () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
-    process.env.PAPERCLIP_HOME = home;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.DEALDESK_HOME = home;
+    delete process.env.DEALDESK_INSTANCE_ID;
 
     const instanceRoot = path.join(home, "instances", "default");
-    expect(resolvePaperclipInstanceRoot()).toBe(instanceRoot);
-    expect(resolvePaperclipConfigPathForInstance()).toBe(path.join(instanceRoot, "config.json"));
+    expect(resolveDealDeskInstanceRoot()).toBe(instanceRoot);
+    expect(resolveDealDeskConfigPathForInstance()).toBe(path.join(instanceRoot, "config.json"));
     expect(resolveDefaultEmbeddedPostgresDir()).toBe(path.join(instanceRoot, "db"));
     expect(resolveDefaultBackupDir()).toBe(path.join(instanceRoot, "data", "backups"));
     expect(resolveDefaultLogsDir()).toBe(path.join(instanceRoot, "logs"));

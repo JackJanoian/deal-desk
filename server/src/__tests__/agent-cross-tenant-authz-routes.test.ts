@@ -106,7 +106,7 @@ const mockWorkspaceOperationService = vi.hoisted(() => ({}));
 const mockLogActivity = vi.hoisted(() => vi.fn());
 const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@dealdesk/shared/telemetry", () => ({
   trackAgentCreated: vi.fn(),
   trackErrorHandlerCrash: vi.fn(),
 }));

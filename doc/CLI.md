@@ -1,6 +1,6 @@
 # CLI Reference
 
-Paperclip CLI now supports both:
+DealDesk CLI now supports both:
 
 - instance setup/diagnostics (`onboard`, `doctor`, `configure`, `env`, `allowed-hostname`, `env-lab`)
 - control-plane client operations (issues, approvals, agents, activity, dashboard)
@@ -10,19 +10,19 @@ Paperclip CLI now supports both:
 Use repo script in development:
 
 ```sh
-pnpm paperclipai --help
+pnpm dealdesk --help
 ```
 
 First-time local bootstrap + run:
 
 ```sh
-pnpm paperclipai run
+pnpm dealdesk run
 ```
 
 Choose local instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm dealdesk run --instance dev
 ```
 
 ## Deployment Modes
@@ -31,27 +31,27 @@ Mode taxonomy and design intent are documented in `doc/DEPLOYMENT-MODES.md`.
 
 Current CLI behavior:
 
-- `paperclipai onboard` and `paperclipai configure --section server` set deployment mode in config
+- `dealdesk onboard` and `dealdesk configure --section server` set deployment mode in config
 - server onboarding/configure ask for reachability intent and write `server.bind`
-- `paperclipai run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
-- runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
-- `paperclipai run` and `paperclipai doctor` still do not expose a direct low-level `--mode` flag
+- `dealdesk run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
+- runtime can override mode with `DEALDESK_DEPLOYMENT_MODE`
+- `dealdesk run` and `dealdesk doctor` still do not expose a direct low-level `--mode` flag
 
 Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
 
 Allow an authenticated/private hostname (for example custom Tailscale DNS):
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm dealdesk allowed-hostname dotta-macbook-pro
 ```
 
 Bring up the default local SSH fixture for environment testing:
 
 ```sh
-pnpm paperclipai env-lab up
-pnpm paperclipai env-lab doctor
-pnpm paperclipai env-lab status --json
-pnpm paperclipai env-lab down
+pnpm dealdesk env-lab up
+pnpm dealdesk env-lab doctor
+pnpm dealdesk env-lab status --json
+pnpm dealdesk env-lab down
 ```
 
 All client commands support:
@@ -65,101 +65,101 @@ All client commands support:
 
 Company-scoped commands also support `--company-id <id>`.
 
-Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclip`:
+Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.dealdesk`:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai issue list --data-dir ./tmp/paperclip-dev
+pnpm dealdesk run --data-dir ./tmp/paperclip-dev
+pnpm dealdesk issue list --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
 
-Store local defaults in `~/.paperclip/context.json`:
+Store local defaults in `~/.dealdesk/context.json`:
 
 ```sh
-pnpm paperclipai context set --api-base http://localhost:3100 --company-id <company-id>
-pnpm paperclipai context show
-pnpm paperclipai context list
-pnpm paperclipai context use default
+pnpm dealdesk context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm dealdesk context show
+pnpm dealdesk context list
+pnpm dealdesk context use default
 ```
 
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-pnpm paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+pnpm dealdesk context set --api-key-env-var-name DEALDESK_API_KEY
+export DEALDESK_API_KEY=...
 ```
 
 ## Company Commands
 
 ```sh
-pnpm paperclipai company list
-pnpm paperclipai company get <company-id>
-pnpm paperclipai company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
+pnpm dealdesk company list
+pnpm dealdesk company get <company-id>
+pnpm dealdesk company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
 ```
 
 Examples:
 
 ```sh
-pnpm paperclipai company delete PAP --yes --confirm PAP
-pnpm paperclipai company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
+pnpm dealdesk company delete PAP --yes --confirm PAP
+pnpm dealdesk company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
 ```
 
 Notes:
 
-- Deletion is server-gated by `PAPERCLIP_ENABLE_COMPANY_DELETION`.
-- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `PAPERCLIP_COMPANY_ID`), not another company.
+- Deletion is server-gated by `DEALDESK_ENABLE_COMPANY_DELETION`.
+- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `DEALDESK_COMPANY_ID`), not another company.
 
 ## Issue Commands
 
 ```sh
-pnpm paperclipai issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
-pnpm paperclipai issue get <issue-id-or-identifier>
-pnpm paperclipai issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
-pnpm paperclipai issue update <issue-id> [--status in_progress] [--comment "..."]
-pnpm paperclipai issue comment <issue-id> --body "..." [--reopen]
-pnpm paperclipai issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
-pnpm paperclipai issue release <issue-id>
+pnpm dealdesk issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
+pnpm dealdesk issue get <issue-id-or-identifier>
+pnpm dealdesk issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
+pnpm dealdesk issue update <issue-id> [--status in_progress] [--comment "..."]
+pnpm dealdesk issue comment <issue-id> --body "..." [--reopen]
+pnpm dealdesk issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
+pnpm dealdesk issue release <issue-id>
 ```
 
 ## Agent Commands
 
 ```sh
-pnpm paperclipai agent list --company-id <company-id>
-pnpm paperclipai agent get <agent-id>
-pnpm paperclipai agent local-cli <agent-id-or-shortname> --company-id <company-id>
+pnpm dealdesk agent list --company-id <company-id>
+pnpm dealdesk agent get <agent-id>
+pnpm dealdesk agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 
-`agent local-cli` is the quickest way to run local Claude/Codex manually as a Paperclip agent:
+`agent local-cli` is the quickest way to run local Claude/Codex manually as a DealDesk agent:
 
 - creates a new long-lived agent API key
-- installs missing Paperclip skills into `~/.codex/skills` and `~/.claude/skills`
-- prints `export ...` lines for `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`
+- installs missing DealDesk skills into `~/.codex/skills` and `~/.claude/skills`
+- prints `export ...` lines for `DEALDESK_API_URL`, `DEALDESK_COMPANY_ID`, `DEALDESK_AGENT_ID`, and `DEALDESK_API_KEY`
 
 Example for shortname-based local setup:
 
 ```sh
-pnpm paperclipai agent local-cli codexcoder --company-id <company-id>
-pnpm paperclipai agent local-cli claudecoder --company-id <company-id>
+pnpm dealdesk agent local-cli codexcoder --company-id <company-id>
+pnpm dealdesk agent local-cli claudecoder --company-id <company-id>
 ```
 
 ## Secrets Commands
 
 ```sh
-pnpm paperclipai secrets list --company-id <company-id>
-pnpm paperclipai secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
-pnpm paperclipai secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-pnpm paperclipai secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-pnpm paperclipai secrets doctor --company-id <company-id>
-pnpm paperclipai secrets migrate-inline-env --company-id <company-id> [--apply]
+pnpm dealdesk secrets list --company-id <company-id>
+pnpm dealdesk secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
+pnpm dealdesk secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+pnpm dealdesk secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+pnpm dealdesk secrets doctor --company-id <company-id>
+pnpm dealdesk secrets migrate-inline-env --company-id <company-id> [--apply]
 ```
 
 Secret listing and declarations never print secret values. `create` accepts
 `--value-env` so shell history does not capture the value. `link` records
-provider-owned references without copying the secret value into Paperclip.
+provider-owned references without copying the secret value into DealDesk.
 For AWS-backed secrets, `secrets doctor` reports missing non-secret provider
 env and the expected AWS SDK runtime credential source; do not store AWS
-bootstrap credentials in Paperclip secrets.
+bootstrap credentials in DealDesk secrets.
 
 Per-company provider vaults (multiple vault instances per provider, default
 vault selection, coming-soon GCP/Vault) are configured from the board UI under
@@ -172,26 +172,26 @@ for vault management today. See the
 ## Approval Commands
 
 ```sh
-pnpm paperclipai approval list --company-id <company-id> [--status pending]
-pnpm paperclipai approval get <approval-id>
-pnpm paperclipai approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
-pnpm paperclipai approval approve <approval-id> [--decision-note "..."]
-pnpm paperclipai approval reject <approval-id> [--decision-note "..."]
-pnpm paperclipai approval request-revision <approval-id> [--decision-note "..."]
-pnpm paperclipai approval resubmit <approval-id> [--payload '{"...":"..."}']
-pnpm paperclipai approval comment <approval-id> --body "..."
+pnpm dealdesk approval list --company-id <company-id> [--status pending]
+pnpm dealdesk approval get <approval-id>
+pnpm dealdesk approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+pnpm dealdesk approval approve <approval-id> [--decision-note "..."]
+pnpm dealdesk approval reject <approval-id> [--decision-note "..."]
+pnpm dealdesk approval request-revision <approval-id> [--decision-note "..."]
+pnpm dealdesk approval resubmit <approval-id> [--payload '{"...":"..."}']
+pnpm dealdesk approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-pnpm paperclipai activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
+pnpm dealdesk activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
 ```
 
 ## Dashboard Commands
 
 ```sh
-pnpm paperclipai dashboard get --company-id <company-id>
+pnpm dealdesk dashboard get --company-id <company-id>
 ```
 
 ## Heartbeat Command
@@ -199,17 +199,17 @@ pnpm paperclipai dashboard get --company-id <company-id>
 `heartbeat run` now also supports context/api-key options and uses the shared client stack:
 
 ```sh
-pnpm paperclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
+pnpm dealdesk heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
 ```
 
 ## Local Storage Defaults
 
-Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` chooses the home directory and `PAPERCLIP_INSTANCE_ID` chooses the instance.
+Local DealDesk data lives under the selected instance root. `DEALDESK_HOME` chooses the home directory and `DEALDESK_INSTANCE_ID` chooses the instance.
 
 ```text
-~/.paperclip/                                     # PAPERCLIP_HOME
+~/.dealdesk/                                     # DEALDESK_HOME
 └── instances/
-    └── default/                                  # instance root (PAPERCLIP_INSTANCE_ID)
+    └── default/                                  # instance root (DEALDESK_INSTANCE_ID)
         ├── config.json                           # runtime config
         ├── .env                                  # instance env file
         ├── db/                                   # embedded PostgreSQL data
@@ -227,16 +227,16 @@ Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` ch
 
 Default paths for the canonical install:
 
-- config: `~/.paperclip/instances/default/config.json`
-- embedded db: `~/.paperclip/instances/default/db`
-- logs: `~/.paperclip/instances/default/logs`
-- storage: `~/.paperclip/instances/default/data/storage`
-- secrets key: `~/.paperclip/instances/default/secrets/master.key`
+- config: `~/.dealdesk/instances/default/config.json`
+- embedded db: `~/.dealdesk/instances/default/db`
+- logs: `~/.dealdesk/instances/default/logs`
+- storage: `~/.dealdesk/instances/default/data/storage`
+- secrets key: `~/.dealdesk/instances/default/secrets/master.key`
 
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+DEALDESK_HOME=/custom/home DEALDESK_INSTANCE_ID=dev pnpm dealdesk run
 ```
 
 ## Storage Configuration
@@ -244,7 +244,7 @@ PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
 Configure storage provider and settings:
 
 ```sh
-pnpm paperclipai configure --section storage
+pnpm dealdesk configure --section storage
 ```
 
 Supported providers:

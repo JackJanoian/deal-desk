@@ -16,8 +16,8 @@ import {
 describe("resolveEnvironmentExecutionTarget", () => {
   beforeEach(() => {
     mockResolveEnvironmentDriverConfigForRuntime.mockReset();
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_RUNTIME_API_URL;
+    delete process.env.DEALDESK_API_URL;
+    delete process.env.DEALDESK_RUNTIME_API_URL;
   });
 
   it("uses a bounded default cwd for sandbox targets when lease metadata omits remoteCwd", async () => {
@@ -58,7 +58,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
     });
   });
 
-  it("keeps sandbox targets on bridge mode even when lease metadata includes a Paperclip API URL", async () => {
+  it("keeps sandbox targets on bridge mode even when lease metadata includes a DealDesk API URL", async () => {
     mockResolveEnvironmentDriverConfigForRuntime.mockResolvedValue({
       driver: "sandbox",
       config: {
@@ -81,7 +81,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       },
       leaseId: "lease-1",
       leaseMetadata: {
-        paperclipApiUrl: "https://paperclip.example.test",
+        dealDeskApiUrl: "https://dealdesk.example.test",
       },
       lease: null,
       environmentRuntime: null,
@@ -93,7 +93,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       providerKey: "fake-plugin",
       remoteCwd: DEFAULT_SANDBOX_REMOTE_CWD,
     });
-    expect(target).not.toHaveProperty("paperclipApiUrl");
+    expect(target).not.toHaveProperty("dealDeskApiUrl");
     expect(target).not.toHaveProperty("paperclipTransport");
   });
 
@@ -139,7 +139,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       config: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "dealdesk",
         remoteWorkspacePath: "/srv/paperclip",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
@@ -171,11 +171,11 @@ describe("resolveEnvironmentExecutionTarget", () => {
       spec: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "dealdesk",
         remoteWorkspacePath: "/srv/paperclip",
         remoteCwd: "/srv/paperclip",
       },
     });
-    expect(target).not.toHaveProperty("paperclipApiUrl");
+    expect(target).not.toHaveProperty("dealDeskApiUrl");
   });
 });

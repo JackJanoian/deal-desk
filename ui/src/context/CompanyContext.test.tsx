@@ -4,7 +4,7 @@ import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Company } from "@paperclipai/shared";
+import type { Company } from "@dealdesk/shared";
 import { queryKeys } from "../lib/queryKeys";
 import {
   CompanyProvider,
@@ -29,7 +29,7 @@ const archivedCompany = { id: "archived-company" };
 function makeCompany(id: string): Company {
   return {
     id,
-    name: "Paperclip",
+    name: "DealDesk",
     description: null,
     status: "active",
     pauseReason: null,
@@ -105,6 +105,15 @@ describe("resolveBootstrapCompanySelection", () => {
       storedCompanyId: "archived-company",
     })).toBe("company-1");
   });
+
+  it("returns null when only archived companies remain", () => {
+    expect(resolveBootstrapCompanySelection({
+      companies: [archivedCompany],
+      sidebarCompanies: [],
+      selectedCompanyId: "archived-company",
+      storedCompanyId: "archived-company",
+    })).toBeNull();
+  });
 });
 
 describe("shouldClearStoredCompanySelection", () => {
@@ -153,7 +162,7 @@ describe("CompanyProvider", () => {
   });
 
   it("does not expose a stale stored company id before companies load", async () => {
-    localStorage.setItem("paperclip.selectedCompanyId", "stale-company");
+    localStorage.setItem("dealdesk.selectedCompanyId", "stale-company");
     mockCompaniesApi.list.mockImplementation(() => new Promise(() => {}));
     const seen: Array<string | null> = [];
 
@@ -171,7 +180,7 @@ describe("CompanyProvider", () => {
   });
 
   it("replaces a stale stored company id with the first loaded company", async () => {
-    localStorage.setItem("paperclip.selectedCompanyId", "stale-company");
+    localStorage.setItem("dealdesk.selectedCompanyId", "stale-company");
     queryClient.setQueryData(queryKeys.companies.all, {
       companies: [makeCompany("company-1")],
       unauthorized: false,
@@ -190,6 +199,6 @@ describe("CompanyProvider", () => {
     });
 
     expect(seen).toEqual([null, "company-1"]);
-    expect(localStorage.getItem("paperclip.selectedCompanyId")).toBe("company-1");
+    expect(localStorage.getItem("dealdesk.selectedCompanyId")).toBe("company-1");
   });
 });

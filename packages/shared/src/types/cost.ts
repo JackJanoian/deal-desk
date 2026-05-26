@@ -26,6 +26,15 @@ export interface CostSummary {
   spendCents: number;
   budgetCents: number;
   utilizationPercent: number;
+  pipelineHealth?: CostPipelineHealth;
+}
+
+export interface CostPipelineHealth {
+  succeededRunsWithUsage: number;
+  costEventCount: number;
+  runtimeTokenTotal: number;
+  unrecordedRunCount: number;
+  hasEstimatedSpend: boolean;
 }
 
 export interface IssueCostSummary {

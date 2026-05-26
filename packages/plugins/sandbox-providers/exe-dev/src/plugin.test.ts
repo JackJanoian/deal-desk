@@ -69,7 +69,7 @@ describe("exe.dev sandbox provider plugin", () => {
       driverKey: "exe-dev",
       config: {
         apiUrl: "https://exe.dev",
-        namePrefix: " Paperclip Sandbox ",
+        namePrefix: " DealDesk Sandbox ",
         image: " ubuntu:22.04 ",
         cpu: "4.8",
         memory: " 8GB ",
@@ -88,7 +88,7 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(result).toEqual({
       ok: true,
       warnings: [
-        "The Paperclip host must have SSH access to the created exe.dev VM, and its SSH key must be registered with exe.dev. The API token only covers provisioning.",
+        "The DealDesk host must have SSH access to the created exe.dev VM, and its SSH key must be registered with exe.dev. The API token only covers provisioning.",
         "reuseLease keeps the VM alive between runs; this provider does not suspend retained VMs.",
       ],
       normalizedConfig: {
@@ -151,7 +151,7 @@ describe("exe.dev sandbox provider plugin", () => {
     })).resolves.toEqual({
       ok: false,
       warnings: [
-        "The Paperclip host must have SSH access to the created exe.dev VM, and its SSH key must be registered with exe.dev. The API token only covers provisioning.",
+        "The DealDesk host must have SSH access to the created exe.dev VM, and its SSH key must be registered with exe.dev. The API token only covers provisioning.",
       ],
       errors: [
         "apiUrl must be a valid URL.",
@@ -168,9 +168,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("acquires a lease by creating a VM and preparing the SSH workspace", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "dealdesk-env-run",
+        ssh_dest: "dealdesk-env-run.exe.xyz",
+        https_url: "https://dealdesk-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -185,7 +185,7 @@ describe("exe.dev sandbox provider plugin", () => {
       requestedCwd: "/workspace/custom",
       config: {
         apiKey: "api-key",
-        namePrefix: "paperclip",
+        namePrefix: "dealdesk",
         image: "ubuntu:22.04",
         timeoutMs: 300000,
       },
@@ -195,11 +195,11 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(String(fetchMock.mock.calls[0]?.[1]?.body ?? "")).toContain("new --json --no-email");
     expect(spawnMock).toHaveBeenCalledTimes(2);
     expect(lease).toMatchObject({
-      providerLeaseId: "paperclip-env-run",
+      providerLeaseId: "dealdesk-env-run",
       metadata: {
         provider: "exe-dev",
-        vmName: "paperclip-env-run",
-        sshDest: "paperclip-env-run.exe.xyz",
+        vmName: "dealdesk-env-run",
+        sshDest: "dealdesk-env-run.exe.xyz",
         remoteCwd: "/workspace/custom",
         shellCommand: "bash",
         reuseLease: false,
@@ -210,9 +210,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("uses a pasted sshPrivateKey when connecting to the VM", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "dealdesk-env-run",
+        ssh_dest: "dealdesk-env-run.exe.xyz",
+        https_url: "https://dealdesk-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -239,9 +239,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("supplies a default Node-install setup script when none is provided", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "dealdesk-env-run",
+        ssh_dest: "dealdesk-env-run.exe.xyz",
+        https_url: "https://dealdesk-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -267,9 +267,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("preserves an operator-supplied setup script and does not append the default", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "dealdesk-env-run",
+        ssh_dest: "dealdesk-env-run.exe.xyz",
+        https_url: "https://dealdesk-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -321,9 +321,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("surfaces exe.dev SSH onboarding guidance during lease acquisition", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "dealdesk-env-run",
+        ssh_dest: "dealdesk-env-run.exe.xyz",
+        https_url: "https://dealdesk-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -340,10 +340,10 @@ describe("exe.dev sandbox provider plugin", () => {
         timeoutMs: 300000,
       },
     })).rejects.toThrow(
-      "the Paperclip host SSH key is not registered with exe.dev",
+      "the DealDesk host SSH key is not registered with exe.dev",
     );
 
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-env-run'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'dealdesk-env-run'");
   });
 
   it("redacts sensitive lifecycle flags in API errors", async () => {
@@ -472,7 +472,7 @@ describe("exe.dev sandbox provider plugin", () => {
     });
 
     expect(result?.exitCode).toBe(1);
-    expect(String(result?.stderr ?? "")).toContain("the Paperclip host SSH key is not registered with exe.dev");
+    expect(String(result?.stderr ?? "")).toContain("the DealDesk host SSH key is not registered with exe.dev");
     expect(String(result?.stderr ?? "")).toContain("ssh exe.dev");
   });
 
@@ -480,8 +480,8 @@ describe("exe.dev sandbox provider plugin", () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "dealdesk-probe",
+          ssh_dest: "dealdesk-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -500,23 +500,23 @@ describe("exe.dev sandbox provider plugin", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      summary: "Connected to exe.dev VM paperclip-probe.",
+      summary: "Connected to exe.dev VM dealdesk-probe.",
       metadata: {
         provider: "exe-dev",
-        vmName: "paperclip-probe",
-        sshDest: "paperclip-probe.exe.xyz",
+        vmName: "dealdesk-probe",
+        sshDest: "dealdesk-probe.exe.xyz",
         shellCommand: "bash",
       },
     });
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'dealdesk-probe'");
   });
 
   it("cleans up the probe VM when SSH verification fails", async () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "dealdesk-probe",
+          ssh_dest: "dealdesk-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -540,15 +540,15 @@ describe("exe.dev sandbox provider plugin", () => {
       },
     });
     expect(String(result?.metadata?.error ?? "")).toContain("permission denied");
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'dealdesk-probe'");
   });
 
   it("returns onboarding guidance when probe hits exe.dev SSH registration", async () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "dealdesk-probe",
+          ssh_dest: "dealdesk-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -568,8 +568,8 @@ describe("exe.dev sandbox provider plugin", () => {
       ok: false,
       summary: "exe.dev environment probe failed.",
     });
-    expect(String(result?.metadata?.error ?? "")).toContain("the Paperclip host SSH key is not registered with exe.dev");
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(result?.metadata?.error ?? "")).toContain("the DealDesk host SSH key is not registered with exe.dev");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'dealdesk-probe'");
   });
 
   it("deletes non-reusable leases on release", async () => {

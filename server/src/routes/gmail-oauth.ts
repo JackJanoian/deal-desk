@@ -8,8 +8,8 @@ import {
 import type { GmailClientConfig } from "../deal-desk/gmail/client-config.js";
 import type { GmailTokensRecord } from "../deal-desk/gmail/tokens.js";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { ddEmailAccounts, companies } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddEmailAccounts, companies } from "@dealdesk/db";
 import { secretService } from "../services/secrets.js";
 
 const STATE_COOKIE = "dd_gmail_oauth_state";
@@ -93,7 +93,7 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
       .from(ddEmailAccounts)
       .where(
         and(
-          eq(ddEmailAccounts.paperclipCompanyId, companyId),
+          eq(ddEmailAccounts.dealDeskCompanyId, companyId),
           eq(ddEmailAccounts.emailAddress, emailAddress),
         ),
       )
@@ -114,7 +114,7 @@ export function createGmailOAuthRouter(input: CreateRouterInput): Router {
         description: "Gmail OAuth refresh + access tokens for Outreach Analyst",
       });
       await input.deps.db.insert(ddEmailAccounts).values({
-        paperclipCompanyId: companyId,
+        dealDeskCompanyId: companyId,
         provider: "gmail",
         emailAddress,
         secretId: created.id,

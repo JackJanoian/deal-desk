@@ -8,7 +8,7 @@ import type {
   CostWindowSpendRow,
   FinanceEvent,
   QuotaWindow,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, Coins, DollarSign, ReceiptText } from "lucide-react";
 import { budgetsApi } from "../api/budgets";
 import { costsApi } from "../api/costs";
@@ -519,6 +519,11 @@ export function Costs() {
       0,
     );
 
+  const pipelineHealth = spendData?.summary.pipelineHealth;
+  const inferenceSpendSubtitle = pipelineHealth?.hasEstimatedSpend
+    ? `${formatTokens(inferenceTokenTotal)} tokens · includes estimated adapter costs`
+    : `${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`;
+
   const topFinanceEvents = (financeData?.events ?? []) as FinanceEvent[];
   const budgetPolicies = budgetData?.policies ?? [];
   const activeBudgetIncidents = budgetData?.activeIncidents ?? [];
@@ -583,7 +588,7 @@ export function Costs() {
             <MetricTile
               label="Inference spend"
               value={formatCents(spendData?.summary.spendCents ?? 0)}
-              subtitle={`${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`}
+              subtitle={inferenceSpendSubtitle}
               icon={DollarSign}
             />
             <MetricTile
@@ -635,6 +640,12 @@ export function Costs() {
             <p className="text-sm text-destructive">{(overviewError as Error).message}</p>
           ) : (
             <>
+              {pipelineHealth && pipelineHealth.unrecordedRunCount > 0 ? (
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  {pipelineHealth.unrecordedRunCount} succeeded run(s) recorded usage but no cost ledger rows yet.
+                  Run <code className="font-mono text-xs">dealdesk costs backfill --company &lt;id&gt;</code> or widen the date range to All Time.
+                </p>
+              ) : null}
               {activeBudgetIncidents.length > 0 ? (
                 <div className="grid gap-4 xl:grid-cols-2">
                   {activeBudgetIncidents.slice(0, 2).map((incident) => (
@@ -721,7 +732,13 @@ export function Costs() {
                   </CardHeader>
                   <CardContent className="space-y-2 px-5 pb-5 pt-2">
                     {(spendData?.byAgent.length ?? 0) === 0 ? (
-                      <p className="text-sm text-muted-foreground">No cost events yet.</p>
+                      <p className="text-sm text-muted-foreground">
+                        {pipelineHealth && pipelineHealth.succeededRunsWithUsage > 0
+                          ? "Agents ran with usage metadata, but no cost events match this date range. Try All Time or run a cost backfill."
+                          : pipelineHealth && pipelineHealth.runtimeTokenTotal > 0
+                            ? "Runtime token totals exist, but no ledger rows are in this range. Subscription-included usage may show tokens with $0 spend."
+                            : "No cost events yet. Usage appears after agent heartbeats record tokens or metered API spend."}
+                      </p>
                     ) : (
                       spendData?.byAgent.map((row) => {
                         const modelRows = agentModelRows.get(row.agentId) ?? [];

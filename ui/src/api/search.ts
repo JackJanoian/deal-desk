@@ -1,4 +1,4 @@
-import type { CompanySearchResponse, CompanySearchScope } from "@paperclipai/shared";
+import type { CompanySearchResponse, CompanySearchScope } from "@dealdesk/shared";
 import { api } from "./client";
 
 export interface CompanySearchParams {

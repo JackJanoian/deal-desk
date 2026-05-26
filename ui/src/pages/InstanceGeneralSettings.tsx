@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PatchInstanceGeneralSettings, BackupRetentionPolicy } from "@paperclipai/shared";
+import type { PatchInstanceGeneralSettings, BackupRetentionPolicy } from "@dealdesk/shared";
 import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
-import { authApi } from "@/api/auth";
 import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
+import { useSignOut } from "@/hooks/useSignOut";
 import { ModeBadge } from "@/components/access/ModeBadge";
 import { Button } from "../components/ui/button";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -18,22 +18,14 @@ import { queryKeys } from "../lib/queryKeys";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { cn } from "../lib/utils";
 
-const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://paperclip.ing/tos";
+const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://dealdesk.ing/tos";
 
 export function InstanceGeneralSettings() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const signOutMutation = useMutation({
-    mutationFn: () => authApi.signOut(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-    },
-    onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to sign out.");
-    },
-  });
+  const signOutMutation = useSignOut();
 
   useEffect(() => {
     setBreadcrumbs([
@@ -279,7 +271,7 @@ export function InstanceGeneralSettings() {
             <h2 className="text-sm font-semibold">AI feedback sharing</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
               Control whether thumbs up and thumbs down votes can send the voted AI output to
-              Paperclip Labs. Votes are always saved locally.
+              DealDesk Labs. Votes are always saved locally.
             </p>
             {FEEDBACK_TERMS_URL ? (
               <a
@@ -354,14 +346,20 @@ export function InstanceGeneralSettings() {
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Sign out</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Sign out of this Paperclip instance. You will be redirected to the login page.
+              Sign out of this DealDesk instance. You will be redirected to the onboarding screen.
             </p>
           </div>
           <Button
             variant="outline"
             size="sm"
             disabled={signOutMutation.isPending}
-            onClick={() => signOutMutation.mutate()}
+            onClick={() =>
+              signOutMutation.mutate(undefined, {
+                onError: (error) => {
+                  setActionError(error instanceof Error ? error.message : "Failed to sign out.");
+                },
+              })
+            }
           >
             <LogOut className="size-4" />
             {signOutMutation.isPending ? "Signing out..." : "Sign out"}

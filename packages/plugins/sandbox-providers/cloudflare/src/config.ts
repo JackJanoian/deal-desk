@@ -33,7 +33,7 @@ export function parseCloudflareDriverConfig(raw: Record<string, unknown>): Cloud
     normalizeId: readBoolean(raw.normalizeId, true),
     requestedCwd: readTrimmedString(raw.requestedCwd) ?? DEFAULT_REQUESTED_CWD,
     sessionStrategy: raw.sessionStrategy === "default" ? "default" : "named",
-    sessionId: readTrimmedString(raw.sessionId) ?? "paperclip",
+    sessionId: readTrimmedString(raw.sessionId) ?? "dealdesk",
     timeoutMs: readInteger(raw.timeoutMs, DEFAULT_TIMEOUT_MS),
     bridgeRequestTimeoutMs: readInteger(raw.bridgeRequestTimeoutMs, DEFAULT_BRIDGE_REQUEST_TIMEOUT_MS),
     previewHostname: readTrimmedString(raw.previewHostname),

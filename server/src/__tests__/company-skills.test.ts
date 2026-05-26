@@ -95,11 +95,11 @@ describe("project workspace skill discovery", () => {
   });
 
   it("finds bounded skill roots under supported workspace paths", async () => {
-    const workspace = await makeTempDir("paperclip-skill-workspace-");
+    const workspace = await makeTempDir("dealdesk-skill-workspace-");
     await writeSkillDir(workspace, "Workspace Root");
     await writeSkillDir(path.join(workspace, "skills", "find-skills"), "Find Skills");
     await writeSkillDir(path.join(workspace, ".agents", "skills", "release"), "Release");
-    await writeSkillDir(path.join(workspace, "skills", ".system", "paperclip"), "Paperclip");
+    await writeSkillDir(path.join(workspace, "skills", ".system", "dealdesk"), "DealDesk");
     await fs.writeFile(path.join(workspace, "README.md"), "# ignore\n", "utf8");
 
     const discovered = await discoverProjectWorkspaceSkillDirectories({
@@ -113,7 +113,7 @@ describe("project workspace skill discovery", () => {
     expect(discovered).toEqual([
       { skillDir: path.resolve(workspace), inventoryMode: "project_root" },
       { skillDir: path.resolve(workspace, ".agents", "skills", "release"), inventoryMode: "full" },
-      { skillDir: path.resolve(workspace, "skills", ".system", "paperclip"), inventoryMode: "full" },
+      { skillDir: path.resolve(workspace, "skills", ".system", "dealdesk"), inventoryMode: "full" },
       { skillDir: path.resolve(workspace, "skills", "find-skills"), inventoryMode: "full" },
     ]);
   });
@@ -158,8 +158,8 @@ describe("project workspace skill discovery", () => {
         "metadata:",
         "  sources:",
         "    - kind: github-dir",
-        "      repo: paperclipai/paperclip",
-        "      path: skills/paperclip",
+        "      repo: dealdesk/paperclip",
+        "      path: skills/dealdesk",
         "---",
         "",
         "# Inline Metadata Skill",
@@ -179,8 +179,8 @@ describe("project workspace skill discovery", () => {
       sources: [
         {
           kind: "github-dir",
-          repo: "paperclipai/paperclip",
-          path: "skills/paperclip",
+          repo: "dealdesk/paperclip",
+          path: "skills/dealdesk",
         },
       ],
     });

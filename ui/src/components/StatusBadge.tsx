@@ -5,7 +5,7 @@ export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0",
+        "inline-flex items-center rounded-full px-2 py-[1px] text-[10.5px] font-medium tracking-[0.005em] whitespace-nowrap shrink-0",
         statusBadge[status] ?? statusBadgeDefault
       )}
     >

@@ -2,16 +2,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { DealDeskConfig } from "../config/schema.js";
 import { addAllowedHostname } from "../commands/allowed-hostname.js";
 
 function createTempConfigPath() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-allowed-hostname-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-allowed-hostname-"));
   return path.join(dir, "config.json");
 }
 
 function writeBaseConfig(configPath: string) {
-  const base: PaperclipConfig = {
+  const base: DealDeskConfig = {
     $meta: {
       version: 1,
       updatedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
@@ -51,7 +51,7 @@ function writeBaseConfig(configPath: string) {
       provider: "local_disk",
       localDisk: { baseDir: "/tmp/paperclip-storage" },
       s3: {
-        bucket: "paperclip",
+        bucket: "dealdesk",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -74,7 +74,7 @@ describe("allowed-hostname command", () => {
     await addAllowedHostname("https://Dotta-MacBook-Pro:3100", { config: configPath });
     await addAllowedHostname("dotta-macbook-pro", { config: configPath });
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf-8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf-8")) as DealDeskConfig;
     expect(raw.server.allowedHostnames).toEqual(["dotta-macbook-pro"]);
   });
 });

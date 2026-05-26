@@ -9,19 +9,23 @@ import {
   type SDKAgent,
   type SDKMessage,
 } from "@cursor/sdk";
-import type { AdapterExecutionContext, AdapterExecutionResult, AdapterInvocationMeta } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult, AdapterInvocationMeta } from "@dealdesk/adapter-utils";
 import {
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  DEFAULT_DEALDESK_AGENT_PROMPT_TEMPLATE,
   asBoolean,
   asString,
-  buildPaperclipEnv,
+  buildDealDeskEnv,
   joinPromptSections,
   parseObject,
-  readPaperclipIssueWorkModeFromContext,
-  renderPaperclipWakePrompt,
+  readDealDeskIssueWorkModeFromContext,
+  renderDealDeskWakePrompt,
   renderTemplate,
-  stringifyPaperclipWakePayload,
-} from "@paperclipai/adapter-utils/server-utils";
+  stringifyDealDeskWakePayload,
+} from "@dealdesk/adapter-utils/server-utils";
+import {
+  estimateMeteredCostUsd,
+  estimateTokensFromDurationMs,
+} from "@dealdesk/shared/model-pricing";
 
 type CursorCloudSession = {
   cursorAgentId: string;
@@ -104,8 +108,8 @@ function buildWakeEnv(ctx: AdapterExecutionContext, configEnv: Record<string, st
   const { runId, agent, context, authToken } = ctx;
   const env: Record<string, string> = {
     ...configEnv,
-    ...buildPaperclipEnv(agent),
-    PAPERCLIP_RUN_ID: runId,
+    ...buildDealDeskEnv(agent),
+    DEALDESK_RUN_ID: runId,
   };
 
   const wakeTaskId = trimNullable(context.taskId) ?? trimNullable(context.issueId);
@@ -116,30 +120,30 @@ function buildWakeEnv(ctx: AdapterExecutionContext, configEnv: Record<string, st
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const wakePayloadJson = stringifyPaperclipWakePayload(context.paperclipWake);
-  const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
+  const wakePayloadJson = stringifyDealDeskWakePayload(context.dealDeskWake);
+  const issueWorkMode = readDealDeskIssueWorkModeFromContext(context);
 
-  if (wakeTaskId) env.PAPERCLIP_TASK_ID = wakeTaskId;
-  if (wakeReason) env.PAPERCLIP_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.PAPERCLIP_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (wakePayloadJson) env.PAPERCLIP_WAKE_PAYLOAD_JSON = wakePayloadJson;
-  if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
-  if (!trimNullable(env.PAPERCLIP_API_KEY) && authToken) {
-    env.PAPERCLIP_API_KEY = authToken;
+  if (wakeTaskId) env.DEALDESK_TASK_ID = wakeTaskId;
+  if (wakeReason) env.DEALDESK_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.DEALDESK_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.DEALDESK_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.DEALDESK_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.DEALDESK_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (wakePayloadJson) env.DEALDESK_WAKE_PAYLOAD_JSON = wakePayloadJson;
+  if (issueWorkMode) env.DEALDESK_ISSUE_WORK_MODE = issueWorkMode;
+  if (!trimNullable(env.DEALDESK_API_KEY) && authToken) {
+    env.DEALDESK_API_KEY = authToken;
   }
 
-  const workspace = parseObject(context.paperclipWorkspace);
+  const workspace = parseObject(context.dealDeskWorkspace);
   const workspaceMappings: Array<[string, unknown]> = [
-    ["PAPERCLIP_WORKSPACE_CWD", workspace.cwd],
-    ["PAPERCLIP_WORKSPACE_SOURCE", workspace.source],
-    ["PAPERCLIP_WORKSPACE_ID", workspace.workspaceId],
-    ["PAPERCLIP_WORKSPACE_REPO_URL", workspace.repoUrl],
-    ["PAPERCLIP_WORKSPACE_REPO_REF", workspace.repoRef],
-    ["PAPERCLIP_WORKSPACE_BRANCH", workspace.branch],
-    ["PAPERCLIP_WORKSPACE_WORKTREE_PATH", workspace.worktreePath],
+    ["DEALDESK_WORKSPACE_CWD", workspace.cwd],
+    ["DEALDESK_WORKSPACE_SOURCE", workspace.source],
+    ["DEALDESK_WORKSPACE_ID", workspace.workspaceId],
+    ["DEALDESK_WORKSPACE_REPO_URL", workspace.repoUrl],
+    ["DEALDESK_WORKSPACE_REPO_REF", workspace.repoRef],
+    ["DEALDESK_WORKSPACE_BRANCH", workspace.branch],
+    ["DEALDESK_WORKSPACE_WORKTREE_PATH", workspace.worktreePath],
     ["AGENT_HOME", workspace.agentHome],
   ];
   for (const [key, value] of workspaceMappings) {
@@ -176,7 +180,7 @@ async function buildInstructionsPrefix(
     const reason = err instanceof Error ? err.message : String(err);
     await onLog(
       "stderr",
-      `[paperclip] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
+      `[dealdesk] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
     );
     return {
       prefix: "",
@@ -188,14 +192,14 @@ async function buildInstructionsPrefix(
   }
 }
 
-function renderPaperclipEnvNote(env: Record<string, string>): string {
+function renderDealDeskEnvNote(env: Record<string, string>): string {
   const keys = Object.keys(env)
-    .filter((key) => key.startsWith("PAPERCLIP_"))
+    .filter((key) => key.startsWith("DEALDESK_"))
     .sort();
   if (keys.length === 0) return "";
   return [
-    "Paperclip runtime note:",
-    `The following PAPERCLIP_* environment variables are available in the cloud agent shell: ${keys.join(", ")}`,
+    "DealDesk runtime note:",
+    `The following DEALDESK_* environment variables are available in the cloud agent shell: ${keys.join(", ")}`,
     "Use them directly instead of assuming they are absent.",
   ].join("\n");
 }
@@ -335,7 +339,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     };
   }
 
-  const workspace = parseObject(context.paperclipWorkspace);
+  const workspace = parseObject(context.dealDeskWorkspace);
   const repoUrl =
     asString(config.repoUrl, "").trim() ||
     asString(workspace.repoUrl, "").trim();
@@ -377,7 +381,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       }
     : null);
   const canReuseSession = sessionMatches(session, envType, envName, repos);
-  const promptTemplate = asString(config.promptTemplate, DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
+  const promptTemplate = asString(config.promptTemplate, DEFAULT_DEALDESK_AGENT_PROMPT_TEMPLATE);
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
@@ -389,7 +393,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     context,
   };
   const instructions = await buildInstructionsPrefix(config, onLog);
-  const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, { resumedSession: canReuseSession });
+  const wakePrompt = renderDealDeskWakePrompt(context.dealDeskWake, { resumedSession: canReuseSession });
   const renderedBootstrapPrompt =
     !canReuseSession && bootstrapPromptTemplate.trim().length > 0
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
@@ -398,20 +402,20 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     canReuseSession && wakePrompt.length > 0
       ? ""
       : renderTemplate(promptTemplate, templateData).trim();
-  const paperclipEnvNote = renderPaperclipEnvNote(remoteEnv);
+  const dealDeskEnvNote = renderDealDeskEnvNote(remoteEnv);
   const prompt = joinPromptSections([
     instructions.prefix,
     renderedBootstrapPrompt,
     wakePrompt,
-    paperclipEnvNote,
+    dealDeskEnvNote,
     renderedPrompt,
   ]);
-  const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+  const sessionHandoffNote = asString(context.dealDeskSessionHandoffMarkdown, "").trim();
   const finalPrompt = joinPromptSections([prompt, sessionHandoffNote]);
 
   const agentOptions = buildAgentOptions({
     apiKey,
-    name: `Paperclip ${agent.name}`,
+    name: `DealDesk ${agent.name}`,
     model,
     envType,
     envName,
@@ -538,6 +542,19 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       repos,
     };
     const isError = result.status !== "finished";
+    const resolvedModel = modelId ?? "unknown";
+    const estimatedUsage = !isError
+      ? estimateTokensFromDurationMs(typeof result.durationMs === "number" ? result.durationMs : 60_000)
+      : null;
+    const estimatedCostUsd = estimatedUsage
+      ? estimateMeteredCostUsd({
+          provider: "cursor",
+          model: resolvedModel,
+          inputTokens: estimatedUsage.inputTokens,
+          cachedInputTokens: estimatedUsage.cachedInputTokens,
+          outputTokens: estimatedUsage.outputTokens,
+        })
+      : null;
     return {
       exitCode: isError ? 1 : 0,
       signal: null,
@@ -549,8 +566,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       provider: "cursor",
       biller: "cursor",
       billingType: "api",
-      model: modelId,
-      costUsd: null,
+      model: resolvedModel,
+      ...(estimatedUsage ? { usage: estimatedUsage } : {}),
+      costUsd: estimatedCostUsd,
       summary: toSummary(result),
       resultJson: {
         status: result.status,
@@ -563,6 +581,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ...(result.git ? { git: result.git } : {}),
         ...(typeof result.durationMs === "number" ? { durationMs: result.durationMs } : {}),
         ...(streamError ? { streamError } : {}),
+        ...(estimatedCostUsd != null ? { costEstimated: true } : {}),
       },
       clearSession: false,
     };

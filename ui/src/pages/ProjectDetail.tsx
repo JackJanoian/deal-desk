@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PROJECT_COLORS, isUuidLike, type BudgetPolicySummary } from "@paperclipai/shared";
+import { PROJECT_COLORS, isUuidLike, type BudgetPolicySummary } from "@dealdesk/shared";
 import { budgetsApi } from "../api/budgets";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { instanceSettingsApi } from "../api/instanceSettings";
@@ -67,31 +67,33 @@ function OverviewContent({
   imageUploadHandler?: (file: File) => Promise<string>;
 }) {
   return (
-    <div className="space-y-6">
-      <InlineEditor
-        value={project.description ?? ""}
-        onSave={(description) => onUpdate({ description })}
-        nullable
-        as="p"
-        className="text-sm text-muted-foreground"
-        placeholder="Add a description..."
-        multiline
-        imageUploadHandler={imageUploadHandler}
-      />
+    <div className="space-y-4">
+      <div className="dd-panel-subtle rounded-lg p-4 space-y-4">
+        <InlineEditor
+          value={project.description ?? ""}
+          onSave={(description) => onUpdate({ description })}
+          nullable
+          as="p"
+          className="text-sm text-muted-foreground"
+          placeholder="Add a description..."
+          multiline
+          imageUploadHandler={imageUploadHandler}
+        />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Status</span>
-          <div className="mt-1">
-            <StatusBadge status={project.status} />
-          </div>
-        </div>
-        {project.targetDate && (
+        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
-            <span className="text-muted-foreground">Target Date</span>
-            <p>{project.targetDate}</p>
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Status</span>
+            <div className="mt-2">
+              <StatusBadge status={project.status} />
+            </div>
           </div>
-        )}
+          {project.targetDate && (
+            <div>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Target date</span>
+              <p className="mt-2 tabular-nums">{project.targetDate}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -203,7 +205,7 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
       projects={projects}
       liveIssueIds={liveIssueIds}
       projectId={projectId}
-      viewStateKey="paperclip:project-issues-view"
+      viewStateKey="dealdesk:project-issues-view"
       onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
     />
   );
@@ -264,7 +266,7 @@ function ProjectPluginOperationsList({
       projects={projects}
       liveIssueIds={liveIssueIds}
       projectId={projectId}
-      viewStateKey={`paperclip:project-plugin-operations-view:${pluginKey}`}
+      viewStateKey={`dealdesk:project-plugin-operations-view:${pluginKey}`}
       onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
     />
   );
@@ -578,7 +580,7 @@ export function ProjectDetail() {
   if (routeProjectRef && activeTab === null) {
     let cachedTab: string | null = null;
     if (project?.id) {
-      try { cachedTab = localStorage.getItem(`paperclip:project-tab:${project.id}`); } catch {}
+      try { cachedTab = localStorage.getItem(`dealdesk:project-tab:${project.id}`); } catch {}
     }
     if (cachedTab === "overview") {
       return <Navigate to={`/projects/${canonicalProjectRef}/overview`} replace />;
@@ -611,7 +613,7 @@ export function ProjectDetail() {
   const handleTabChange = (tab: ProjectTab) => {
     // Cache the active tab per project
     if (project?.id) {
-      try { localStorage.setItem(`paperclip:project-tab:${project.id}`, tab); } catch {}
+      try { localStorage.setItem(`dealdesk:project-tab:${project.id}`, tab); } catch {}
     }
     if (isProjectPluginTab(tab)) {
       navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(tab)}`);
@@ -633,85 +635,96 @@ export function ProjectDetail() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="h-7 flex items-center">
-          <ColorPicker
-            currentColor={project.color ?? "#6366f1"}
-            onSelect={(color) => updateProject.mutate({ color })}
-          />
-        </div>
+    <div className="space-y-4 overflow-hidden sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
-          <InlineEditor
-            value={project.name}
-            onSave={(name) => updateProject.mutate({ name })}
-            as="h2"
-            className="text-xl font-bold"
-          />
-          {project.pauseReason === "budget" ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-red-200">
-              <span className="h-2 w-2 rounded-full bg-red-400" />
-              Paused by budget hard stop
+          <div className="dd-kicker">Project</div>
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 items-center">
+              <ColorPicker
+                currentColor={project.color ?? "#6366f1"}
+                onSelect={(color) => updateProject.mutate({ color })}
+              />
             </div>
-          ) : null}
-          {project.managedByPlugin ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "#6366f1" }} />
-              Managed by {project.managedByPlugin.pluginDisplayName}
+            <div className="min-w-0 space-y-2">
+              <InlineEditor
+                value={project.name}
+                onSave={(name) => updateProject.mutate({ name })}
+                as="h2"
+                className="text-xl font-semibold sm:text-2xl"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                {project.pauseReason === "budget" ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-200">
+                    <span className="h-2 w-2 rounded-full bg-red-400" />
+                    Paused by budget hard stop
+                  </div>
+                ) : null}
+                {project.managedByPlugin ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/45 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "#6366f1" }} />
+                    Managed by {project.managedByPlugin.pluginDisplayName}
+                  </div>
+                ) : null}
+              </div>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
 
-      <PluginSlotOutlet
-        slotTypes={["toolbarButton", "contextMenuItem"]}
-        entityType="project"
-        context={{
-          companyId: resolvedCompanyId ?? null,
-          companyPrefix: companyPrefix ?? null,
-          projectId: project.id,
-          projectRef: canonicalProjectRef,
-          entityId: project.id,
-          entityType: "project",
-        }}
-        className="flex flex-wrap gap-2"
-        itemClassName="inline-flex"
-        missingBehavior="placeholder"
-      />
-
-      <PluginLauncherOutlet
-        placementZones={["toolbarButton"]}
-        entityType="project"
-        context={{
-          companyId: resolvedCompanyId ?? null,
-          companyPrefix: companyPrefix ?? null,
-          projectId: project.id,
-          projectRef: canonicalProjectRef,
-          entityId: project.id,
-          entityType: "project",
-        }}
-        className="flex flex-wrap gap-2"
-        itemClassName="inline-flex"
-      />
-
-      <Tabs value={activeTab ?? "list"} onValueChange={(value) => handleTabChange(value as ProjectTab)}>
-        <PageTabBar
-          items={[
-            { value: "list", label: "Issues" },
-            { value: "overview", label: "Overview" },
-            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: "Plugin operations" }] : []),
-            ...(showWorkspacesTab ? [{ value: "workspaces", label: "Workspaces" }] : []),
-            { value: "configuration", label: "Configuration" },
-            { value: "budget", label: "Budget" },
-            ...pluginTabItems.map((item) => ({
-              value: item.value,
-              label: item.label,
-            })),
-          ]}
-          align="start"
-          value={activeTab ?? "list"}
-          onValueChange={(value) => handleTabChange(value as ProjectTab)}
+      <div className="flex flex-wrap gap-2">
+        <PluginSlotOutlet
+          slotTypes={["toolbarButton", "contextMenuItem"]}
+          entityType="project"
+          context={{
+            companyId: resolvedCompanyId ?? null,
+            companyPrefix: companyPrefix ?? null,
+            projectId: project.id,
+            projectRef: canonicalProjectRef,
+            entityId: project.id,
+            entityType: "project",
+          }}
+          className="flex flex-wrap gap-2"
+          itemClassName="inline-flex"
+          missingBehavior="placeholder"
         />
+
+        <PluginLauncherOutlet
+          placementZones={["toolbarButton"]}
+          entityType="project"
+          context={{
+            companyId: resolvedCompanyId ?? null,
+            companyPrefix: companyPrefix ?? null,
+            projectId: project.id,
+            projectRef: canonicalProjectRef,
+            entityId: project.id,
+            entityType: "project",
+          }}
+          className="flex flex-wrap gap-2"
+          itemClassName="inline-flex"
+        />
+      </div>
+
+      <Tabs value={activeTab ?? "list"} onValueChange={(value) => handleTabChange(value as ProjectTab)} className="space-y-4">
+        <div className="border-b border-border/70">
+          <PageTabBar
+            items={[
+              { value: "list", label: "Issues" },
+              { value: "overview", label: "Overview" },
+              ...(project.managedByPlugin ? [{ value: "plugin-operations", label: "Plugin operations" }] : []),
+              ...(showWorkspacesTab ? [{ value: "workspaces", label: "Workspaces" }] : []),
+              { value: "configuration", label: "Configuration" },
+              { value: "budget", label: "Budget" },
+              ...pluginTabItems.map((item) => ({
+                value: item.value,
+                label: item.label,
+              })),
+            ]}
+            align="start"
+            value={activeTab ?? "list"}
+            onValueChange={(value) => handleTabChange(value as ProjectTab)}
+          />
+        </div>
       </Tabs>
 
       {activeTab === "overview" && (

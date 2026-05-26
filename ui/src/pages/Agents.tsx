@@ -18,7 +18,7 @@ import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Bot, Plus, List, GitBranch, SlidersHorizontal } from "lucide-react";
-import { AGENT_ROLE_LABELS, type Agent } from "@paperclipai/shared";
+import { AGENT_ROLE_LABELS, type Agent } from "@dealdesk/shared";
 
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 
@@ -132,7 +132,14 @@ export function Agents() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
+        <p className="text-sm text-muted-foreground">
+          Monitor agent health, org structure, and live runs across the company.
+        </p>
+      </div>
+
+      <div className="dd-panel-subtle flex flex-col gap-3 rounded-lg p-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => navigate(`/agents/${v}`)}>
           <PageTabBar
             items={[
@@ -150,8 +157,8 @@ export function Agents() {
           <div className="relative">
             <button
               className={cn(
-                "flex items-center gap-1.5 px-2 py-1.5 text-xs transition-colors border border-border",
-                filtersOpen || showTerminated ? "text-foreground bg-accent" : "text-muted-foreground hover:bg-accent/50"
+                "flex items-center gap-1.5 rounded-md border border-border/70 px-2 py-1.5 text-xs transition-colors",
+                filtersOpen || showTerminated ? "border-primary/30 bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent/50"
               )}
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
@@ -160,7 +167,7 @@ export function Agents() {
               {showTerminated && <span className="ml-0.5 px-1 bg-foreground/10 rounded text-[10px]">1</span>}
             </button>
             {filtersOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-lg border border-border/70 bg-popover p-1 shadow-md">
                 <button
                   className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-left hover:bg-accent/50 transition-colors"
                   onClick={() => setShowTerminated(!showTerminated)}
@@ -178,11 +185,11 @@ export function Agents() {
           </div>
           {/* View toggle */}
           {!forceListView && (
-            <div className="flex items-center border border-border">
+            <div className="flex items-center overflow-hidden rounded-md border border-border/70 bg-card/45">
               <button
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "list" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("list")}
               >
@@ -191,7 +198,7 @@ export function Agents() {
               <button
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "org" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("org")}
               >
@@ -223,7 +230,7 @@ export function Agents() {
 
       {/* List view */}
       {effectiveView === "list" && filtered.length > 0 && (
-        <div className="border border-border">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45">
           {filtered.map((agent) => {
             return (
               <EntityRow
@@ -285,14 +292,16 @@ export function Agents() {
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match the selected filter.
-        </p>
+        <div className="dd-grid-surface rounded-xl border border-dashed border-border/80 bg-card/25 px-6 py-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            No agents match the selected filter.
+          </p>
+        </div>
       )}
 
       {/* Org chart view */}
       {effectiveView === "org" && filteredOrg.length > 0 && (
-        <div className="border border-border py-1">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45 py-1">
           {filteredOrg.map((node) => (
             <OrgTreeNode key={node.id} node={node} depth={0} agentMap={agentMap} liveRunByAgent={liveRunByAgent} tab={tab} />
           ))}
@@ -300,15 +309,19 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match the selected filter.
-        </p>
+        <div className="dd-grid-surface rounded-xl border border-dashed border-border/80 bg-card/25 px-6 py-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            No agents match the selected filter.
+          </p>
+        </div>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No organizational hierarchy defined.
-        </p>
+        <div className="dd-grid-surface rounded-xl border border-dashed border-border/80 bg-card/25 px-6 py-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            No organizational hierarchy defined.
+          </p>
+        </div>
       )}
     </div>
   );
@@ -335,7 +348,7 @@ function OrgTreeNode({
     <div style={{ paddingLeft: depth * 24 }}>
       <Link
         to={agent ? agentUrl(agent) : `/agents/${node.id}`}
-        className={cn("flex items-center gap-3 px-3 py-2 hover:bg-accent/30 transition-colors w-full text-left no-underline text-inherit", agent?.pausedAt && tab !== "paused" && "opacity-50")}
+        className={cn("flex items-center gap-3 px-3 py-2 hover:bg-accent/35 transition-colors w-full text-left no-underline text-inherit", agent?.pausedAt && tab !== "paused" && "opacity-50")}
       >
         <span className="relative flex h-2.5 w-2.5 shrink-0">
           <span className={`absolute inline-flex h-full w-full rounded-full ${statusColor}`} />
@@ -412,14 +425,14 @@ function LiveRunIndicator({
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
-      className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 transition-colors no-underline"
+      className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 transition-colors no-underline hover:bg-primary/15"
       onClick={(e) => e.stopPropagation()}
     >
       <span className="relative flex h-2 w-2">
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+      <span className="text-[11px] font-medium text-primary">
         Live{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>

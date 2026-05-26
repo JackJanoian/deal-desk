@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import type { GmailClientConfig } from "../gmail/client-config.js";
+import { localGmailOAuthRedirectUriAlternates } from "../gmail/redirect-uri.js";
 
 export interface GmailClientConfigDeps {
   loadConfig(args: { companyId: string }): Promise<GmailClientConfig | null>;
@@ -13,9 +14,12 @@ export function gmailClientConfigGetHandler(deps: GmailClientConfigDeps) {
   return async (req: Request, res: Response) => {
     const companyId = req.params.companyId as string;
     const existing = await deps.loadConfig({ companyId });
+    const redirectUri = deps.resolveRedirectUri(req);
+    const redirectUriAlternates = localGmailOAuthRedirectUriAlternates(redirectUri);
     res.status(200).json({
       configured: existing !== null,
-      redirectUri: deps.resolveRedirectUri(req),
+      redirectUri,
+      ...(redirectUriAlternates.length > 0 ? { redirectUriAlternates } : {}),
     });
   };
 }

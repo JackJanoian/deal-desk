@@ -1,4 +1,4 @@
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   agentTaskSessions as agentTaskSessionsTable,
   agents as agentsTable,
@@ -7,7 +7,7 @@ import {
   heartbeatRuns,
   issues as issuesTable,
   pluginLogs,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import { eq, and, like, desc, inArray, sql } from "drizzle-orm";
 import type {
   HostServices,
@@ -20,15 +20,14 @@ import type {
   IssueComment,
   PluginIssueAssigneeSummary,
   PluginIssueOrchestrationSummary,
-} from "@paperclipai/plugin-sdk";
-import type { CreateIssueThreadInteraction, IssueDocumentSummary } from "@paperclipai/shared";
-import { pluginOperationIssueOriginKind } from "@paperclipai/shared";
+} from "@dealdesk/plugin-sdk";
+import type { CreateIssueThreadInteraction, IssueDocumentSummary } from "@dealdesk/shared";
+import { pluginOperationIssueOriginKind } from "@dealdesk/shared";
 import { companyService } from "./companies.js";
 import { agentService } from "./agents.js";
 import { projectService } from "./projects.js";
 import { issueService } from "./issues.js";
 import { issueThreadInteractionService } from "./issue-thread-interactions.js";
-import { goalService } from "./goals.js";
 import { documentService } from "./documents.js";
 import { heartbeatService } from "./heartbeat.js";
 import { budgetService } from "./budgets.js";
@@ -460,7 +459,7 @@ if (_logFlushInterval.unref) _logFlushInterval.unref();
  * buildHostServices — creates a concrete implementation of the `HostServices`
  * interface for a specific plugin.
  *
- * This implementation delegates to the core Paperclip domain services,
+ * This implementation delegates to the core DealDesk domain services,
  * providing the bridge between the plugin worker's SDK and the host platform.
  *
  * @param db - Database connection instance.
@@ -478,7 +477,7 @@ export function buildHostServices(
   pluginKey: string,
   eventBus: PluginEventBus,
   notifyWorker?: (method: string, params: unknown) => void,
-  options: { pluginWorkerManager?: PluginWorkerManager; manifest?: import("@paperclipai/shared").PaperclipPluginManifestV1 } = {},
+  options: { pluginWorkerManager?: PluginWorkerManager; manifest?: import("@dealdesk/shared").DealDeskPluginManifestV1 } = {},
 ): HostServices & { dispose(): void } {
   const registry = pluginRegistryService(db);
   const stateStore = pluginStateStore(db);
@@ -522,7 +521,6 @@ export function buildHostServices(
   const projects = projectService(db);
   const issues = issueService(db);
   const documents = documentService(db);
-  const goals = goalService(db);
   const activity = activityService(db);
   const costs = costService(db);
   const budgets = budgetService(db);
@@ -955,7 +953,7 @@ export function buildHostServices(
         await scopedBus.emit(params.name, params.companyId, params.payload);
       },
       async subscribe(params: { eventPattern: string; filter?: Record<string, unknown> | null }) {
-        const handler = async (event: import("@paperclipai/plugin-sdk").PluginEvent) => {
+        const handler = async (event: import("@dealdesk/plugin-sdk").PluginEvent) => {
           if (notifyWorker) {
             notifyWorker("onEvent", { event });
           }
@@ -1902,41 +1900,17 @@ export function buildHostServices(
     },
 
     goals: {
-      async list(params) {
-        const companyId = ensureCompanyId(params.companyId);
-        await ensurePluginAvailableForCompany(companyId);
-        const rows = await goals.list(companyId);
-        return applyWindow(
-          rows.filter((goal) =>
-            (!params.level || goal.level === params.level) &&
-            (!params.status || goal.status === params.status),
-          ) as Goal[],
-          params,
-        );
+      async list() {
+        return [];
       },
-      async get(params) {
-        const companyId = ensureCompanyId(params.companyId);
-        await ensurePluginAvailableForCompany(companyId);
-        const goal = await goals.getById(params.goalId);
-        return (inCompany(goal, companyId) ? goal : null) as Goal | null;
+      async get() {
+        return null;
       },
-      async create(params) {
-        const companyId = ensureCompanyId(params.companyId);
-        await ensurePluginAvailableForCompany(companyId);
-        return (await goals.create(companyId, {
-          title: params.title,
-          description: params.description,
-          level: params.level as any,
-          status: params.status as any,
-          parentId: params.parentId,
-          ownerAgentId: params.ownerAgentId,
-        })) as Goal;
+      async create() {
+        throw new Error("Goals are not supported in DealDesk");
       },
-      async update(params) {
-        const companyId = ensureCompanyId(params.companyId);
-        await ensurePluginAvailableForCompany(companyId);
-        requireInCompany("Goal", await goals.getById(params.goalId), companyId);
-        return (await goals.update(params.goalId, params.patch as any)) as Goal;
+      async update() {
+        throw new Error("Goals are not supported in DealDesk");
       },
     },
 

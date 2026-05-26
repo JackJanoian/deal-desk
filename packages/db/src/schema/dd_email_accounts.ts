@@ -6,7 +6,7 @@ export const ddEmailAccounts = pgTable(
   "dd_email_accounts",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     provider: ddEmailProviderEnum("provider").notNull(),
     emailAddress: varchar("email_address", { length: 320 }).notNull(),
     secretId: uuid("secret_id").notNull(), // FK conceptually to company_secrets.id
@@ -15,9 +15,9 @@ export const ddEmailAccounts = pgTable(
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
   },
   (t) => ({
-    companyIdx: index("dd_email_accounts_company_idx").on(t.paperclipCompanyId),
+    companyIdx: index("dd_email_accounts_company_idx").on(t.dealDeskCompanyId),
     uniqueActive: unique("dd_email_accounts_company_email_unique").on(
-      t.paperclipCompanyId,
+      t.dealDeskCompanyId,
       t.emailAddress,
     ),
   }),

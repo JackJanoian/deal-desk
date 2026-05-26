@@ -1,13 +1,13 @@
-import type { CLIAdapterModule } from "@paperclipai/adapter-utils";
-import { printAcpxStreamEvent } from "@paperclipai/adapter-acpx-local/cli";
-import { printClaudeStreamEvent } from "@paperclipai/adapter-claude-local/cli";
-import { printCodexStreamEvent } from "@paperclipai/adapter-codex-local/cli";
-import { printCursorStreamEvent } from "@paperclipai/adapter-cursor-local/cli";
-import { printCursorCloudEvent } from "@paperclipai/adapter-cursor-cloud/cli";
-import { printGeminiStreamEvent } from "@paperclipai/adapter-gemini-local/cli";
-import { printOpenCodeStreamEvent } from "@paperclipai/adapter-opencode-local/cli";
-import { printPiStreamEvent } from "@paperclipai/adapter-pi-local/cli";
-import { printOpenClawGatewayStreamEvent } from "@paperclipai/adapter-openclaw-gateway/cli";
+import type { CLIAdapterModule } from "@dealdesk/adapter-utils";
+import { printAcpxStreamEvent } from "@dealdesk/adapter-acpx-local/cli";
+import { printClaudeStreamEvent } from "@dealdesk/adapter-claude-local/cli";
+import { printCodexStreamEvent } from "@dealdesk/adapter-codex-local/cli";
+import { printCursorStreamEvent } from "@dealdesk/adapter-cursor-local/cli";
+import { printCursorCloudEvent } from "@dealdesk/adapter-cursor-cloud/cli";
+import { printGeminiStreamEvent } from "@dealdesk/adapter-gemini-local/cli";
+import { printOpenCodeStreamEvent } from "@dealdesk/adapter-opencode-local/cli";
+import { printPiStreamEvent } from "@dealdesk/adapter-pi-local/cli";
+import { printOpenClawGatewayStreamEvent } from "@dealdesk/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 

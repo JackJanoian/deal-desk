@@ -23,7 +23,7 @@ describe("plugin local folders", () => {
   });
 
   async function makeRoot() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-folder-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "dealdesk-plugin-folder-"));
     tempRoots.push(root);
     return root;
   }

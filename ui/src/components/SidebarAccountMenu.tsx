@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   LogOut,
   type LucideIcon,
@@ -9,10 +9,11 @@ import {
   Sun,
   UserRoundPen,
 } from "lucide-react";
-import type { DeploymentMode } from "@paperclipai/shared";
+import type { DeploymentMode } from "@dealdesk/shared";
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
+import { useSignOut } from "@/hooks/useSignOut";
 import { useSidebar } from "../context/SidebarContext";
 import { useTheme } from "../context/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -61,11 +62,11 @@ function deriveUserSlug(name: string | null | undefined, email: string | null | 
 
 function MenuAction({ label, description, icon: Icon, onClick, href, external = false }: MenuActionProps) {
   const className =
-    "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-accent/60";
+    "dd-interactive flex w-full items-start gap-3 rounded-lg border border-transparent px-3 py-3 text-left hover:bg-accent/60";
 
   const content = (
     <>
-      <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+      <span className="mt-0.5 rounded-md border border-border/70 bg-card/60 p-2 text-muted-foreground">
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
@@ -106,7 +107,6 @@ export function SidebarAccountMenu({
   version,
 }: SidebarAccountMenuProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const queryClient = useQueryClient();
   const { isMobile, setSidebarOpen } = useSidebar();
   const { theme, toggleTheme } = useTheme();
   const open = controlledOpen ?? internalOpen;
@@ -117,13 +117,7 @@ export function SidebarAccountMenu({
     retry: false,
   });
 
-  const signOutMutation = useMutation({
-    mutationFn: () => authApi.signOut(),
-    onSuccess: async () => {
-      setOpen(false);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-    },
-  });
+  const signOutMutation = useSignOut();
 
   const displayName = session?.user.name?.trim() || "Board";
   const secondaryLabel =
@@ -137,13 +131,19 @@ export function SidebarAccountMenu({
     if (isMobile) setSidebarOpen(false);
   }
 
+  function handleSignOut() {
+    signOutMutation.mutate(undefined, {
+      onSuccess: closeNavigationChrome,
+    });
+  }
+
   return (
-    <div className="border-t border-r border-border bg-background px-3 py-2">
+    <div className="dd-shell border-t border-r border-sidebar-border px-3 py-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground"
+            className="dd-interactive flex w-full items-center gap-2.5 rounded-md border border-transparent px-3 py-2 text-left text-[13px] font-medium text-foreground/80 hover:bg-sidebar-accent/70 hover:text-foreground"
             aria-label="Open account menu"
           >
             <Avatar size="sm">
@@ -157,12 +157,12 @@ export function SidebarAccountMenu({
           side="top"
           align="start"
           sideOffset={10}
-          className="w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-1rem)] overflow-hidden rounded-t-2xl rounded-b-none border-border p-0 shadow-2xl"
+          className="w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-1rem)] overflow-hidden rounded-t-xl rounded-b-none border-border/75 p-0 shadow-[0_24px_80px_color-mix(in_oklab,black_46%,transparent)]"
         >
-          <div className="h-24 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--accent))_55%,hsl(var(--muted))_100%)]" />
+          <div className="h-24 bg-[linear-gradient(135deg,var(--primary)_0%,color-mix(in_oklab,var(--primary)_32%,var(--accent))_48%,var(--muted)_100%)]" />
           <div className="-mt-8 px-4 pb-4">
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl border-4 border-popover bg-popover p-0.5 shadow-sm">
+              <div className="rounded-xl border-4 border-popover bg-popover p-0.5 shadow-sm">
                 <Avatar size="lg">
                   {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
                   <AvatarFallback>{initials}</AvatarFallback>
@@ -177,7 +177,7 @@ export function SidebarAccountMenu({
                 </div>
                 <p className="truncate text-sm text-muted-foreground">{secondaryLabel}</p>
                 {version ? (
-                  <p className="mt-1 text-xs text-muted-foreground">Paperclip v{version}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">DealDesk v{version}</p>
                 ) : null}
               </div>
             </div>
@@ -220,7 +220,7 @@ export function SidebarAccountMenu({
                     "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-destructive/10",
                     signOutMutation.isPending && "cursor-not-allowed opacity-60",
                   )}
-                  onClick={() => signOutMutation.mutate()}
+                  onClick={handleSignOut}
                   disabled={signOutMutation.isPending}
                 >
                   <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">

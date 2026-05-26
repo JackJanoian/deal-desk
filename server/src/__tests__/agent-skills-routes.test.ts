@@ -61,7 +61,7 @@ const mockAdapter = vi.hoisted(() => ({
   syncSkills: vi.fn(),
 }));
 
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@dealdesk/shared/telemetry", () => ({
   trackAgentCreated: mockTrackAgentCreated,
   trackErrorHandlerCrash: vi.fn(),
 }));
@@ -95,7 +95,7 @@ vi.mock("../adapters/index.js", () => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@dealdesk/shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -336,7 +336,7 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         adapterType: "claude_local",
         config: expect.objectContaining({
-          paperclipRuntimeSkills: expect.any(Array),
+          dealDeskRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -394,7 +394,7 @@ describe.sequential("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "claude",
-          paperclipRuntimeSkills: expect.any(Array),
+          dealDeskRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -412,7 +412,7 @@ describe.sequential("agent skill routes", () => {
     mockSecretService.resolveAdapterConfigForRuntime.mockResolvedValueOnce({
       config: {
         agent: "codex",
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: ["company/company-1/release-changelog"],
         },
       },
@@ -436,7 +436,7 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
           agent: "codex",
-          paperclipSkillSync: expect.objectContaining({
+          dealdeskSkillSync: expect.objectContaining({
             desiredSkills: ["company/company-1/release-changelog"],
           }),
         }),
@@ -448,7 +448,7 @@ describe.sequential("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "codex",
-          paperclipRuntimeSkills: expect.any(Array),
+          dealDeskRuntimeSkills: expect.any(Array),
         }),
       }),
       ["company/company-1/release-changelog"],
@@ -498,7 +498,7 @@ describe.sequential("agent skill routes", () => {
       expect.any(String),
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
+          dealdeskSkillSync: expect.objectContaining({
             desiredSkills: ["company/company-1/release-changelog"],
           }),
         }),
@@ -523,7 +523,7 @@ describe.sequential("agent skill routes", () => {
       "company-1",
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
+          dealdeskSkillSync: expect.objectContaining({
             desiredSkills: ["company/company-1/release-changelog"],
           }),
         }),
@@ -736,7 +736,7 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         icon: "crown",
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
+          dealdeskSkillSync: expect.objectContaining({
             desiredSkills: ["company/company-1/release-changelog"],
           }),
         }),

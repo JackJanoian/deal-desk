@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import os from "node:os";
 import path from "node:path";
-import type { QuotaWindow } from "@paperclipai/adapter-utils";
+import type { QuotaWindow } from "@dealdesk/adapter-utils";
 
 // Pure utility functions — import directly from adapter source
 import {
@@ -11,7 +11,7 @@ import {
   parseClaudeCliUsageText,
   readClaudeToken,
   claudeConfigDir,
-} from "@paperclipai/adapter-claude-local/server";
+} from "@dealdesk/adapter-claude-local/server";
 
 import {
   secondsToWindowLabel,
@@ -20,7 +20,7 @@ import {
   fetchCodexQuota,
   mapCodexRpcQuota,
   codexHomeDir,
-} from "@paperclipai/adapter-codex-local/server";
+} from "@dealdesk/adapter-codex-local/server";
 
 // ---------------------------------------------------------------------------
 // toPercent
@@ -226,7 +226,7 @@ describe("readClaudeToken", () => {
 
   it("returns null when credentials.json does not exist", async () => {
     // Point to a directory that does not have credentials.json
-    process.env.CLAUDE_CONFIG_DIR = "/tmp/__no_such_paperclip_dir__";
+    process.env.CLAUDE_CONFIG_DIR = "/tmp/__no_such_dealdesk_dir__";
     const token = await readClaudeToken();
     expect(token).toBe(null);
   });
@@ -375,7 +375,7 @@ describe("readCodexAuthInfo", () => {
   });
 
   it("returns null when auth.json does not exist", async () => {
-    process.env.CODEX_HOME = "/tmp/__no_such_paperclip_codex_dir__";
+    process.env.CODEX_HOME = "/tmp/__no_such_dealdesk_codex_dir__";
     const result = await readCodexAuthInfo();
     expect(result).toBe(null);
   });

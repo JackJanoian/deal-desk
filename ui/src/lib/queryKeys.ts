@@ -92,10 +92,6 @@ export const queryKeys = {
     list: (companyId: string) => ["projects", companyId] as const,
     detail: (id: string) => ["projects", "detail", id] as const,
   },
-  goals: {
-    list: (companyId: string) => ["goals", companyId] as const,
-    detail: (id: string) => ["goals", "detail", id] as const,
-  },
   budgets: {
     overview: (companyId: string) => ["budgets", "overview", companyId] as const,
   },
@@ -199,9 +195,11 @@ export const queryKeys = {
       ["deal-desk", "thesis", companyId, thesisId] as const,
     thesisTargets: (companyId: string, thesisId: string) =>
       ["deal-desk", "thesis-targets", companyId, thesisId] as const,
-    intermediaries: (companyId: string) =>
-      ["deal-desk", "intermediaries", companyId] as const,
+    pipeline: (companyId: string, thesisId: string) =>
+      ["deal-desk", "pipeline", companyId, thesisId] as const,
     roleTemplates: (companyId: string) =>
       ["deal-desk", "role-templates", companyId] as const,
+    intermediaries: (companyId: string) =>
+      ["deal-desk", companyId, "intermediaries"] as const,
   },
 };

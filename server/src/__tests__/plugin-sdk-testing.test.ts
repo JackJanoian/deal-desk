@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import type { DealDeskPluginManifestV1 } from "@dealdesk/shared";
+import { createTestHarness } from "@dealdesk/plugin-sdk/testing";
 
 describe("plugin SDK test harness", () => {
   it("requires skills.managed capability before resetting a missing declaration", async () => {
-    const manifest: PaperclipPluginManifestV1 = {
+    const manifest: DealDeskPluginManifestV1 = {
       id: "paperclip.test-missing-managed-skill-capability",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Missing Managed Skill Capability",
       description: "Test plugin",
-      author: "Paperclip",
+      author: "DealDesk",
       categories: ["automation"],
       capabilities: [],
       entrypoints: { worker: "./dist/worker.js" },

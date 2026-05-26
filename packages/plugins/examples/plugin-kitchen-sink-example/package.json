@@ -1,26 +1,27 @@
 {
-  "name": "@paperclipai/plugin-kitchen-sink-example",
+  "name": "@dealdesk/plugin-kitchen-sink-example",
   "version": "0.1.0",
-  "description": "Reference plugin that demonstrates the full Paperclip plugin surface area in one package",
+  "description": "Reference plugin that demonstrates the full DealDesk plugin surface area in one package",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "exports": {
     ".": "./src/index.ts"
   },
-  "paperclipPlugin": {
+  "dealDeskPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @paperclipai/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @dealdesk/plugin-sdk ensure-build-deps",
     "build": "tsc && node ./scripts/build-ui.mjs",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm --filter @paperclipai/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @dealdesk/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
-    "@paperclipai/plugin-sdk": "workspace:*",
-    "@paperclipai/shared": "workspace:*"
+    "@dealdesk/plugin-sdk": "workspace:*",
+    "@dealdesk/shared": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "^0.27.3",

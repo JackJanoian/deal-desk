@@ -4,8 +4,8 @@ import { eq, and } from "drizzle-orm";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
-import type { DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
+import type { Db } from "@dealdesk/db";
+import type { DeploymentExposure, DeploymentMode } from "@dealdesk/shared";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
@@ -17,12 +17,13 @@ import { companyRoutes } from "./routes/companies.js";
 import { dealDeskRoutes } from "./routes/deal-desk.js";
 // DEAL DESK: Gmail OAuth start + callback routes for Outreach Analyst email account linking.
 import { createGmailOAuthRouter } from "./routes/gmail-oauth.js";
+import { resolveGmailOAuthRedirectUri } from "./deal-desk/gmail/redirect-uri.js";
 import {
   loadGmailOAuthClient,
   type GmailClientConfigStore,
 } from "./deal-desk/gmail/client-config.js";
 import { secretService } from "./services/secrets.js";
-import { companySecrets } from "@paperclipai/db";
+import { companySecrets } from "@dealdesk/db";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { agentRoutes } from "./routes/agents.js";
 import { projectRoutes } from "./routes/projects.js";
@@ -31,7 +32,6 @@ import { issueTreeControlRoutes } from "./routes/issue-tree-control.js";
 import { routineRoutes } from "./routes/routines.js";
 import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
-import { goalRoutes } from "./routes/goals.js";
 import { approvalRoutes } from "./routes/approvals.js";
 import { secretRoutes } from "./routes/secrets.js";
 import { costRoutes } from "./routes/costs.js";
@@ -67,8 +67,9 @@ import { createPluginEventBus } from "./services/plugin-event-bus.js";
 import { setPluginEventBus } from "./services/activity-log.js";
 import { createPluginDevWatcher } from "./services/plugin-dev-watcher.js";
 import { createPluginHostServiceCleanup } from "./services/plugin-host-service-cleanup.js";
+import { createCoalescedErrorLogger } from "./utils/coalesced-error-logger.js";
 import { pluginRegistryService } from "./services/plugin-registry.js";
-import { createHostClientHandlers } from "@paperclipai/plugin-sdk";
+import { createHostClientHandlers } from "@dealdesk/plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
 import { createCachedViteHtmlRenderer } from "./vite-html-renderer.js";
 
@@ -117,7 +118,7 @@ export function shouldEnablePrivateHostnameGuard(opts: {
   );
 }
 
-function isPaperclipManagedAuthPath(pathname: string): boolean {
+function isDealDeskManagedAuthPath(pathname: string): boolean {
   return pathname === "/api/auth/get-session" || pathname === "/api/auth/profile";
 }
 
@@ -172,7 +173,7 @@ export async function createApp(
   );
   if (opts.betterAuthHandler) {
     app.all("/api/auth/{*authPath}", (req, res, next) => {
-      if (isPaperclipManagedAuthPath(req.path)) {
+      if (isDealDeskManagedAuthPath(req.path)) {
         next();
         return;
       }
@@ -244,10 +245,7 @@ export async function createApp(
     createGmailOAuthRouter({
       loadClientConfig: (companyId) =>
         loadGmailOAuthClient({ companyId }, { store: buildOAuthClientStore() }),
-      resolveRedirectUri: (req) => {
-        const base = process.env.PAPERCLIP_PUBLIC_URL ?? `${req.protocol}://${req.get("host")}`;
-        return `${base.replace(/\/$/, "")}/api/oauth/gmail/callback`;
-      },
+      resolveRedirectUri: resolveGmailOAuthRedirectUri,
       resolveCompanyId: (req) =>
         (req.query.companyId as string | undefined) ??
         (req as ExpressRequest & { user?: { companyId?: string } }).user?.companyId ??
@@ -267,7 +265,6 @@ export async function createApp(
   api.use(routineRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(environmentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(executionWorkspaceRoutes(db));
-  api.use(goalRoutes(db));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(secretRoutes(db));
   api.use(costRoutes(db, { pluginWorkerManager: workerManager }));
@@ -420,7 +417,7 @@ export async function createApp(
           .end(indexHtml);
       });
     } else {
-      console.warn("[paperclip] UI dist not found; running in API-only mode");
+      console.warn("[dealdesk] UI dist not found; running in API-only mode");
     }
   }
 
@@ -471,17 +468,21 @@ export async function createApp(
 
   jobCoordinator.start();
   scheduler.start();
+  const logRepeatedError = createCoalescedErrorLogger({
+    logger,
+    intervalMs: 60_000,
+  });
   const feedbackExportTimer = opts.feedbackExportService
     ? setInterval(() => {
       void opts.feedbackExportService?.flushPendingFeedbackTraces().catch((err) => {
-        logger.error({ err }, "Failed to flush pending feedback exports");
+        logRepeatedError(err, "Failed to flush pending feedback exports");
       });
     }, FEEDBACK_EXPORT_FLUSH_INTERVAL_MS)
     : null;
   feedbackExportTimer?.unref?.();
   if (opts.feedbackExportService) {
     void opts.feedbackExportService.flushPendingFeedbackTraces().catch((err) => {
-      logger.error({ err }, "Failed to flush pending feedback exports");
+      logRepeatedError(err, "Failed to flush pending feedback exports");
     });
   }
   void toolDispatcher.initialize().catch((err) => {

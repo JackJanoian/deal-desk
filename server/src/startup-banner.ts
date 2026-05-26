@@ -1,6 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
-import type { BindMode, DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
+import { resolveDealDeskConfigPath, resolveDealDeskEnvPath } from "./paths.js";
+import { type BindMode, type DeploymentExposure, type DeploymentMode } from "@dealdesk/shared";
+import {
+  renderTerminalBannerDivider,
+  renderTerminalBannerHeader,
+  renderTerminalBannerRow,
+} from "@dealdesk/shared/terminal-banner";
 
 import { parse as parseEnvFileContents } from "dotenv";
 
@@ -36,25 +41,6 @@ type StartupBannerOptions = {
   databaseBackupDir: string;
 };
 
-const ansi = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  cyan: "\x1b[36m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  magenta: "\x1b[35m",
-  blue: "\x1b[34m",
-};
-
-function color(text: string, c: keyof typeof ansi): string {
-  return `${ansi[c]}${text}${ansi.reset}`;
-}
-
-function row(label: string, value: string): string {
-  return `${color(label.padEnd(16), "dim")} ${value}`;
-}
-
 function redactConnectionString(raw: string): string {
   try {
     const u = new URL(raw);
@@ -72,7 +58,7 @@ function resolveAgentJwtSecretStatus(
   status: "pass" | "warn";
   message: string;
 } {
-  const envValue = process.env.PAPERCLIP_AGENT_JWT_SECRET?.trim();
+  const envValue = process.env.DEALDESK_AGENT_JWT_SECRET?.trim();
   if (envValue) {
     return {
       status: "pass",
@@ -82,7 +68,7 @@ function resolveAgentJwtSecretStatus(
 
   if (existsSync(envFilePath)) {
     const parsed = parseEnvFileContents(readFileSync(envFilePath, "utf-8"));
-    const fileValue = typeof parsed.PAPERCLIP_AGENT_JWT_SECRET === "string" ? parsed.PAPERCLIP_AGENT_JWT_SECRET.trim() : "";
+    const fileValue = typeof parsed.DEALDESK_AGENT_JWT_SECRET === "string" ? parsed.DEALDESK_AGENT_JWT_SECRET.trim() : "";
     if (fileValue) {
       return {
         status: "warn",
@@ -93,7 +79,7 @@ function resolveAgentJwtSecretStatus(
 
   return {
     status: "warn",
-    message: "missing (run `pnpm paperclipai onboard`)",
+    message: "missing (run `pnpm dealdesk onboard`)",
   };
 }
 
@@ -102,74 +88,57 @@ export function printStartupBanner(opts: StartupBannerOptions): void {
   const baseUrl = `http://${baseHost}:${opts.listenPort}`;
   const apiUrl = `${baseUrl}/api`;
   const uiUrl = opts.uiMode === "none" ? "disabled" : baseUrl;
-  const configPath = resolvePaperclipConfigPath();
-  const envFilePath = resolvePaperclipEnvPath();
+  const configPath = resolveDealDeskConfigPath();
+  const envFilePath = resolveDealDeskEnvPath();
   const agentJwtSecret = resolveAgentJwtSecretStatus(envFilePath);
 
   const dbMode =
-    opts.db.mode === "embedded-postgres"
-      ? color("embedded-postgres", "green")
-      : color("external-postgres", "yellow");
-  const uiMode =
+    opts.db.mode === "embedded-postgres" ? "embedded-postgres" : "external-postgres";
+  const uiModeLabel =
     opts.uiMode === "vite-dev"
-      ? color("vite-dev-middleware", "cyan")
+      ? "vite-dev-middleware"
       : opts.uiMode === "static"
-        ? color("static-ui", "magenta")
-        : color("headless-api", "yellow");
+        ? "static-ui"
+        : "headless-api";
 
   const portValue =
     opts.requestedPort === opts.listenPort
-      ? `${opts.listenPort}`
-      : `${opts.listenPort} ${color(`(requested ${opts.requestedPort})`, "dim")}`;
+      ? String(opts.listenPort)
+      : `${opts.listenPort} (requested ${opts.requestedPort})`;
 
   const dbDetails =
     opts.db.mode === "embedded-postgres"
-      ? `${opts.db.dataDir} ${color(`(pg:${opts.db.port})`, "dim")}`
+      ? `${opts.db.dataDir} (pg:${opts.db.port})`
       : redactConnectionString(opts.db.connectionString);
 
   const heartbeat = opts.heartbeatSchedulerEnabled
-    ? `enabled ${color(`(${opts.heartbeatSchedulerIntervalMs}ms)`, "dim")}`
-    : color("disabled", "yellow");
+    ? `enabled (${opts.heartbeatSchedulerIntervalMs}ms)`
+    : "disabled";
   const dbBackup = opts.databaseBackupEnabled
-    ? `enabled ${color(`(every ${opts.databaseBackupIntervalMinutes}m, keep ${opts.databaseBackupRetentionDays}d)`, "dim")}`
-    : color("disabled", "yellow");
+    ? `enabled (every ${opts.databaseBackupIntervalMinutes}m, keep ${opts.databaseBackupRetentionDays}d)`
+    : "disabled";
 
-  const art = [
-    color("██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ", "cyan"),
-    color("██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗", "cyan"),
-    color("██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝", "cyan"),
-    color("██╔═══╝ ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗██║     ██║     ██║██╔═══╝ ", "cyan"),
-    color("██║     ██║  ██║██║     ███████╗██║  ██║╚██████╗███████╗██║██║     ", "cyan"),
-    color("╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ", "cyan"),
-  ];
+  const row = (label: string, value: string) => renderTerminalBannerRow(label, value);
 
   const lines = [
-    "",
-    ...art,
-    color("  ───────────────────────────────────────────────────────", "blue"),
-    row("Mode", `${dbMode}  |  ${uiMode}`),
+    ...renderTerminalBannerHeader({ includeTagline: false }),
+    renderTerminalBannerDivider(),
+    row("Mode", `${dbMode}  |  ${uiModeLabel}`),
     row("Deploy", `${opts.deploymentMode} (${opts.deploymentExposure})`),
-    row("Bind", `${opts.bind} ${color(`(${opts.host})`, "dim")}`),
-    row("Auth", opts.authReady ? color("ready", "green") : color("not-ready", "yellow")),
+    row("Bind", `${opts.bind} (${opts.host})`),
+    row("Auth", opts.authReady ? "ready" : "not-ready"),
     row("Server", portValue),
-    row("API", `${apiUrl} ${color(`(health: ${apiUrl}/health)`, "dim")}`),
+    row("API", `${apiUrl} (health: ${apiUrl}/health)`),
     row("UI", uiUrl),
     row("Database", dbDetails),
     row("Migrations", opts.migrationSummary),
-    row(
-      "Agent JWT",
-      agentJwtSecret.status === "pass"
-        ? color(agentJwtSecret.message, "green")
-        : color(agentJwtSecret.message, "yellow"),
-    ),
+    row("Agent JWT", agentJwtSecret.message),
     row("Heartbeat", heartbeat),
     row("DB Backup", dbBackup),
     row("Backup Dir", opts.databaseBackupDir),
     row("Config", configPath),
-    agentJwtSecret.status === "warn"
-      ? color("  ───────────────────────────────────────────────────────", "yellow")
-      : null,
-    color("  ───────────────────────────────────────────────────────", "blue"),
+    agentJwtSecret.status === "warn" ? renderTerminalBannerDivider() : null,
+    renderTerminalBannerDivider(),
     "",
   ];
 

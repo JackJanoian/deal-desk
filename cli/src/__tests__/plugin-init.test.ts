@@ -8,10 +8,10 @@ const mocks = vi.hoisted(() => ({
   scaffoldPluginProject: vi.fn((options: { outputDir: string }) => options.outputDir),
 }));
 
-vi.mock("../../../packages/plugins/create-paperclip-plugin/src/index.js", async () => {
+vi.mock("../../../packages/plugins/create-dealdesk-plugin/src/index.js", async () => {
   const actual =
-    await vi.importActual<typeof import("../../../packages/plugins/create-paperclip-plugin/src/index.js")>(
-      "../../../packages/plugins/create-paperclip-plugin/src/index.js",
+    await vi.importActual<typeof import("../../../packages/plugins/create-dealdesk-plugin/src/index.js")>(
+      "../../../packages/plugins/create-dealdesk-plugin/src/index.js",
     );
   return {
     ...actual,
@@ -29,7 +29,7 @@ import {
 const tempDirs: string[] = [];
 
 function makeTempDir(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-plugin-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dealdesk-cli-plugin-"));
   tempDirs.push(dir);
   return dir;
 }
@@ -47,7 +47,7 @@ describe("plugin init", () => {
   });
 
   it("maps package name and flags to scaffolder options", () => {
-    const cwd = path.resolve("/tmp/paperclip-cli-test");
+    const cwd = path.resolve("/tmp/dealdesk-cli-test");
     const options = buildPluginInitScaffoldOptions(
       "@acme/plugin-linear",
       {
@@ -79,7 +79,7 @@ describe("plugin init", () => {
       "cd '/tmp/acme plugin'",
       "pnpm install",
       "pnpm dev",
-      "paperclipai plugin install '/tmp/acme plugin'",
+      "dealdesk plugin install '/tmp/acme plugin'",
     ]);
   });
 
@@ -105,7 +105,7 @@ describe("plugin init", () => {
         "--description",
         "Demo description",
         "--author",
-        "Paperclip",
+        "DealDesk",
         "--sdk-path",
         "/repo/packages/plugins/sdk",
       ],
@@ -120,7 +120,7 @@ describe("plugin init", () => {
       category: "workspace",
       displayName: "Demo Plugin",
       description: "Demo description",
-      author: "Paperclip",
+      author: "DealDesk",
       sdkPath: "/repo/packages/plugins/sdk",
     });
   });

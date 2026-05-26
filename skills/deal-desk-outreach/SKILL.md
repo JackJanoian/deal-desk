@@ -17,6 +17,35 @@ GET /api/companies/{companyId}/deal-desk/tools/email-accounts
 
 If `accounts` is empty or all accounts have `revokedAt` set, **stop**. File an issue asking the user to visit `/deal-desk/email-accounts` and click Connect Gmail.
 
+Also verify Apollo enrichment is configured when contact emails are unknown:
+
+```
+GET /api/companies/{companyId}/deal-desk/tools/apollo-api-key
+```
+
+If `configured` is false, ask the user to add an Apollo API key at `/deal-desk/email-accounts`.
+
+## Contact setup
+
+Create and enrich contacts before drafting:
+
+```
+POST /api/companies/{companyId}/deal-desk/tools/contacts
+{
+  "targetId": "<uuid>",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "title": "CEO",
+  "isPrimary": true
+}
+```
+
+```
+POST /api/companies/{companyId}/deal-desk/tools/contacts/enrich/{contactId}
+```
+
+The enrich endpoint requires the target to have a website/domain and the contact to have first and last names.
+
 ## Drafting a Send
 
 ```
@@ -32,11 +61,13 @@ Content-Type: application/json
 }
 ```
 
+When Apollo is configured, draft auto-enriches the contact and returns **422** if no email can be found.
+
 Response: `201 { "id": "<send-uuid>" }`. The send is now `awaiting_approval`.
 
 ## What NOT To Do
 
-- Do not invent contact email addresses. Pull them from `dd_contacts`.
+- Do not invent contact email addresses. Create contacts and run Apollo enrich instead.
 - Do not contact anyone on `dd_suppression_list`.
 - Do not call any "send" or "approve" endpoint yourself. Approval is a human-only action.
 - Do not draft more than 5 sends per heartbeat without user direction.

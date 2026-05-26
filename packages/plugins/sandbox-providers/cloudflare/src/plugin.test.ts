@@ -64,7 +64,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         normalizeId: false,
         requestedCwd: "/workspace/custom",
         sessionStrategy: "default",
-        sessionId: "paperclip",
+        sessionId: "dealdesk",
         timeoutMs: 450000,
         bridgeRequestTimeoutMs: 40000,
         previewHostname: null,
@@ -126,15 +126,15 @@ describe("Cloudflare sandbox provider plugin", () => {
       },
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://bridge.example.workers.dev/api/paperclip-sandbox/v1/leases/acquire",
+      "https://bridge.example.workers.dev/api/dealdesk-sandbox/v1/leases/acquire",
       expect.objectContaining({
         method: "POST",
         headers: expect.any(Headers),
       }),
     );
-    expect(requestHeadersAt().get("X-Paperclip-Run-Id")).toBe("run-1");
-    expect(requestHeadersAt().get("X-Paperclip-Environment-Id")).toBe("env-1");
-    expect(requestHeadersAt().get("X-Paperclip-Issue-Id")).toBe("issue-1");
+    expect(requestHeadersAt().get("X-DealDesk-Run-Id")).toBe("run-1");
+    expect(requestHeadersAt().get("X-DealDesk-Environment-Id")).toBe("env-1");
+    expect(requestHeadersAt().get("X-DealDesk-Issue-Id")).toBe("issue-1");
     expect(requestBodyAt()).toMatchObject({
       environmentId: "env-1",
       runId: "run-1",
@@ -229,25 +229,25 @@ describe("Cloudflare sandbox provider plugin", () => {
       args: ["-lc", "ls"],
       cwd: "/workspace/paperclip",
       env: {
-        PAPERCLIP_SANDBOX_EXEC_CHANNEL: "bridge",
+        DEALDESK_SANDBOX_EXEC_CHANNEL: "bridge",
         KEEP_ME: "visible",
       },
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
         sessionStrategy: "default",
-        sessionId: "paperclip",
+        sessionId: "dealdesk",
       },
     });
 
     expect(requestBodyAt()).toMatchObject({
       sessionStrategy: "named",
-      sessionId: "paperclip-bridge",
+      sessionId: "dealdesk-bridge",
       env: {
         KEEP_ME: "visible",
       },
     });
-    expect(requestBodyAt().env).not.toHaveProperty("PAPERCLIP_SANDBOX_EXEC_CHANNEL");
+    expect(requestBodyAt().env).not.toHaveProperty("DEALDESK_SANDBOX_EXEC_CHANNEL");
   });
 
   it("maps lost-lease execute errors into a deterministic command failure", async () => {
@@ -318,6 +318,6 @@ describe("Cloudflare sandbox provider plugin", () => {
       },
     })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/paperclip: mkdir: permission denied");
 
-    expect(requestHeadersAt().get("X-Paperclip-Issue-Id")).toBe("issue-1");
+    expect(requestHeadersAt().get("X-DealDesk-Issue-Id")).toBe("issue-1");
   });
 });

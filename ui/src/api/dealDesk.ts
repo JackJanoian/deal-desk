@@ -29,7 +29,7 @@ export type CreateThesisInput = {
 
 export type Thesis = {
   id: string;
-  paperclipCompanyId: string;
+  dealDeskCompanyId: string;
   name: string;
   sector: string;
   subSectors: unknown;
@@ -56,7 +56,7 @@ export type DdSource = { url: string; description?: string };
 
 export type DdTarget = {
   id: string;
-  paperclipCompanyId: string;
+  dealDeskCompanyId: string;
   thesisId: string;
   sourcedByAgentId: string | null;
   sourceTicketId: string | null;
@@ -84,41 +84,6 @@ export type DdTarget = {
   updatedAt: string;
 };
 
-export type DdIntermediary = {
-  id: string;
-  paperclipCompanyId: string;
-  name: string;
-  firm: string | null;
-  title: string | null;
-  coverageSectors: unknown;
-  coverageSizeMin: string | null;
-  coverageSizeMax: string | null;
-  email: string | null;
-  linkedinUrl: string | null;
-  phone: string | null;
-  recentDeals: unknown;
-  lastTouchDate: string | null;
-  cadenceDays: number;
-  nextTouchDue: string | null;
-  relationshipStrength: number;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreateIntermediaryInput = {
-  name: string;
-  firm?: string | null;
-  title?: string | null;
-  email?: string | null;
-  linkedinUrl?: string | null;
-  phone?: string | null;
-  coverageSectors?: string[];
-  cadenceDays?: number;
-  relationshipStrength?: number;
-  notes?: string | null;
-};
-
 // DEAL DESK: Phase 8 — pre-built PE agent role templates (read-only).
 export type DdRoleTemplate = {
   id: string;
@@ -128,6 +93,59 @@ export type DdRoleTemplate = {
   defaultHeartbeatCron: string;
   defaultBudgetUsd: number;
   systemPrompt: string;
+};
+
+export type CreateTargetInput = {
+  thesisId: string;
+  companyName: string;
+  website?: string;
+  description?: string;
+  sector?: string;
+  subSector?: string;
+  hqCity?: string;
+  hqState?: string;
+  estimatedRevenue?: number;
+  ownershipType?: string;
+  fitScore: number;
+  fitRationale: string;
+  sources?: DdSource[];
+};
+
+export type UpdateTargetInput = {
+  status?: DdTargetStatus;
+  notes?: string | null;
+  fitScore?: number;
+  fitRationale?: string;
+  sector?: string | null;
+  subSector?: string | null;
+  website?: string | null;
+  description?: string | null;
+  hqCity?: string | null;
+  hqState?: string | null;
+  ownershipType?: string | null;
+};
+
+export type PipelineSummary = {
+  total: number;
+  byStatus: Record<DdTargetStatus, number>;
+};
+
+export type DdIntermediary = {
+  id: string;
+  dealDeskCompanyId: string;
+  name: string;
+  firm: string | null;
+  title: string | null;
+  email: string | null;
+  linkedinUrl: string | null;
+  coverageSectors: unknown;
+  cadenceDays: number;
+  lastTouchDate: string | null;
+  nextTouchDue: string | null;
+  relationshipStrength: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const dealDeskApi = {
@@ -155,6 +173,21 @@ export const dealDeskApi = {
     api.get<DdTarget[]>(
       `/companies/${companyId}/deal-desk/theses/${thesisId}/targets`,
     ),
+  getTarget: (companyId: string, targetId: string) =>
+    api.get<DdTarget>(`/companies/${companyId}/deal-desk/targets/${targetId}`),
+  createTarget: (companyId: string, data: CreateTargetInput) =>
+    api.post<DdTarget>(`/companies/${companyId}/deal-desk/targets`, data),
+  updateTarget: (companyId: string, targetId: string, data: UpdateTargetInput) =>
+    api.patch<DdTarget>(
+      `/companies/${companyId}/deal-desk/targets/${targetId}`,
+      data,
+    ),
+  getPipelineSummary: (companyId: string, thesisId: string) =>
+    api.get<PipelineSummary>(
+      `/companies/${companyId}/deal-desk/pipeline/summary?thesisId=${encodeURIComponent(thesisId)}`,
+    ),
+  listIntermediaries: (companyId: string) =>
+    api.get<DdIntermediary[]>(`/companies/${companyId}/deal-desk/intermediaries`),
   updateTargetStatus: (
     companyId: string,
     targetId: string,
@@ -163,15 +196,5 @@ export const dealDeskApi = {
     api.patch<DdTarget>(
       `/companies/${companyId}/deal-desk/targets/${targetId}/status`,
       { status },
-    ),
-  listIntermediaries: (companyId: string) =>
-    api.get<DdIntermediary[]>(
-      `/companies/${companyId}/deal-desk/intermediaries`,
-    ),
-  // TODO(v0.2): server tools endpoint may differ; wired per FORK.md.
-  createIntermediary: (companyId: string, data: CreateIntermediaryInput) =>
-    api.post<DdIntermediary>(
-      `/companies/${companyId}/deal-desk/tools/intermediaries`,
-      data,
     ),
 };

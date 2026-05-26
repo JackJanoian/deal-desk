@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCursorSkillsInjected } from "@paperclipai/adapter-cursor-local/server";
+import { ensureCursorSkillsInjected } from "@dealdesk/adapter-cursor-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -20,14 +20,14 @@ describe("cursor local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("skips Paperclip skills when linking into Cursor skills home", async () => {
-    const skillsDir = await makeTempDir("paperclip-cursor-skills-src-");
-    const skillsHome = await makeTempDir("paperclip-cursor-skills-home-");
+  it("skips DealDesk skills when linking into Cursor skills home", async () => {
+    const skillsDir = await makeTempDir("dealdesk-cursor-skills-src-");
+    const skillsHome = await makeTempDir("dealdesk-cursor-skills-home-");
     cleanupDirs.add(skillsDir);
     cleanupDirs.add(skillsHome);
 
-    await createSkillDir(skillsDir, "paperclip");
-    await createSkillDir(skillsDir, "paperclip-create-agent");
+    await createSkillDir(skillsDir, "dealdesk");
+    await createSkillDir(skillsDir, "dealdesk-create-agent");
     await fs.writeFile(path.join(skillsDir, "README.txt"), "ignore", "utf8");
 
     const logs: string[] = [];
@@ -38,22 +38,22 @@ describe("cursor local adapter skill injection", () => {
       { skillsDir, skillsHome },
     );
 
-    await expect(fs.lstat(path.join(skillsHome, "paperclip"))).rejects.toMatchObject({ code: "ENOENT" });
-    await expect(fs.lstat(path.join(skillsHome, "paperclip-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
-    expect(logs.some((line) => line.includes('Injected Cursor skill "paperclip"'))).toBe(false);
-    expect(logs.some((line) => line.includes('Injected Cursor skill "paperclip-create-agent"'))).toBe(false);
+    await expect(fs.lstat(path.join(skillsHome, "dealdesk"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.lstat(path.join(skillsHome, "dealdesk-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
+    expect(logs.some((line) => line.includes('Injected Cursor skill "dealdesk"'))).toBe(false);
+    expect(logs.some((line) => line.includes('Injected Cursor skill "dealdesk-create-agent"'))).toBe(false);
   });
 
-  it("preserves existing Paperclip targets and does not link missing Paperclip skills", async () => {
-    const skillsDir = await makeTempDir("paperclip-cursor-preserve-src-");
-    const skillsHome = await makeTempDir("paperclip-cursor-preserve-home-");
+  it("preserves existing DealDesk targets and does not link missing DealDesk skills", async () => {
+    const skillsDir = await makeTempDir("dealdesk-cursor-preserve-src-");
+    const skillsHome = await makeTempDir("dealdesk-cursor-preserve-home-");
     cleanupDirs.add(skillsDir);
     cleanupDirs.add(skillsHome);
 
-    await createSkillDir(skillsDir, "paperclip");
-    await createSkillDir(skillsDir, "paperclip-create-agent");
+    await createSkillDir(skillsDir, "dealdesk");
+    await createSkillDir(skillsDir, "dealdesk-create-agent");
 
-    const existingTarget = path.join(skillsHome, "paperclip");
+    const existingTarget = path.join(skillsHome, "dealdesk");
     await fs.mkdir(existingTarget, { recursive: true });
     await fs.writeFile(path.join(existingTarget, "keep.txt"), "keep", "utf8");
 
@@ -61,12 +61,12 @@ describe("cursor local adapter skill injection", () => {
 
     expect((await fs.lstat(existingTarget)).isDirectory()).toBe(true);
     expect(await fs.readFile(path.join(existingTarget, "keep.txt"), "utf8")).toBe("keep");
-    await expect(fs.lstat(path.join(skillsHome, "paperclip-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.lstat(path.join(skillsHome, "dealdesk-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("logs per-skill link failures and continues without throwing", async () => {
-    const skillsDir = await makeTempDir("paperclip-cursor-fail-src-");
-    const skillsHome = await makeTempDir("paperclip-cursor-fail-home-");
+    const skillsDir = await makeTempDir("dealdesk-cursor-fail-src-");
+    const skillsHome = await makeTempDir("dealdesk-cursor-fail-home-");
     cleanupDirs.add(skillsDir);
     cleanupDirs.add(skillsHome);
 

@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Link } from "@/lib/router";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import type { Issue, IssueRecoveryAction } from "@paperclipai/shared";
+import type { Issue, IssueRecoveryAction } from "@dealdesk/shared";
 import { heartbeatsApi, type LiveRunForIssue } from "../api/heartbeats";
 import type { TranscriptEntry } from "../adapters";
 import { issuesApi } from "../api/issues";
@@ -117,11 +117,11 @@ export function ActiveAgentsPanel({
 
   return (
     <div>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="dd-kicker mb-3">
         {title}
       </h3>
       {runs.length === 0 ? (
-        <div className="rounded-xl border border-border p-4">
+        <div className="dd-panel-subtle rounded-lg p-4">
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : (
@@ -172,11 +172,11 @@ const AgentRunCard = memo(function AgentRunCard({
     <div className={cn(
       "flex h-[320px] flex-col overflow-hidden rounded-xl border shadow-sm",
       isActive
-        ? "border-cyan-500/25 bg-cyan-500/[0.04] shadow-[0_16px_40px_rgba(6,182,212,0.08)]"
-        : "border-border bg-background/70",
+        ? "border-primary/30 bg-primary/[0.055] shadow-[0_16px_42px_color-mix(in_oklab,var(--primary)_13%,transparent)]"
+        : "border-border/70 bg-card/60",
       className,
     )}>
-      <div className="border-b border-border/60 px-3 py-3">
+      <div className="border-b border-border/60 bg-background/20 px-3 py-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ const AgentRunCard = memo(function AgentRunCard({
               to={`/issues/${issue?.identifier ?? run.issueId}`}
               className={cn(
                 "line-clamp-2 hover:underline",
-                isActive ? "text-cyan-700 dark:text-cyan-300" : "text-muted-foreground hover:text-foreground",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
               title={issue?.title ? `${issue?.identifier ?? run.issueId.slice(0, 8)} - ${issue.title}` : issue?.identifier ?? run.issueId.slice(0, 8)}
             >

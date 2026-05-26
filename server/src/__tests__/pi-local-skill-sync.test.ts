@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listPiSkills,
   syncPiSkills,
-} from "@paperclipai/adapter-pi-local/server";
+} from "@dealdesk/adapter-pi-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("pi local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const dealdeskKey = "dealdesk/dealdesk/dealdesk";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -27,12 +27,12 @@ describe("pi local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("installs converted Deal Desk skills that keep Paperclip-compatible keys", async () => {
-    const home = await makeTempDir("paperclip-pi-skill-sync-");
-    const runtimeSkills = await makeTempDir("paperclip-pi-skill-src-");
+  it("installs converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+    const home = await makeTempDir("dealdesk-pi-skill-sync-");
+    const runtimeSkills = await makeTempDir("dealdesk-pi-skill-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const ctx = {
       agentId: "agent-1",
@@ -42,12 +42,12 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
@@ -56,21 +56,21 @@ describe("pi local skill sync", () => {
 
     const before = await listPiSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(dealdeskKey);
+    expect(before.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("missing");
 
-    const after = await syncPiSkills(ctx, [paperclipKey]);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    const after = await syncPiSkills(ctx, [dealdeskKey]);
+    expect(after.desiredSkills).toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("installed");
+    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "dealdesk"))).isSymbolicLink()).toBe(true);
   });
 
   it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclip-pi-skill-prune-");
-    const runtimeSkills = await makeTempDir("paperclip-pi-skill-prune-src-");
+    const home = await makeTempDir("dealdesk-pi-skill-prune-");
+    const runtimeSkills = await makeTempDir("dealdesk-pi-skill-prune-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -80,19 +80,19 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
       },
     } as const;
 
-    await syncPiSkills(configuredCtx, [paperclipKey]);
+    await syncPiSkills(configuredCtx, [dealdeskKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -100,17 +100,17 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: [],
         },
-        paperclipRuntimeSkills: configuredCtx.config.paperclipRuntimeSkills,
+        dealDeskRuntimeSkills: configuredCtx.config.dealDeskRuntimeSkills,
       },
     } as const;
 
     const after = await syncPiSkills(clearedCtx, []);
-    expect(after.desiredSkills).not.toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("available");
-    await expect(fs.lstat(path.join(home, ".pi", "agent", "skills", "paperclip"))).rejects.toMatchObject({
+    expect(after.desiredSkills).not.toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("available");
+    await expect(fs.lstat(path.join(home, ".pi", "agent", "skills", "dealdesk"))).rejects.toMatchObject({
       code: "ENOENT",
     });
   });

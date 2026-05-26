@@ -461,6 +461,7 @@ export type {
   BudgetIncidentResolutionInput,
   CostEvent,
   CostSummary,
+  CostPipelineHealth,
   IssueCostSummary,
   CostByAgent,
   CostByProviderModel,
@@ -609,7 +610,7 @@ export type {
   PluginDatabaseDeclaration,
   PluginApiRouteCompanyResolution,
   PluginApiRouteDeclaration,
-  PaperclipPluginManifestV1,
+  DealDeskPluginManifestV1,
   PluginRecord,
   PluginDatabaseNamespaceRecord,
   PluginMigrationRecord,
@@ -1024,6 +1025,50 @@ export {
   type ListPluginState,
 } from "./validators/index.js";
 
+export {
+  PRODUCT_NAME,
+  PRODUCT_DISPLAY_NAME,
+  CLI_NAME,
+  TAGLINE,
+  BANNER_WORDMARK,
+  DEALDESK_ASCII_ART,
+  LEGACY_HOME_DIR,
+  HOME_DIR,
+} from "./branding.js";
+
+export {
+  BANNER_COLOR,
+  renderTerminalBannerDivider,
+  renderTerminalBannerHeader,
+  renderTerminalBannerRow,
+  tb,
+  terminalBannerTheme,
+  type TerminalBannerHeaderOptions,
+  type TerminalBannerStyle,
+} from "./terminal-banner.js";
+
+export {
+  DEFAULT_DEALDESK_INSTANCE_ID,
+  DEALDESK_CONFIG_BASENAME,
+  DEALDESK_ENV_FILENAME,
+  expandHomePrefix,
+  resolveDealDeskHomeDir,
+  resolveDealDeskInstanceId,
+  resolveDealDeskInstanceRoot,
+  resolveDealDeskInstanceConfigPath,
+  resolveDealDeskConfigPathForInstance,
+  resolveDealDeskEnvPathForConfig,
+  resolveDefaultEmbeddedPostgresDir,
+  resolveDefaultLogsDir,
+  resolveDefaultSecretsKeyFilePath,
+  resolveDefaultStorageDir,
+  resolveDefaultBackupDir,
+  resolveHomeAwarePath,
+  resolvePaperclipHomeDir,
+  resolvePaperclipInstanceId,
+  resolvePaperclipInstanceRoot,
+} from "./home-paths.js";
+
 export { API_PREFIX, API } from "./api.js";
 export { normalizeAgentUrlKey, deriveAgentUrlKey, isUuidLike } from "./agent-url-key.js";
 export { deriveProjectUrlKey, normalizeProjectUrlKey, hasNonAsciiContent } from "./project-url-key.js";
@@ -1062,7 +1107,7 @@ export {
 } from "./routine-variables.js";
 
 export {
-  paperclipConfigSchema,
+  dealDeskConfigSchema,
   configMetaSchema,
   llmConfigSchema,
   databaseBackupConfigSchema,
@@ -1077,7 +1122,7 @@ export {
   secretsLocalEncryptedConfigSchema,
   telemetryConfigSchema,
   type TelemetryConfig,
-  type PaperclipConfig,
+  type DealDeskConfig,
   type LlmConfig,
   type DatabaseBackupConfig,
   type DatabaseConfig,

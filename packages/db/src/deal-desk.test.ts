@@ -1,6 +1,6 @@
 // DEAL DESK: Smoke test for PE table migration 0085.
 // Verifies dd_* tables exist after migration, basic CRUD works, and the
-// dd_targets uniqueness constraint prevents duplicate (paperclipCompanyId,
+// dd_targets uniqueness constraint prevents duplicate (dealDeskCompanyId,
 // companyName) pairs.
 
 import { afterEach, describe, expect, it } from "vitest";
@@ -16,7 +16,7 @@ const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbedded = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 async function createTempDb(): Promise<string> {
-  const db = await startEmbeddedPostgresTestDatabase("paperclip-deal-desk-");
+  const db = await startEmbeddedPostgresTestDatabase("dealdesk-deal-desk-");
   cleanups.push(db.cleanup);
   return db.connectionString;
 }
@@ -30,6 +30,7 @@ afterEach(async () => {
 
 const EXPECTED_DD_TABLES = [
   "dd_contacts",
+  "dd_email_accounts",
   "dd_intermediaries",
   "dd_outreach_campaigns",
   "dd_outreach_sends",
@@ -78,7 +79,7 @@ describeEmbedded("deal desk migration (0085)", () => {
         const [thesis] = await sql.unsafe<{ id: string }[]>(
           `
             INSERT INTO dd_theses
-              (paperclip_company_id, name, sector)
+              (deal_desk_company_id, name, sector)
             VALUES
               ('${companyId}', 'HVAC Southeast', 'HVAC Services')
             RETURNING id
@@ -89,7 +90,7 @@ describeEmbedded("deal desk migration (0085)", () => {
         const [target] = await sql.unsafe<{ id: string; status: string }[]>(
           `
             INSERT INTO dd_targets
-              (paperclip_company_id, thesis_id, company_name, fit_score, fit_rationale)
+              (deal_desk_company_id, thesis_id, company_name, fit_score, fit_rationale)
             VALUES
               ('${companyId}', '${thesis!.id}', 'Acme HVAC', 75, 'Solid fit')
             RETURNING id, status
@@ -118,7 +119,7 @@ describeEmbedded("deal desk migration (0085)", () => {
   );
 
   it(
-    "enforces unique (paperclip_company_id, company_name) on dd_targets",
+    "enforces unique (deal_desk_company_id, company_name) on dd_targets",
     async () => {
       const connectionString = await createTempDb();
       await applyPendingMigrations(connectionString);
@@ -128,7 +129,7 @@ describeEmbedded("deal desk migration (0085)", () => {
         const companyId = "00000000-0000-0000-0000-000000000002";
         const [thesis] = await sql.unsafe<{ id: string }[]>(
           `
-            INSERT INTO dd_theses (paperclip_company_id, name, sector)
+            INSERT INTO dd_theses (deal_desk_company_id, name, sector)
             VALUES ('${companyId}', 'Test', 'Test')
             RETURNING id
           `,
@@ -136,7 +137,7 @@ describeEmbedded("deal desk migration (0085)", () => {
 
         await sql.unsafe(
           `
-            INSERT INTO dd_targets (paperclip_company_id, thesis_id, company_name)
+            INSERT INTO dd_targets (deal_desk_company_id, thesis_id, company_name)
             VALUES ('${companyId}', '${thesis!.id}', 'Dup Co')
           `,
         );
@@ -145,7 +146,7 @@ describeEmbedded("deal desk migration (0085)", () => {
         try {
           await sql.unsafe(
             `
-              INSERT INTO dd_targets (paperclip_company_id, thesis_id, company_name)
+              INSERT INTO dd_targets (deal_desk_company_id, thesis_id, company_name)
               VALUES ('${companyId}', '${thesis!.id}', 'Dup Co')
             `,
           );
@@ -161,7 +162,7 @@ describeEmbedded("deal desk migration (0085)", () => {
   );
 
   it(
-    "leaves a representative set of Paperclip tables intact",
+    "leaves a representative set of DealDesk tables intact",
     async () => {
       const connectionString = await createTempDb();
       await applyPendingMigrations(connectionString);

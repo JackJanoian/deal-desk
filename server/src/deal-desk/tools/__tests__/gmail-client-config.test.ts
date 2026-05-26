@@ -11,7 +11,7 @@ const baseDeps = {
   loadConfig: vi.fn().mockResolvedValue(null),
   saveConfig: vi.fn(),
   deleteConfig: vi.fn(),
-  resolveRedirectUri: () => "http://localhost:3000/api/oauth/gmail/callback",
+  resolveRedirectUri: () => "http://127.0.0.1:3100/api/oauth/gmail/callback",
 };
 
 describe("Gmail OAuth client config endpoints", () => {
@@ -22,7 +22,8 @@ describe("Gmail OAuth client config endpoints", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       configured: false,
-      redirectUri: "http://localhost:3000/api/oauth/gmail/callback",
+      redirectUri: "http://127.0.0.1:3100/api/oauth/gmail/callback",
+      redirectUriAlternates: ["http://localhost:3100/api/oauth/gmail/callback"],
     });
   });
 

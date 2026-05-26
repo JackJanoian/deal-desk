@@ -1,7 +1,7 @@
 # Token Optimization Plan
 
 Date: 2026-03-13  
-Related discussion: https://github.com/paperclipai/paperclip/discussions/449
+Related discussion: https://github.com/dealdesk/paperclip/discussions/449
 
 ## Goal
 
@@ -12,7 +12,7 @@ This plan is based on:
 - the current V1 control-plane design
 - the current adapter and heartbeat implementation
 - the linked user discussion
-- local runtime data from the default Paperclip instance on 2026-03-13
+- local runtime data from the default DealDesk instance on 2026-03-13
 
 ## Executive Summary
 
@@ -121,16 +121,16 @@ Local adapters inject repo skills into runtime skill directories.
 Important `codex_local` nuance:
 
 - Codex does not read skills directly from the active worktree.
-- Paperclip discovers repo skills from the current checkout, then symlinks them into `$CODEX_HOME/skills` or `~/.codex/skills`.
-- If an existing Paperclip skill symlink already points at another live checkout, the current implementation skips it instead of repointing it.
-- This can leave Codex using stale skill content from a different worktree even after Paperclip-side skill changes land.
+- DealDesk discovers repo skills from the current checkout, then symlinks them into `$CODEX_HOME/skills` or `~/.codex/skills`.
+- If an existing DealDesk skill symlink already points at another live checkout, the current implementation skips it instead of repointing it.
+- This can leave Codex using stale skill content from a different worktree even after DealDesk-side skill changes land.
 - That is both a correctness risk and a token-analysis risk, because runtime behavior may not reflect the instructions in the checkout being tested.
 
 Current repo skill sizes:
 
-- `skills/paperclip/SKILL.md`: 17,441 bytes
+- `skills/dealdesk/SKILL.md`: 17,441 bytes
 - `.agents/skills/create-agent-adapter/SKILL.md`: 31,832 bytes
-- `skills/paperclip-create-agent/SKILL.md`: 4,718 bytes
+- `skills/dealdesk-create-agent/SKILL.md`: 4,718 bytes
 - `skills/para-memory-files/SKILL.md`: 3,978 bytes
 
 That is nearly 58 KB of skill markdown before any company-specific instructions.
@@ -157,7 +157,7 @@ This should happen first.
 
 - Store both:
   - raw adapter-reported usage
-  - Paperclip-normalized per-run usage
+  - DealDesk-normalized per-run usage
 - For sessioned adapters, compute normalized deltas against prior usage for the same persisted session.
 - Add explicit fields for:
   - `sessionReused`
@@ -223,7 +223,7 @@ This is the right version of the discussion’s bootstrap idea.
 
 Static instructions and dynamic wake context have different cache behavior and should be modeled separately.
 
-For `codex_local`, this also requires isolating the Codex skill home per worktree or teaching Paperclip to repoint its own skill symlinks when the source checkout changes. Otherwise prompt and skill improvements in the active worktree may not reach the running agent.
+For `codex_local`, this also requires isolating the Codex skill home per worktree or teaching DealDesk to repoint its own skill symlinks when the source checkout changes. Otherwise prompt and skill improvements in the active worktree may not reach the running agent.
 
 ### Success criteria
 
@@ -317,7 +317,7 @@ Even when reuse is desirable, some sessions become too expensive to keep alive i
 - Expose active skill set in agent config and run metadata.
 - For `codex_local`, either:
   - run with a worktree-specific `CODEX_HOME`, or
-  - treat Paperclip-owned Codex skill symlinks as repairable when they point at a different checkout
+  - treat DealDesk-owned Codex skill symlinks as repairable when they point at a different checkout
 
 ### Why
 
@@ -373,7 +373,7 @@ Initial targets:
 3. Change `shouldResetTaskSessionForWake(...)` so timer wakes do not reset by default.
 4. Implement `bootstrapPromptTemplate` end-to-end in adapter execution.
 5. Add compact heartbeat context and incremental comment APIs.
-6. Rewrite `skills/paperclip/SKILL.md` around delta-fetch behavior.
+6. Rewrite `skills/dealdesk/SKILL.md` around delta-fetch behavior.
 7. Add session rotation with carry-forward summaries.
 8. Replace global skill injection with explicit allowlists.
 9. Fix `codex_local` skill resolution so worktree-local skill changes reliably reach the runtime.

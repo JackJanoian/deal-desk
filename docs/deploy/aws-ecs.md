@@ -1,23 +1,23 @@
 ---
 title: AWS ECS Fargate
-summary: Deploy Paperclip to AWS using ECS Fargate, RDS Postgres, and EFS
+summary: Deploy DealDesk to AWS using ECS Fargate, RDS Postgres, and EFS
 ---
 
-Deploy Paperclip to AWS with ECS Fargate (compute), RDS Postgres 17 (database), and EFS (persistent storage). This guide uses the AWS CLI and produces a single-task ECS service behind an ALB with HTTPS.
+Deploy DealDesk to AWS with ECS Fargate (compute), RDS Postgres 17 (database), and EFS (persistent storage). This guide uses the AWS CLI and produces a single-task ECS service behind an ALB with HTTPS.
 
 ## Prerequisites
 
 - AWS CLI v2 configured with a profile that has admin-level permissions
 - Docker installed locally (for building and pushing the image)
 - A registered domain with DNS you control (for the TLS certificate)
-- The Paperclip repo cloned locally
+- The DealDesk repo cloned locally
 
 Set these shell variables for the rest of the guide:
 
 ```bash
 export AWS_REGION=us-east-1
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export PAPERCLIP_DOMAIN=paperclip.example.com   # your domain
+export DEALDESK_DOMAIN=paperclip.example.com   # your domain
 export DB_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)
 export AUTH_SECRET=$(openssl rand -base64 32)
 ```
@@ -77,7 +77,7 @@ Create security groups:
 # ALB security group — inbound HTTPS
 ALB_SG=$(aws ec2 create-security-group \
   --group-name paperclip-alb \
-  --description "Paperclip ALB" \
+  --description "DealDesk ALB" \
   --vpc-id $VPC_ID \
   --query 'GroupId' --output text)
 
@@ -93,7 +93,7 @@ aws ec2 authorize-security-group-ingress \
 # ECS task security group — inbound from ALB only
 ECS_SG=$(aws ec2 create-security-group \
   --group-name paperclip-ecs \
-  --description "Paperclip ECS tasks" \
+  --description "DealDesk ECS tasks" \
   --vpc-id $VPC_ID \
   --query 'GroupId' --output text)
 
@@ -105,7 +105,7 @@ aws ec2 authorize-security-group-ingress \
 # RDS security group — inbound from ECS only
 RDS_SG=$(aws ec2 create-security-group \
   --group-name paperclip-rds \
-  --description "Paperclip RDS" \
+  --description "DealDesk RDS" \
   --vpc-id $VPC_ID \
   --query 'GroupId' --output text)
 
@@ -117,7 +117,7 @@ aws ec2 authorize-security-group-ingress \
 # EFS security group — inbound NFS from ECS only
 EFS_SG=$(aws ec2 create-security-group \
   --group-name paperclip-efs \
-  --description "Paperclip EFS" \
+  --description "DealDesk EFS" \
   --vpc-id $VPC_ID \
   --query 'GroupId' --output text)
 
@@ -134,7 +134,7 @@ aws ec2 authorize-security-group-ingress \
 # that spans our two subnets so RDS can place the instance.
 aws rds create-db-subnet-group \
   --db-subnet-group-name paperclip-db-subnet \
-  --db-subnet-group-description "Paperclip RDS subnets" \
+  --db-subnet-group-description "DealDesk RDS subnets" \
   --subnet-ids $SUBNET_1 $SUBNET_2
 
 aws rds create-db-instance \
@@ -142,7 +142,7 @@ aws rds create-db-instance \
   --db-instance-class db.t4g.micro \
   --engine postgres \
   --engine-version 17 \
-  --master-username paperclip \
+  --master-username dealdesk \
   --master-user-password "$DB_PASSWORD" \
   --allocated-storage 20 \
   --storage-type gp3 \
@@ -151,7 +151,7 @@ aws rds create-db-instance \
   --no-publicly-accessible \
   --backup-retention-period 7 \
   --no-multi-az \
-  --db-name paperclip \
+  --db-name dealdesk \
   --region $AWS_REGION
 
 # Wait for it to become available (takes 5-10 min)
@@ -273,7 +273,7 @@ Register the task definition using the template at `docker/ecs-task-definition.j
 sed -e "s|<ACCOUNT_ID>|$AWS_ACCOUNT_ID|g" \
     -e "s|<REGION>|$AWS_REGION|g" \
     -e "s|<EFS_ID>|$EFS_ID|g" \
-    -e "s|<DOMAIN>|$PAPERCLIP_DOMAIN|g" \
+    -e "s|<DOMAIN>|$DEALDESK_DOMAIN|g" \
     docker/ecs-task-definition.json > /tmp/paperclip-task-def.json
 
 aws ecs register-task-definition \
@@ -286,7 +286,7 @@ Request a certificate (you must validate via DNS):
 
 ```bash
 CERT_ARN=$(aws acm request-certificate \
-  --domain-name $PAPERCLIP_DOMAIN \
+  --domain-name $DEALDESK_DOMAIN \
   --validation-method DNS \
   --query 'CertificateArn' --output text)
 
@@ -349,13 +349,13 @@ HTTP_LISTENER_ARN=$(aws elbv2 create-listener \
 ```
 
 Point your DNS to the ALB:
-- Create a CNAME or ALIAS record for `$PAPERCLIP_DOMAIN` -> `$ALB_DNS`
+- Create a CNAME or ALIAS record for `$DEALDESK_DOMAIN` -> `$ALB_DNS`
 
 ## 10. Create ECS Service
 
 ```bash
 aws ecs create-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service-name paperclip-server \
   --task-definition paperclip-server \
   --desired-count 1 \
@@ -386,21 +386,21 @@ aws ecs create-service \
 ```bash
 # Watch task come up
 aws ecs describe-services \
-  --cluster paperclip \
+  --cluster dealdesk \
   --services paperclip-server \
   --query 'services[0].{desired:desiredCount,running:runningCount,status:status}'
 
 # Check task health
-aws ecs list-tasks --cluster paperclip --service-name paperclip-server
-TASK_ARN=$(aws ecs list-tasks --cluster paperclip --service-name paperclip-server --query 'taskArns[0]' --output text)
-aws ecs describe-tasks --cluster paperclip --tasks $TASK_ARN \
+aws ecs list-tasks --cluster dealdesk --service-name paperclip-server
+TASK_ARN=$(aws ecs list-tasks --cluster dealdesk --service-name paperclip-server --query 'taskArns[0]' --output text)
+aws ecs describe-tasks --cluster dealdesk --tasks $TASK_ARN \
   --query 'tasks[0].{status:lastStatus,health:healthStatus}'
 
 # Check logs
 aws logs tail /ecs/paperclip --since 10m --follow
 
 # Hit the health endpoint
-curl -sf https://$PAPERCLIP_DOMAIN/api/health
+curl -sf https://$DEALDESK_DOMAIN/api/health
 ```
 
 **Healthy indicators:**
@@ -415,11 +415,11 @@ After the first user has signed up (which grants admin role), lock down the inst
 ```bash
 # Disable public sign-up (prevents unauthorized users from creating accounts)
 # Add to the task definition environment section, then redeploy:
-#   { "name": "PAPERCLIP_AUTH_DISABLE_SIGN_UP", "value": "true" }
+#   { "name": "DEALDESK_AUTH_DISABLE_SIGN_UP", "value": "true" }
 
 # Or update via Secrets Manager / task def override, then force new deployment
 aws ecs update-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service paperclip-server \
   --force-new-deployment
 ```
@@ -440,13 +440,13 @@ docker push \
 
 # Roll out
 aws ecs update-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service paperclip-server \
   --force-new-deployment
 
 # Watch the deployment
 aws ecs describe-services \
-  --cluster paperclip \
+  --cluster dealdesk \
   --services paperclip-server \
   --query 'services[0].deployments[*].{status:status,running:runningCount,desired:desiredCount,rollout:rolloutState}'
 ```
@@ -470,7 +470,7 @@ aws ecs list-task-definitions \
 
 # 2. Update service to the previous revision
 aws ecs update-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service paperclip-server \
   --task-definition paperclip-server:<PREVIOUS_REVISION>
 ```
@@ -482,13 +482,13 @@ Scale down when not in use:
 ```bash
 # Stop
 aws ecs update-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service paperclip-server \
   --desired-count 0
 
 # Start
 aws ecs update-service \
-  --cluster paperclip \
+  --cluster dealdesk \
   --service paperclip-server \
   --desired-count 1
 ```
@@ -506,8 +506,8 @@ Remove all resources in reverse order:
 
 ```bash
 # 1. ECS service and cluster
-aws ecs update-service --cluster paperclip --service paperclip-server --desired-count 0
-aws ecs delete-service --cluster paperclip --service paperclip-server --force
+aws ecs update-service --cluster dealdesk --service paperclip-server --desired-count 0
+aws ecs delete-service --cluster dealdesk --service paperclip-server --force
 aws ecs delete-cluster --cluster paperclip
 
 # 2. ALB and ACM cert

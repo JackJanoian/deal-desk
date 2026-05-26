@@ -3,7 +3,7 @@ import {
   asNumber,
   parseObject,
   parseJson,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@dealdesk/adapter-utils/server-utils";
 
 const CODEX_TRANSIENT_UPSTREAM_RE =
   /(?:we(?:'|’)re\s+currently\s+experiencing\s+high\s+demand|temporary\s+errors|rate[-\s]?limit(?:ed)?|too\s+many\s+requests|\b429\b|server\s+overloaded|service\s+unavailable|try\s+again\s+later)/i;
@@ -15,6 +15,7 @@ export function parseCodexJsonl(stdout: string) {
   let sessionId: string | null = null;
   let finalMessage: string | null = null;
   let errorMessage: string | null = null;
+  let costUsd: number | null = null;
   const usage = {
     inputTokens: 0,
     cachedInputTokens: 0,
@@ -49,18 +50,21 @@ export function parseCodexJsonl(stdout: string) {
       continue;
     }
 
-    if (type === "turn.completed") {
+    if (type === "turn.completed" || type === "turn.failed") {
       const usageObj = parseObject(event.usage);
       usage.inputTokens = asNumber(usageObj.input_tokens, usage.inputTokens);
       usage.cachedInputTokens = asNumber(usageObj.cached_input_tokens, usage.cachedInputTokens);
       usage.outputTokens = asNumber(usageObj.output_tokens, usage.outputTokens);
+      const eventCostUsd = asNumber(event.total_cost_usd, NaN);
+      if (Number.isFinite(eventCostUsd)) {
+        costUsd = (costUsd ?? 0) + eventCostUsd;
+      }
+      if (type === "turn.failed") {
+        const err = parseObject(event.error);
+        const msg = asString(err.message, "").trim();
+        if (msg) errorMessage = msg;
+      }
       continue;
-    }
-
-    if (type === "turn.failed") {
-      const err = parseObject(event.error);
-      const msg = asString(err.message, "").trim();
-      if (msg) errorMessage = msg;
     }
   }
 
@@ -68,6 +72,7 @@ export function parseCodexJsonl(stdout: string) {
     sessionId,
     summary: finalMessage?.trim() ?? "",
     usage,
+    costUsd,
     errorMessage,
   };
 }

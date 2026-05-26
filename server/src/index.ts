@@ -22,7 +22,7 @@ import {
   companies,
   companyMemberships,
   instanceUserRoles,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
@@ -39,6 +39,7 @@ import {
 } from "./services/index.js";
 import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
+import { setGmailOAuthPublicOrigin } from "./deal-desk/gmail/redirect-uri.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
 import { createStorageServiceFromConfig } from "./storage/index.js";
 import { printStartupBanner } from "./startup-banner.js";
@@ -46,6 +47,8 @@ import { getBoardClaimWarningUrl, initializeBoardClaimChallenge } from "./board-
 import { maybePersistWorktreeRuntimePorts } from "./worktree-config.js";
 import { initTelemetry, getTelemetryClient } from "./telemetry.js";
 import { conflict } from "./errors.js";
+import { startEmbeddedPostgresLivenessWatchdog } from "./embedded-postgres-watchdog.js";
+import { createCoalescedErrorLogger } from "./utils/coalesced-error-logger.js";
 import type {
   InstanceDatabaseBackupRunResult,
   InstanceDatabaseBackupTrigger,
@@ -79,7 +82,6 @@ type EmbeddedPostgresCtor = new (opts: {
   onError?: (message: unknown) => void;
 }) => EmbeddedPostgresInstance;
 
-
 export interface StartedServer {
   server: ReturnType<typeof createServer>;
   host: string;
@@ -91,34 +93,34 @@ export interface StartedServer {
 export async function startServer(): Promise<StartedServer> {
   let config = loadConfig();
   initTelemetry({ enabled: config.telemetryEnabled });
-  if (process.env.PAPERCLIP_SECRETS_PROVIDER === undefined) {
-    process.env.PAPERCLIP_SECRETS_PROVIDER = config.secretsProvider;
+  if (process.env.DEALDESK_SECRETS_PROVIDER === undefined) {
+    process.env.DEALDESK_SECRETS_PROVIDER = config.secretsProvider;
   }
-  if (process.env.PAPERCLIP_SECRETS_STRICT_MODE === undefined) {
-    process.env.PAPERCLIP_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
+  if (process.env.DEALDESK_SECRETS_STRICT_MODE === undefined) {
+    process.env.DEALDESK_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
   }
-  if (process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE === undefined) {
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
+  if (process.env.DEALDESK_SECRETS_MASTER_KEY_FILE === undefined) {
+    process.env.DEALDESK_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
   }
-  
+
   type MigrationSummary =
     | "skipped"
     | "already applied"
     | "applied (empty database)"
     | "applied (pending migrations)";
-  
+
   function formatPendingMigrationSummary(migrations: string[]): string {
     if (migrations.length === 0) return "none";
     return migrations.length > 3
       ? `${migrations.slice(0, 3).join(", ")} (+${migrations.length - 3} more)`
       : migrations.join(", ");
   }
-  
+
   async function promptApplyMigrations(migrations: string[]): Promise<boolean> {
-    if (process.env.PAPERCLIP_MIGRATION_AUTO_APPLY === "true") return true;
-    if (process.env.PAPERCLIP_MIGRATION_PROMPT === "never") return false;
+    if (process.env.DEALDESK_MIGRATION_AUTO_APPLY === "true") return true;
+    if (process.env.DEALDESK_MIGRATION_PROMPT === "never") return false;
     if (!stdin.isTTY || !stdout.isTTY) return true;
-  
+
     const prompt = createInterface({ input: stdin, output: stdout });
     try {
       const answer = (await prompt.question(
@@ -129,11 +131,11 @@ export async function startServer(): Promise<StartedServer> {
       prompt.close();
     }
   }
-  
+
   type EnsureMigrationsOptions = {
     autoApply?: boolean;
   };
-  
+
   async function ensureMigrations(
     connectionString: string,
     label: string,
@@ -162,10 +164,10 @@ export async function startServer(): Promise<StartedServer> {
       if (!apply) {
         throw new Error(
           `${label} has pending migrations (${formatPendingMigrationSummary(state.pendingMigrations)}). ` +
-            "Refusing to start against a stale schema. Run pnpm db:migrate or set PAPERCLIP_MIGRATION_AUTO_APPLY=true.",
+            "Refusing to start against a stale schema. Run pnpm db:migrate or set DEALDESK_MIGRATION_AUTO_APPLY=true.",
         );
       }
-  
+
       logger.info({ pendingMigrations: state.pendingMigrations }, `Applying ${state.pendingMigrations.length} pending migrations for ${label}`);
       await applyPendingMigrations(connectionString);
       return "applied (pending migrations)";
@@ -175,7 +177,7 @@ export async function startServer(): Promise<StartedServer> {
     if (!apply) {
       throw new Error(
         `${label} has pending migrations (${formatPendingMigrationSummary(state.pendingMigrations)}). ` +
-          "Refusing to start against a stale schema. Run pnpm db:migrate or set PAPERCLIP_MIGRATION_AUTO_APPLY=true.",
+          "Refusing to start against a stale schema. Run pnpm db:migrate or set DEALDESK_MIGRATION_AUTO_APPLY=true.",
       );
     }
   
@@ -183,7 +185,7 @@ export async function startServer(): Promise<StartedServer> {
     await applyPendingMigrations(connectionString);
     return "applied (pending migrations)";
   }
-  
+
   function isLoopbackHost(host: string): boolean {
     const normalized = host.trim().toLowerCase();
     return normalized === "127.0.0.1" || normalized === "localhost" || normalized === "::1";
@@ -203,19 +205,14 @@ export async function startServer(): Promise<StartedServer> {
   }
   
   const LOCAL_BOARD_USER_ID = "local-board";
-  const LOCAL_BOARD_USER_EMAIL = "local@paperclip.local";
+  const LOCAL_BOARD_USER_EMAIL = "local@dealdesk.local";
   const LOCAL_BOARD_USER_NAME = "Board";
   
   async function ensureLocalTrustedBoardPrincipal(db: any): Promise<void> {
     const now = new Date();
-    const existingUser = await db
-      .select({ id: authUsers.id })
-      .from(authUsers)
-      .where(eq(authUsers.id, LOCAL_BOARD_USER_ID))
-      .then((rows: Array<{ id: string }>) => rows[0] ?? null);
-  
-    if (!existingUser) {
-      await db.insert(authUsers).values({
+    await db
+      .insert(authUsers)
+      .values({
         id: LOCAL_BOARD_USER_ID,
         name: LOCAL_BOARD_USER_NAME,
         email: LOCAL_BOARD_USER_EMAIL,
@@ -223,8 +220,16 @@ export async function startServer(): Promise<StartedServer> {
         image: null,
         createdAt: now,
         updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: authUsers.id,
+        set: {
+          name: LOCAL_BOARD_USER_NAME,
+          email: LOCAL_BOARD_USER_EMAIL,
+          emailVerified: true,
+          updatedAt: now,
+        },
       });
-    }
   
     const role = await db
       .select({ id: instanceUserRoles.id })
@@ -261,11 +266,12 @@ export async function startServer(): Promise<StartedServer> {
       });
     }
   }
-  
+
   let db;
   let pluginMigrationDb;
   let embeddedPostgres: EmbeddedPostgresInstance | null = null;
   let embeddedPostgresStartedByThisProcess = false;
+  let stopEmbeddedPostgresWatchdog: (() => void) | null = null;
   let migrationSummary: MigrationSummary = "skipped";
   let activeDatabaseConnectionString: string;
   let resolvedEmbeddedPostgresPort: number | null = null;
@@ -275,7 +281,7 @@ export async function startServer(): Promise<StartedServer> {
   if (config.databaseUrl) {
     const migrationUrl = config.databaseMigrationUrl ?? config.databaseUrl;
     migrationSummary = await ensureMigrations(migrationUrl, "PostgreSQL");
-  
+
     db = createDb(config.databaseUrl);
     pluginMigrationDb = config.databaseMigrationUrl ? createDb(config.databaseMigrationUrl) : db;
     logger.info("Using external PostgreSQL via DATABASE_URL/config");
@@ -292,12 +298,12 @@ export async function startServer(): Promise<StartedServer> {
         "Embedded PostgreSQL mode requires dependency `embedded-postgres`. Reinstall dependencies (without omitting required packages), or set DATABASE_URL for external Postgres.",
       );
     }
-  
+
     const dataDir = resolve(config.embeddedPostgresDataDir);
     const configuredPort = config.embeddedPostgresPort;
     let port = configuredPort;
     const logBuffer = createEmbeddedPostgresLogBuffer(120);
-    const verboseEmbeddedPostgresLogs = process.env.PAPERCLIP_EMBEDDED_POSTGRES_VERBOSE === "true";
+    const verboseEmbeddedPostgresLogs = process.env.DEALDESK_EMBEDDED_POSTGRES_VERBOSE === "true";
     const appendEmbeddedPostgresLog = (message: unknown) => {
       logBuffer.append(message);
       if (!verboseEmbeddedPostgresLogs) {
@@ -361,7 +367,7 @@ export async function startServer(): Promise<StartedServer> {
     if (runningPid) {
       logger.warn(`Embedded PostgreSQL already running; reusing existing process (pid=${runningPid}, port=${port})`);
     } else {
-      const configuredAdminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${configuredPort}/postgres`;
+      const configuredAdminConnectionString = `postgres://dealdesk:dealdesk@127.0.0.1:${configuredPort}/postgres`;
       try {
         const actualDataDir = await getPostgresDataDirectory(configuredAdminConnectionString);
         if (
@@ -370,7 +376,7 @@ export async function startServer(): Promise<StartedServer> {
         ) {
           throw new Error("reachable postgres does not use the expected embedded data directory");
         }
-        await ensurePostgresDatabase(configuredAdminConnectionString, "paperclip");
+        await ensurePostgresDatabase(configuredAdminConnectionString, "dealdesk");
         logger.warn(
           `Embedded PostgreSQL appears to already be reachable without a pid file; reusing existing server on configured port ${configuredPort}`,
         );
@@ -383,8 +389,8 @@ export async function startServer(): Promise<StartedServer> {
         logger.info(`Using embedded PostgreSQL because no DATABASE_URL set (dataDir=${dataDir}, port=${port})`);
         embeddedPostgres = new EmbeddedPostgres({
           databaseDir: dataDir,
-          user: "paperclip",
-          password: "paperclip",
+          user: "dealdesk",
+          password: "dealdesk",
           port,
           persistent: true,
           initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -423,13 +429,13 @@ export async function startServer(): Promise<StartedServer> {
       }
     }
   
-    const embeddedAdminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
-    const dbStatus = await ensurePostgresDatabase(embeddedAdminConnectionString, "paperclip");
+    const embeddedAdminConnectionString = `postgres://dealdesk:dealdesk@127.0.0.1:${port}/postgres`;
+    const dbStatus = await ensurePostgresDatabase(embeddedAdminConnectionString, "dealdesk");
     if (dbStatus === "created") {
-      logger.info("Created embedded PostgreSQL database: paperclip");
+      logger.info("Created embedded PostgreSQL database: dealdesk");
     }
-  
-    const embeddedConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+
+    const embeddedConnectionString = `postgres://dealdesk:dealdesk@127.0.0.1:${port}/dealdesk`;
     const shouldAutoApplyFirstRunMigrations = !clusterAlreadyInitialized || dbStatus === "created";
     if (shouldAutoApplyFirstRunMigrations) {
       logger.info("Detected first-run embedded PostgreSQL setup; applying pending migrations automatically");
@@ -444,6 +450,13 @@ export async function startServer(): Promise<StartedServer> {
     activeDatabaseConnectionString = embeddedConnectionString;
     resolvedEmbeddedPostgresPort = port;
     startupDbInfo = { mode: "embedded-postgres", dataDir, port };
+  }
+
+  if (embeddedPostgresStartedByThisProcess) {
+    stopEmbeddedPostgresWatchdog = startEmbeddedPostgresLivenessWatchdog({
+      probe: () => (db as { execute(query: string): Promise<unknown> }).execute("SELECT 1"),
+      logger,
+    });
   }
 
   // DEAL DESK: Seed pre-built PE agent role templates into dd_role_templates.
@@ -464,11 +477,11 @@ export async function startServer(): Promise<StartedServer> {
         "Use authenticated mode for non-loopback deployments.",
     );
   }
-  
+
   if (config.deploymentMode === "local_trusted" && config.deploymentExposure !== "private") {
     throw new Error("local_trusted mode only supports private exposure");
   }
-  
+
   if (config.deploymentMode === "authenticated") {
     if (config.authBaseUrlMode === "explicit" && !config.authPublicBaseUrl) {
       throw new Error("auth.baseUrlMode=explicit requires auth.publicBaseUrl");
@@ -488,7 +501,7 @@ export async function startServer(): Promise<StartedServer> {
   if (config.authBaseUrlMode === "explicit" && config.authPublicBaseUrl) {
     config.authPublicBaseUrl = rewriteLocalUrlPort(config.authPublicBaseUrl, listenPort);
   }
-  
+
   let authReady = config.deploymentMode === "local_trusted";
   let betterAuthHandler: RequestHandler | undefined;
   let resolveSession:
@@ -574,7 +587,7 @@ export async function startServer(): Promise<StartedServer> {
         connectionString: activeDatabaseConnectionString,
         backupDir: config.databaseBackupDir,
         retention,
-        filenamePrefix: "paperclip",
+        filenamePrefix: "dealdesk",
       });
       const finishedAt = new Date();
       const response: InstanceDatabaseBackupRunResult = {
@@ -607,6 +620,16 @@ export async function startServer(): Promise<StartedServer> {
     }
   };
   const pluginWorkerManager = createPluginWorkerManager();
+  const runtimeListenHost = config.host;
+  const runtimeApiUrl = choosePrimaryRuntimeApiUrl({
+    authPublicBaseUrl: config.authPublicBaseUrl ?? null,
+    allowedHostnames: config.allowedHostnames,
+    bindHost: runtimeListenHost,
+    port: listenPort,
+  });
+  setGmailOAuthPublicOrigin(
+    config.authPublicBaseUrl?.trim() || process.env.DEALDESK_PUBLIC_URL?.trim() || runtimeApiUrl,
+  );
   const app = await createApp(db as any, {
     uiMode,
     serverPort: listenPort,
@@ -639,19 +662,12 @@ export async function startServer(): Promise<StartedServer> {
   // This prevents intermittent 502/ECONNRESET errors caused by Node's 5s default.
   server.keepAliveTimeout = 185000;
   server.headersTimeout = 186000;
-  
+
   if (listenPort !== requestedListenPort) {
     logger.warn(`Requested port is busy; using next free port (requestedPort=${requestedListenPort}, selectedPort=${listenPort})`);
   }
-  
-  const runtimeListenHost = config.host;
-  const runtimeApiUrl = choosePrimaryRuntimeApiUrl({
-    authPublicBaseUrl: config.authPublicBaseUrl ?? null,
-    allowedHostnames: config.allowedHostnames,
-    bindHost: runtimeListenHost,
-    port: listenPort,
-  });
-  const configuredApiUrl = process.env.PAPERCLIP_API_URL?.trim() || runtimeApiUrl;
+
+  const configuredApiUrl = process.env.DEALDESK_API_URL?.trim() || runtimeApiUrl;
   const runtimeApiCandidates = buildRuntimeApiCandidateUrls({
     preferredApiUrl: configuredApiUrl,
     authPublicBaseUrl: config.authPublicBaseUrl ?? null,
@@ -659,12 +675,12 @@ export async function startServer(): Promise<StartedServer> {
     bindHost: runtimeListenHost,
     port: listenPort,
   });
-  process.env.PAPERCLIP_LISTEN_HOST = runtimeListenHost;
-  process.env.PAPERCLIP_LISTEN_PORT = String(listenPort);
-  process.env.PAPERCLIP_RUNTIME_API_URL = runtimeApiUrl;
-  process.env.PAPERCLIP_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
-  process.env.PAPERCLIP_API_URL = configuredApiUrl;
-  
+  process.env.DEALDESK_LISTEN_HOST = runtimeListenHost;
+  process.env.DEALDESK_LISTEN_PORT = String(listenPort);
+  process.env.DEALDESK_RUNTIME_API_URL = runtimeApiUrl;
+  process.env.DEALDESK_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
+  process.env.DEALDESK_API_URL = configuredApiUrl;
+
   setupLiveEventsWebSocketServer(server, db as any, {
     deploymentMode: config.deploymentMode,
     resolveSessionFromHeaders,
@@ -682,11 +698,15 @@ export async function startServer(): Promise<StartedServer> {
     .catch((err) => {
       logger.error({ err }, "startup reconciliation of persisted runtime services failed");
     });
-  
+
   if (config.heartbeatSchedulerEnabled) {
     const heartbeat = heartbeatService(db as any, { pluginWorkerManager });
     const routines = routineService(db as any, { pluginWorkerManager });
-  
+    const logRepeatedSchedulerError = createCoalescedErrorLogger({
+      logger,
+      intervalMs: 60_000,
+    });
+
     // Reap orphaned running runs at startup while in-memory execution state is empty,
     // then resume any persisted queued runs that were waiting on the previous process.
     void heartbeat
@@ -739,7 +759,7 @@ export async function startServer(): Promise<StartedServer> {
           }
         })
         .catch((err) => {
-          logger.error({ err }, "heartbeat timer tick failed");
+          logRepeatedSchedulerError(err, "heartbeat timer tick failed");
         });
 
       void routines
@@ -750,7 +770,7 @@ export async function startServer(): Promise<StartedServer> {
           }
         })
         .catch((err) => {
-          logger.error({ err }, "routine scheduler tick failed");
+          logRepeatedSchedulerError(err, "routine scheduler tick failed");
         });
   
       // Periodically reap orphaned runs (5-min staleness threshold) and make sure
@@ -794,7 +814,7 @@ export async function startServer(): Promise<StartedServer> {
           }
         })
         .catch((err) => {
-          logger.error({ err }, "periodic heartbeat recovery failed");
+          logRepeatedSchedulerError(err, "periodic heartbeat recovery failed");
         });
     }, config.heartbeatSchedulerIntervalMs);
   }
@@ -833,7 +853,7 @@ export async function startServer(): Promise<StartedServer> {
     server.listen(listenPort, config.host, () => {
       server.off("error", onError);
       logger.info(`Server listening on ${config.host}:${listenPort}`);
-      if (process.env.PAPERCLIP_OPEN_ON_LISTEN === "true") {
+      if (process.env.DEALDESK_OPEN_ON_LISTEN === "true") {
         const openHost = config.host === "0.0.0.0" || config.host === "::" ? "127.0.0.1" : config.host;
         const url = `http://${openHost}:${listenPort}`;
         void import("open")
@@ -845,10 +865,10 @@ export async function startServer(): Promise<StartedServer> {
             logger.warn({ err, url }, "Failed to open browser on startup");
           });
       }
-        printStartupBanner({
-          bind: config.bind,
-          host: config.host,
-          deploymentMode: config.deploymentMode,
+      printStartupBanner({
+        bind: config.bind,
+        host: config.host,
+        deploymentMode: config.deploymentMode,
         deploymentExposure: config.deploymentExposure,
         authReady,
         requestedPort: requestedListenPort,
@@ -893,6 +913,7 @@ export async function startServer(): Promise<StartedServer> {
       }
 
       if (embeddedPostgres && embeddedPostgresStartedByThisProcess) {
+        stopEmbeddedPostgresWatchdog?.();
         logger.info({ signal }, "Stopping embedded PostgreSQL");
         try {
           await embeddedPostgres?.stop();
@@ -933,7 +954,7 @@ function isMainModule(metaUrl: string): boolean {
 
 if (isMainModule(import.meta.url)) {
   void startServer().catch((err) => {
-    logger.error({ err }, "Paperclip server failed to start");
+    logger.error({ err }, "DealDesk server failed to start");
     process.exit(1);
   });
 }

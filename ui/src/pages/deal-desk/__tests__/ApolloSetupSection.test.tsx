@@ -18,15 +18,33 @@ describe("ApolloSetupSection", () => {
     fetchMock
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ configured: false }),
+        json: async () => ({ configured: false, matchEnabled: null, searchEnabled: null, enrichmentEnabled: null }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true }),
+        json: async () => ({
+          ok: true,
+          capabilities: {
+            matchEnabled: true,
+            searchEnabled: true,
+            enrichmentEnabled: true,
+            planLimited: false,
+            masterKeyRequired: false,
+            lastValidatedAt: "2026-01-01T00:00:00.000Z",
+          },
+        }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ configured: true }),
+        json: async () => ({
+          configured: true,
+          matchEnabled: true,
+          searchEnabled: true,
+          enrichmentEnabled: true,
+          planLimited: false,
+          masterKeyRequired: false,
+          lastValidatedAt: "2026-01-01T00:00:00.000Z",
+        }),
       } as Response);
 
     render(<ApolloSetupSection companyId="c1" />);
@@ -46,14 +64,24 @@ describe("ApolloSetupSection", () => {
         apiKey: "my-apollo-key-123",
       });
     });
-    await waitFor(() => expect(screen.getByText(/configured/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/email enrichment enabled/i)).toBeInTheDocument(),
+    );
   });
 
   it("shows Reset when configured and clears on click", async () => {
     fetchMock
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ configured: true }),
+        json: async () => ({
+          configured: true,
+          matchEnabled: true,
+          searchEnabled: true,
+          enrichmentEnabled: true,
+          planLimited: false,
+          masterKeyRequired: false,
+          lastValidatedAt: "2026-01-01T00:00:00.000Z",
+        }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -61,11 +89,11 @@ describe("ApolloSetupSection", () => {
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ configured: false }),
+        json: async () => ({ configured: false, matchEnabled: null, searchEnabled: null, enrichmentEnabled: null }),
       } as Response);
 
     render(<ApolloSetupSection companyId="c1" />);
-    await waitFor(() => screen.getByText(/configured/i));
+    await waitFor(() => screen.getByText(/email enrichment enabled/i));
 
     fireEvent.click(screen.getByRole("button", { name: /reset/i }));
 
@@ -76,5 +104,46 @@ describe("ApolloSetupSection", () => {
       expect(delCall).toBeTruthy();
     });
     await waitFor(() => expect(screen.getByLabelText(/apollo api key/i)).toBeInTheDocument());
+  });
+
+  it("shows plan-limited badge when enrichment is blocked", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        configured: true,
+        matchEnabled: false,
+        searchEnabled: false,
+        enrichmentEnabled: false,
+        planLimited: true,
+        masterKeyRequired: false,
+        lastValidatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    } as Response);
+
+    render(<ApolloSetupSection companyId="c1" />);
+    await waitFor(() =>
+      expect(screen.getByText(/plan doesn't support email reveal/i)).toBeInTheDocument(),
+    );
+  });
+
+  it("shows free-tier enrichment when search + bulk path works", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        configured: true,
+        matchEnabled: false,
+        searchEnabled: true,
+        enrichmentEnabled: true,
+        planLimited: true,
+        masterKeyRequired: false,
+        lastValidatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    } as Response);
+
+    render(<ApolloSetupSection companyId="c1" />);
+    await waitFor(() =>
+      expect(screen.getByText(/email enrichment enabled/i)).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/free-tier path active/i)).toBeInTheDocument();
   });
 });

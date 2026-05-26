@@ -26,7 +26,7 @@ import {
   storybookSecretProviders,
   storybookSecrets,
   storybookSidebarBadges,
-} from "../fixtures/paperclipData";
+} from "../fixtures/dealDeskData";
 import "@mdxeditor/editor/style.css";
 import "./tailwind-entry.css";
 import "./styles.css";
@@ -72,7 +72,7 @@ function installStorybookApiFixtures() {
             status: "active",
             user: {
               id: "user-board",
-              email: "board@paperclip.local",
+              email: "board@dealdesk.local",
               name: "Board Operator",
               image: null,
             },
@@ -82,7 +82,7 @@ function installStorybookApiFixtures() {
             status: "active",
             user: {
               id: "user-product",
-              email: "product@paperclip.local",
+              email: "product@dealdesk.local",
               name: "Product Lead",
               image: null,
             },
@@ -336,7 +336,7 @@ const preview: Preview = {
   ],
   globalTypes: {
     theme: {
-      description: "Paperclip color mode",
+      description: "DealDesk color mode",
       defaultValue: "dark",
       toolbar: {
         title: "Theme",

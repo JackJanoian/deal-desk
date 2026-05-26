@@ -15,11 +15,11 @@ import { PromptFileInput } from "../../components/deal-desk/PromptFileInput";
 import { ReportsToPicker } from "../../components/ReportsToPicker";
 
 export const DEAL_DESK_SKILL_KEYS = [
-  "paperclip",
-  "paperclip-converting-plans-to-tasks",
-  "paperclip-create-agent",
-  "paperclip-create-plugin",
-  "paperclip-dev",
+  "dealdesk",
+  "dealdesk-converting-plans-to-tasks",
+  "dealdesk-create-agent",
+  "dealdesk-create-plugin",
+  "dealdesk-dev",
 ] as const;
 
 type DealDeskQuickHireInput = {

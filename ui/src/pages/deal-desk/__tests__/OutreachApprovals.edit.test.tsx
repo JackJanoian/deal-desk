@@ -8,8 +8,12 @@ import { OutreachApprovalsPage } from "../OutreachApprovals";
 vi.mock("../../../context/CompanyContext", () => ({
   useCompany: () => ({
     selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", issuePrefix: "PAP", name: "Paperclip" },
+    selectedCompany: { id: "company-1", issuePrefix: "PAP", name: "DealDesk" },
   }),
+}));
+
+vi.mock("../../../context/BreadcrumbContext", () => ({
+  useBreadcrumbs: () => ({ setBreadcrumbs: vi.fn() }),
 }));
 
 const fetchMock = vi.fn();
@@ -65,7 +69,11 @@ describe("OutreachApprovals edit flow", () => {
       );
       expect(patchCall).toBeTruthy();
       const body = JSON.parse((patchCall![1] as RequestInit).body as string);
-      expect(body).toEqual({ subject: "Updated subject", body: "Updated body" });
+      expect(body).toEqual({
+        subject: "Updated subject",
+        body: "Updated body",
+        recipientEmail: "alice@acme.com",
+      });
     });
   });
 });

@@ -84,13 +84,13 @@ export function Approvals() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="dd-panel-subtle flex items-center justify-between rounded-lg p-3">
         <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
           <PageTabBar items={[
             { value: "pending", label: <>Pending{pendingCount > 0 && (
               <span className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
-                "bg-yellow-500/20 text-yellow-500"
+                "ml-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium",
+                "text-amber-600 dark:text-amber-300"
               )}>
                 {pendingCount}
               </span>
@@ -104,8 +104,10 @@ export function Approvals() {
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
 
       {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ShieldCheck className="h-8 w-8 text-muted-foreground/30 mb-3" />
+        <div className="dd-grid-surface flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-card/25 px-6 py-16 text-center">
+          <div className="mb-3 rounded-xl border border-border/70 bg-card/70 p-4 text-primary/75">
+            <ShieldCheck className="h-8 w-8" />
+          </div>
           <p className="text-sm text-muted-foreground">
             {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
           </p>

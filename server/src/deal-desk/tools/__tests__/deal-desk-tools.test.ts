@@ -10,7 +10,7 @@ import {
   ddTheses,
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import { dealDeskToolsRouter } from "../index.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -35,7 +35,7 @@ describeEmbeddedPostgres("deal-desk tools", () => {
   let app!: express.Express;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-deal-desk-tools-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-deal-desk-tools-");
     db = createDb(tempDb.connectionString);
     app = express();
     app.use(express.json());
@@ -50,7 +50,7 @@ describeEmbeddedPostgres("deal-desk tools", () => {
     const inserted = await db
       .insert(ddTheses)
       .values({
-        paperclipCompanyId: companyId,
+        dealDeskCompanyId: companyId,
         name: "HVAC SE",
         sector: "HVAC Services",
       })
@@ -125,7 +125,7 @@ describeEmbeddedPostgres("deal-desk tools", () => {
     expect(count.length).toBe(0);
   });
 
-  it("listTargets: returns inserted target", async () => {
+  it("listTargets: returns inserted target with extended fields", async () => {
     await request(app)
       .post(`/companies/${companyId}/deal-desk/tools/targets`)
       .send(makeTargetBody());
@@ -137,6 +137,33 @@ describeEmbeddedPostgres("deal-desk tools", () => {
     expect(res.body.count).toBe(1);
     expect(res.body.targets[0].name).toBe("Acme HVAC");
     expect(res.body.targets[0].fitScore).toBe(75);
+    expect(res.body.targets[0].fitRationale).toContain("Atlanta-area");
+  });
+
+  it("getTarget: returns full target record", async () => {
+    const createRes = await request(app)
+      .post(`/companies/${companyId}/deal-desk/tools/targets`)
+      .send(makeTargetBody());
+
+    const res = await request(app)
+      .get(`/companies/${companyId}/deal-desk/tools/targets/${createRes.body.targetId}`);
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.target.companyName).toBe("Acme HVAC");
+  });
+
+  it("updateTarget: updates status via PATCH", async () => {
+    const createRes = await request(app)
+      .post(`/companies/${companyId}/deal-desk/tools/targets`)
+      .send(makeTargetBody());
+
+    const res = await request(app)
+      .patch(`/companies/${companyId}/deal-desk/tools/targets/${createRes.body.targetId}`)
+      .send({ status: "qualified", notes: "Validated fit" });
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.target.status).toBe("qualified");
+    expect(res.body.target.notes).toBe("Validated fit");
   });
 
   it("recordIntermediaryTouch: updates lastTouchDate and recomputes nextTouchDue", async () => {
@@ -169,6 +196,43 @@ describeEmbeddedPostgres("deal-desk tools", () => {
     expectedNext.setUTCDate(expectedNext.getUTCDate() + 30);
     expect(touchRes.body.intermediary.nextTouchDue).toBe(
       expectedNext.toISOString().slice(0, 10),
+    );
+  });
+
+  it("intermediaryOutreachDraft: queues check-in for approval", async () => {
+    const createRes = await request(app)
+      .post(`/companies/${companyId}/deal-desk/tools/intermediaries`)
+      .send({
+        name: "Alex Banker",
+        firm: "River Advisors",
+        email: "alex@riveradvisors.com",
+        coverageSectors: ["CPG"],
+        recentDeals: [],
+      });
+    expect(createRes.status).toBe(201);
+    const intermediaryId = createRes.body.intermediaryId as string;
+
+    const draftRes = await request(app)
+      .post(`/companies/${companyId}/deal-desk/tools/intermediaries/outreach/draft`)
+      .send({
+        intermediaryId,
+        subject: "123 Capital — CPG mandate check-in",
+        body: "Hi Alex — quick intro from 123 Capital.",
+      });
+    expect(draftRes.status).toBe(201);
+    expect(draftRes.body.ok).toBe(true);
+
+    const pendingRes = await request(app)
+      .get(`/companies/${companyId}/deal-desk/tools/outreach/sends/pending`);
+    expect(pendingRes.status).toBe(200);
+    expect(pendingRes.body.sends).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          intermediaryId,
+          subject: "123 Capital — CPG mandate check-in",
+          isIntermediaryCheckIn: true,
+        }),
+      ]),
     );
   });
 });

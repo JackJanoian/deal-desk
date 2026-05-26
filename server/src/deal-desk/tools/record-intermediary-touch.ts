@@ -2,8 +2,8 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { ddIntermediaries } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddIntermediaries } from "@dealdesk/db";
 
 export const recordIntermediaryTouchInputSchema = z.object({
   intermediaryId: z.string().uuid(),
@@ -46,7 +46,7 @@ export function recordIntermediaryTouchHandler(db: Db) {
     const existing = await db.query.ddIntermediaries.findFirst({
       where: and(
         eq(ddIntermediaries.id, input.intermediaryId),
-        eq(ddIntermediaries.paperclipCompanyId, companyId),
+        eq(ddIntermediaries.dealDeskCompanyId, companyId),
       ),
     });
     if (!existing) {

@@ -4,7 +4,7 @@ Reference for migration. Paths absolute from repo root.
 
 ## Concept mapping (per FORK.md)
 
-| Paperclip | Deal Desk | Where it lives |
+| DealDesk | Deal Desk | Where it lives |
 |---|---|---|
 | Company | Fund | `packages/db/src/schema/companies.ts`, server routes `/api/companies`, UI `ui/src/components/Sidebar.tsx`, `OnboardingWizard.tsx` |
 | Goal | Investment Thesis (UI label only) | `packages/db/src/schema/goals.ts`, `ui/src/components/NewGoalDialog.tsx` |
@@ -42,12 +42,12 @@ Hardcoded display strings appear in:
   - Primary currently `oklch(0.205 0 0)` (near-black)
   - Replace primary accent with teal `#0d9488`
 - Worktree branding: `server/src/ui-branding.ts` (favicon, color derivation, HTML title injection ~lines 181–189)
-- CLI name: `cli/src/index.ts` line ~35 `.name("paperclipai")`
-- Paperclip icon usage: `ui/src/pages/CompanySkills.tsx` (lucide-react `Paperclip` icon)
+- CLI name: `cli/src/index.ts` line ~35 `.name("dealdesk")`
+- DealDesk icon usage: `ui/src/pages/CompanySkills.tsx` (lucide-react `DealDesk` icon)
 
 ## CLI entry
 
-- `cli/src/index.ts` defines `paperclipai` program. Onboard command in `cli/src/commands/onboard.ts`.
+- `cli/src/index.ts` defines `dealdesk` program. Onboard command in `cli/src/commands/onboard.ts`.
 - To add `dealdesk` alias: add a wrapper bin entry in `cli/package.json` `bin` field and/or use Commander `.alias()`.
 
 ## Adapter registry / tool registration
@@ -59,7 +59,7 @@ Hardcoded display strings appear in:
   - External adapters via `buildExternalAdapters()` (plugin loader)
 - UI: `cli/src/adapters/registry.ts` (or `ui/src/adapters/registry.ts`)
 
-**Note:** Paperclip's tools-per-adapter pattern isn't a generic "tool registry" the way FORK.md Phase 5 anticipates. Paperclip's actual model is per-adapter. Strategy for Phase 5: expose Deal Desk tools as HTTP endpoints under `/api/companies/:companyId/deal-desk/tools`.
+**Note:** DealDesk's tools-per-adapter pattern isn't a generic "tool registry" the way FORK.md Phase 5 anticipates. DealDesk's actual model is per-adapter. Strategy for Phase 5: expose Deal Desk tools as HTTP endpoints under `/api/companies/:companyId/deal-desk/tools`.
 
 ## DB migrations (Drizzle)
 
@@ -67,7 +67,7 @@ Hardcoded display strings appear in:
 - Drizzle config: `packages/db/drizzle.config.ts`
   - `schema: "./dist/schema/*.js"`, `out: "./src/migrations"`, dialect postgres
 - Existing migrations: `packages/db/src/migrations/0001_*.sql` ... `0018_*.sql`
-- Applied at server startup via `applyPendingMigrations()` from `@paperclipai/db`
+- Applied at server startup via `applyPendingMigrations()` from `@dealdesk/db`
 - `pnpm db:generate` → emits next numbered SQL migration
 
 **For Phase 3:** Add a new `packages/db/src/schema/deal-desk.ts` that defines the `dd_*` tables (FORK.md specifies a single migration file, but Drizzle generates from schema files, so adding schema is the idiomatic path). Then run `pnpm db:generate` to produce the SQL.
@@ -81,7 +81,7 @@ Hardcoded display strings appear in:
 
 - Demo seed: `packages/db/src/seed.ts` (small, creates a demo company + CEO agent)
 - Agent defaults / pre-built configurations: `server/src/services/default-agent-instructions.ts`
-- No formal "agent template" table observed — Paperclip's "hire" flow likely just creates `agents` rows with role + adapterConfig. The Deal Desk role templates can live either as:
+- No formal "agent template" table observed — DealDesk's "hire" flow likely just creates `agents` rows with role + adapterConfig. The Deal Desk role templates can live either as:
   - A new `dd_role_templates` table, or
   - A static JSON/TS export consumed by the UI "Hire" dialog
 
@@ -99,6 +99,6 @@ Phase 8 will resolve this concretely after reading the hire dialog UI.
 
 ## Risks / open questions
 
-1. **Phase 5 tool registry shape:** FORK.md assumes a generic `registry.register(tool)` API. Paperclip's actual model is per-adapter. We'll expose tools as HTTP endpoints and document them in skills — agents call them through their adapter's HTTP capability.
+1. **Phase 5 tool registry shape:** FORK.md assumes a generic `registry.register(tool)` API. DealDesk's actual model is per-adapter. We'll expose tools as HTTP endpoints and document them in skills — agents call them through their adapter's HTTP capability.
 2. **Phase 8 agent templates:** No discovered template seeding mechanism. Will likely seed via a new lightweight table or a static export consumed by the UI hire flow.
 3. **`pnpm test` runtime:** Monorepo test suite is large. Per-phase runs may take many minutes each.

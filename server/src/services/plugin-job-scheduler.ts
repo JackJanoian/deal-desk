@@ -35,12 +35,13 @@
  */
 
 import { and, eq, lte, or } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { pluginJobs, pluginJobRuns } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { pluginJobs, pluginJobRuns } from "@dealdesk/db";
 import type { PluginJobStore } from "./plugin-job-store.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { parseCron, nextCronTick, validateCron } from "./cron.js";
 import { logger } from "../middleware/logger.js";
+import { createCoalescedErrorLogger } from "../utils/coalesced-error-logger.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -213,6 +214,10 @@ export function createPluginJobScheduler(
   } = options;
 
   const log = logger.child({ service: "plugin-job-scheduler" });
+  const logRepeatedError = createCoalescedErrorLogger({
+    logger: log,
+    intervalMs: 60_000,
+  });
 
   // -----------------------------------------------------------------------
   // State
@@ -323,10 +328,7 @@ export function createPluginJobScheduler(
         await Promise.allSettled(dispatches);
       }
     } catch (err) {
-      log.error(
-        { err: err instanceof Error ? err.message : String(err) },
-        "scheduler tick error",
-      );
+      logRepeatedError(err instanceof Error ? err.message : String(err), "scheduler tick error");
     } finally {
       tickInProgress = false;
     }

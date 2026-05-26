@@ -73,7 +73,7 @@ function SidebarSectionHeader({
   const hasMenu = Boolean(
     menu && ((menu.actions?.length ?? 0) > 0 || (menu.radioChoices?.length ?? 0) > 0),
   );
-  const labelClassName = "text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60";
+  const labelClassName = "dd-kicker text-muted-foreground/70";
   const headerControlVisibilityClassName = isMobile
     ? "opacity-100"
     : "opacity-0 group-hover/sidebar-section:opacity-100 group-focus-within/sidebar-section:opacity-100";
@@ -97,7 +97,7 @@ function SidebarSectionHeader({
           type="button"
           className={cn(
             "inline-flex min-w-0 max-w-full items-center rounded-md px-1 py-0.5 text-left outline-none transition-colors",
-            "hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            "hover:bg-sidebar-accent/60 focus-visible:bg-sidebar-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             menuOpen && "bg-accent/50",
           )}
           aria-label={menu?.ariaLabel ?? `${label} actions`}

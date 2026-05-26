@@ -43,7 +43,20 @@ function makeApp(store: ApolloConfigStore) {
   const app = express();
   app.use(express.json());
   app.get("/c/:companyId/apollo-api-key", apolloApiKeyGetHandler({ store }));
-  app.post("/c/:companyId/apollo-api-key", apolloApiKeyPostHandler({ store }));
+  app.post(
+    "/c/:companyId/apollo-api-key",
+    apolloApiKeyPostHandler({
+      store,
+      probeCapabilities: async () => ({
+        matchEnabled: false,
+        searchEnabled: true,
+        enrichmentEnabled: true,
+        planLimited: true,
+        masterKeyRequired: false,
+        lastValidatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    }),
+  );
   app.delete("/c/:companyId/apollo-api-key", apolloApiKeyDeleteHandler({ store }));
   return app;
 }
@@ -57,7 +70,41 @@ describe("apollo-api-key handlers", () => {
   it("GET returns configured=false initially", async () => {
     const res = await request(makeApp(store)).get("/c/c1/apollo-api-key");
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ configured: false });
+    expect(res.body).toMatchObject({
+      configured: false,
+      matchEnabled: null,
+      searchEnabled: null,
+      lastValidatedAt: null,
+    });
+  });
+
+  it("POST saves the key and returns capabilities from probe", async () => {
+    const app = express();
+    app.use(express.json());
+    app.post(
+      "/c/:companyId/apollo-api-key",
+      apolloApiKeyPostHandler({
+        store,
+        probeCapabilities: async () => ({
+          matchEnabled: true,
+          searchEnabled: true,
+          enrichmentEnabled: true,
+          planLimited: false,
+          masterKeyRequired: false,
+          lastValidatedAt: "2026-01-01T00:00:00.000Z",
+        }),
+      }),
+    );
+    app.get("/c/:companyId/apollo-api-key", apolloApiKeyGetHandler({ store }));
+    const post = await request(app)
+      .post("/c/c1/apollo-api-key")
+      .send({ apiKey: "key-12345678" });
+    expect(post.status).toBe(200);
+    expect(post.body.ok).toBe(true);
+    expect(post.body.capabilities.matchEnabled).toBe(true);
+    const get = await request(app).get("/c/c1/apollo-api-key");
+    expect(get.body.configured).toBe(true);
+    expect(get.body.matchEnabled).toBe(true);
   });
 
   it("POST saves the key, GET then shows configured=true", async () => {

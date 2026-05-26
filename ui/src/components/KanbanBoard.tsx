@@ -20,7 +20,7 @@ import {
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
 import { Identity } from "./Identity";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@dealdesk/shared";
 import { AlertTriangle } from "lucide-react";
 import { isSuccessfulRunHandoffRequired } from "../lib/successful-run-handoff";
 
@@ -68,12 +68,12 @@ function KanbanColumn({
   const isEmpty = issues.length === 0;
 
   return (
-    <div className={`flex flex-col shrink-0 transition-[width,min-width] ${isEmpty && !isOver ? "min-w-[48px] w-[48px]" : "min-w-[260px] w-[260px]"}`}>
-      <div className={`flex items-center gap-2 px-2 py-2 mb-1 ${isEmpty && !isOver ? "justify-center" : ""}`}>
+    <div className={`flex flex-col shrink-0 transition-[width,min-width] ${isEmpty && !isOver ? "min-w-[56px] w-[56px]" : "min-w-[268px] w-[268px]"}`}>
+      <div className={`mb-1 flex items-center gap-2 rounded-md px-2 py-2 ${isEmpty && !isOver ? "justify-center" : "bg-muted/20"}`}>
         <StatusIcon status={status} />
         {(!isEmpty || isOver) && (
           <>
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="dd-kicker">
               {statusLabel(status)}
             </span>
             <span className="text-xs text-muted-foreground/60 ml-auto tabular-nums">
@@ -84,8 +84,8 @@ function KanbanColumn({
       </div>
       <div
         ref={setNodeRef}
-        className={`flex-1 min-h-[120px] rounded-md p-1 space-y-1 transition-colors ${
-          isOver ? "bg-accent/40" : "bg-muted/20"
+        className={`flex-1 min-h-[120px] rounded-lg border p-1.5 space-y-1.5 transition-colors ${
+          isOver ? "border-primary/35 bg-primary/10" : "border-border/60 bg-muted/20"
         }`}
       >
         <SortableContext
@@ -144,9 +144,9 @@ function KanbanCard({
       style={style}
       {...attributes}
       {...listeners}
-      className={`rounded-md border bg-card p-2.5 cursor-grab active:cursor-grabbing transition-shadow ${
+      className={`dd-panel-subtle rounded-lg p-2.5 cursor-grab active:cursor-grabbing transition-[box-shadow,background-color,border-color,opacity] ${
         isDragging && !isOverlay ? "opacity-30" : ""
-      } ${isOverlay ? "shadow-lg ring-1 ring-primary/20" : "hover:shadow-sm"}`}
+      } ${isOverlay ? "shadow-lg ring-1 ring-primary/20" : "hover:border-primary/30 hover:bg-accent/30"}`}
     >
       <Link
         to={`/issues/${issue.identifier ?? issue.id}`}
@@ -178,7 +178,7 @@ function KanbanCard({
             </span>
           )}
         </div>
-        <p className="text-sm leading-snug line-clamp-2 mb-2">{issue.title}</p>
+        <p className="text-sm leading-snug line-clamp-2 mb-2 text-foreground/92">{issue.title}</p>
         <div className="flex items-center gap-2">
           <PriorityIcon priority={issue.priority} />
           {issue.assigneeAgentId && (() => {

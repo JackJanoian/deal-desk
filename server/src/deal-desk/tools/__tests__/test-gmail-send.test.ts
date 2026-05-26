@@ -16,7 +16,7 @@ const happyDeps = () => ({
       ddEmailAccounts: {
         findFirst: vi.fn().mockResolvedValue({
           id: "acc-1",
-          paperclipCompanyId: "co-1",
+          dealDeskCompanyId: "co-1",
           emailAddress: "alice@example.com",
           secretId: "sec-tokens",
           revokedAt: null,

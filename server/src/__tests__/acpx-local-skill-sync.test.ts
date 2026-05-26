@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   listAcpxSkills,
   syncAcpxSkills,
-} from "@paperclipai/adapter-acpx-local/server";
+} from "@dealdesk/adapter-acpx-local/server";
 
 describe("acpx local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const dealdeskKey = "dealdesk/dealdesk/dealdesk";
   const convertedRuntimeSkills = [{
-    key: paperclipKey,
-    runtimeName: "paperclip",
-    source: "/tmp/paperclip-deal-desk-skill",
+    key: dealdeskKey,
+    runtimeName: "dealdesk",
+    source: "/tmp/dealdesk-deal-desk-skill",
     sourceKind: "deal_desk",
   }];
 
@@ -20,18 +20,18 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "claude",
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: convertedRuntimeSkills,
+        dealDeskRuntimeSkills: convertedRuntimeSkills,
       },
     });
 
     expect(snapshot.adapterType).toBe("acpx_local");
     expect(snapshot.supported).toBe(true);
     expect(snapshot.mode).toBe("ephemeral");
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).toContain(dealdeskKey);
+    expect(snapshot.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("configured");
     expect(snapshot.warnings).toEqual([]);
   });
 
@@ -42,18 +42,18 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "codex",
-        paperclipSkillSync: {
-          desiredSkills: ["paperclip"],
+        dealdeskSkillSync: {
+          desiredSkills: ["dealdesk"],
         },
-        paperclipRuntimeSkills: convertedRuntimeSkills,
+        dealDeskRuntimeSkills: convertedRuntimeSkills,
       },
-    }, ["paperclip"]);
+    }, ["dealdesk"]);
 
     expect(snapshot.supported).toBe(true);
     expect(snapshot.mode).toBe("ephemeral");
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.desiredSkills).not.toContain("paperclip");
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).toContain(dealdeskKey);
+    expect(snapshot.desiredSkills).not.toContain("dealdesk");
+    expect(snapshot.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("configured");
     expect(snapshot.warnings).toEqual([]);
   });
 
@@ -64,19 +64,19 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "custom",
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: convertedRuntimeSkills,
+        dealDeskRuntimeSkills: convertedRuntimeSkills,
       },
     });
 
     expect(snapshot.supported).toBe(false);
     expect(snapshot.mode).toBe("unsupported");
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).toContain(dealdeskKey);
+    expect(snapshot.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("configured");
     expect(snapshot.warnings).toContain(
-      "Custom ACP commands do not expose a Paperclip skill integration contract yet; selected skills are tracked only.",
+      "Custom ACP commands do not expose a DealDesk skill integration contract yet; selected skills are tracked only.",
     );
   });
 });

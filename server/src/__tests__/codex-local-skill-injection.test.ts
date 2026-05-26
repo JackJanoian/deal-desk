@@ -2,18 +2,18 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCodexSkillsInjected } from "@paperclipai/adapter-codex-local/server";
+import { ensureCodexSkillsInjected } from "@dealdesk/adapter-codex-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
-async function createPaperclipRepoSkill(root: string, skillName: string) {
+async function createDealDeskRepoSkill(root: string, skillName: string) {
   await fs.mkdir(path.join(root, "server"), { recursive: true });
   await fs.mkdir(path.join(root, "packages", "adapter-utils"), { recursive: true });
   await fs.mkdir(path.join(root, "skills", skillName), { recursive: true });
   await fs.writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n", "utf8");
-  await fs.writeFile(path.join(root, "package.json"), '{"name":"paperclip"}\n', "utf8");
+  await fs.writeFile(path.join(root, "package.json"), '{"name":"dealdesk"}\n', "utf8");
   await fs.writeFile(
     path.join(root, "skills", skillName, "SKILL.md"),
     `---\nname: ${skillName}\n---\n`,
@@ -31,8 +31,8 @@ async function createCustomSkill(root: string, skillName: string) {
 }
 
 describe("codex local adapter skill injection", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
-  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
+  const dealdeskKey = "dealdesk/dealdesk/dealdesk";
+  const createAgentKey = "dealdesk/dealdesk/dealdesk-create-agent";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -40,18 +40,18 @@ describe("codex local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("skips Codex Paperclip skills instead of repairing or injecting them", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const oldRepo = await makeTempDir("paperclip-codex-old-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("skips Codex DealDesk skills instead of repairing or injecting them", async () => {
+    const currentRepo = await makeTempDir("dealdesk-codex-current-");
+    const oldRepo = await makeTempDir("dealdesk-codex-old-");
+    const skillsHome = await makeTempDir("dealdesk-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(currentRepo, "paperclip-create-agent");
-    await createPaperclipRepoSkill(oldRepo, "paperclip");
-    await fs.symlink(path.join(oldRepo, "skills", "paperclip"), path.join(skillsHome, "paperclip"));
+    await createDealDeskRepoSkill(currentRepo, "dealdesk");
+    await createDealDeskRepoSkill(currentRepo, "dealdesk-create-agent");
+    await createDealDeskRepoSkill(oldRepo, "dealdesk");
+    await fs.symlink(path.join(oldRepo, "skills", "dealdesk"), path.join(skillsHome, "dealdesk"));
 
     const logs: Array<{ stream: "stdout" | "stderr"; chunk: string }> = [];
     await ensureCodexSkillsInjected(
@@ -62,62 +62,62 @@ describe("codex local adapter skill injection", () => {
         skillsHome,
         skillsEntries: [
           {
-            key: paperclipKey,
-            runtimeName: "paperclip",
-            source: path.join(currentRepo, "skills", "paperclip"),
+            key: dealdeskKey,
+            runtimeName: "dealdesk",
+            source: path.join(currentRepo, "skills", "dealdesk"),
           },
           {
             key: createAgentKey,
-            runtimeName: "paperclip-create-agent",
-            source: path.join(currentRepo, "skills", "paperclip-create-agent"),
+            runtimeName: "dealdesk-create-agent",
+            source: path.join(currentRepo, "skills", "dealdesk-create-agent"),
           },
         ],
       },
     );
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
-      await fs.realpath(path.join(oldRepo, "skills", "paperclip")),
+    expect(await fs.realpath(path.join(skillsHome, "dealdesk"))).toBe(
+      await fs.realpath(path.join(oldRepo, "skills", "dealdesk")),
     );
-    await expect(fs.lstat(path.join(skillsHome, "paperclip-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.lstat(path.join(skillsHome, "dealdesk-create-agent"))).rejects.toMatchObject({ code: "ENOENT" });
     expect(logs.some((entry) => entry.chunk.includes("Codex skill"))).toBe(false);
   });
 
-  it("preserves a custom Codex skill symlink outside Paperclip repo checkouts", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const customRoot = await makeTempDir("paperclip-codex-custom-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("preserves a custom Codex skill symlink outside DealDesk repo checkouts", async () => {
+    const currentRepo = await makeTempDir("dealdesk-codex-current-");
+    const customRoot = await makeTempDir("dealdesk-codex-custom-");
+    const skillsHome = await makeTempDir("dealdesk-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(customRoot);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createCustomSkill(customRoot, "paperclip");
-    await fs.symlink(path.join(customRoot, "custom", "paperclip"), path.join(skillsHome, "paperclip"));
+    await createDealDeskRepoSkill(currentRepo, "dealdesk");
+    await createCustomSkill(customRoot, "dealdesk");
+    await fs.symlink(path.join(customRoot, "custom", "dealdesk"), path.join(skillsHome, "dealdesk"));
 
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclipKey,
-        runtimeName: "paperclip",
-        source: path.join(currentRepo, "skills", "paperclip"),
+        key: dealdeskKey,
+        runtimeName: "dealdesk",
+        source: path.join(currentRepo, "skills", "dealdesk"),
       }],
     });
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
-      await fs.realpath(path.join(customRoot, "custom", "paperclip")),
+    expect(await fs.realpath(path.join(skillsHome, "dealdesk"))).toBe(
+      await fs.realpath(path.join(customRoot, "custom", "dealdesk")),
     );
   });
 
-  it("does not process broken symlinks for unavailable Paperclip repo skills", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const oldRepo = await makeTempDir("paperclip-codex-old-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("does not process broken symlinks for unavailable DealDesk repo skills", async () => {
+    const currentRepo = await makeTempDir("dealdesk-codex-current-");
+    const oldRepo = await makeTempDir("dealdesk-codex-old-");
+    const skillsHome = await makeTempDir("dealdesk-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(oldRepo, "agent-browser");
+    await createDealDeskRepoSkill(currentRepo, "dealdesk");
+    await createDealDeskRepoSkill(oldRepo, "agent-browser");
     const staleTarget = path.join(oldRepo, "skills", "agent-browser");
     await fs.symlink(staleTarget, path.join(skillsHome, "agent-browser"));
     await fs.rm(staleTarget, { recursive: true, force: true });
@@ -130,9 +130,9 @@ describe("codex local adapter skill injection", () => {
       {
         skillsHome,
         skillsEntries: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
-          source: path.join(currentRepo, "skills", "paperclip"),
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
+          source: path.join(currentRepo, "skills", "dealdesk"),
         }],
       },
     );
@@ -141,14 +141,14 @@ describe("codex local adapter skill injection", () => {
     expect(logs.some((entry) => entry.chunk.includes('Removed stale Codex skill "agent-browser"'))).toBe(false);
   });
 
-  it("preserves existing Paperclip symlinks but does not add missing ones", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("preserves existing DealDesk symlinks but does not add missing ones", async () => {
+    const currentRepo = await makeTempDir("dealdesk-codex-current-");
+    const skillsHome = await makeTempDir("dealdesk-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(currentRepo, "agent-browser");
+    await createDealDeskRepoSkill(currentRepo, "dealdesk");
+    await createDealDeskRepoSkill(currentRepo, "agent-browser");
     await fs.symlink(
       path.join(currentRepo, "skills", "agent-browser"),
       path.join(skillsHome, "agent-browser"),
@@ -157,13 +157,13 @@ describe("codex local adapter skill injection", () => {
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclipKey,
-        runtimeName: "paperclip",
-        source: path.join(currentRepo, "skills", "paperclip"),
+        key: dealdeskKey,
+        runtimeName: "dealdesk",
+        source: path.join(currentRepo, "skills", "dealdesk"),
       }],
     });
 
-    await expect(fs.lstat(path.join(skillsHome, "paperclip"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.lstat(path.join(skillsHome, "dealdesk"))).rejects.toMatchObject({ code: "ENOENT" });
     expect((await fs.lstat(path.join(skillsHome, "agent-browser"))).isSymbolicLink()).toBe(true);
     expect(await fs.realpath(path.join(skillsHome, "agent-browser"))).toBe(
       await fs.realpath(path.join(currentRepo, "skills", "agent-browser")),

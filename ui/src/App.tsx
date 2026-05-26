@@ -20,11 +20,10 @@ import { Routines } from "./pages/Routines";
 import { RoutineDetail } from "./pages/RoutineDetail";
 import { UserProfile } from "./pages/UserProfile";
 import { ExecutionWorkspaceDetail } from "./pages/ExecutionWorkspaceDetail";
-import { Goals } from "./pages/Goals";
-import { GoalDetail } from "./pages/GoalDetail";
 // DEAL DESK: Phase 7 — dashboard pages.
 import { Targets as DealDeskTargets } from "./pages/deal-desk/Targets";
 import { Intermediaries as DealDeskIntermediaries } from "./pages/deal-desk/Intermediaries";
+import { Pipeline as DealDeskPipeline } from "./pages/deal-desk/Pipeline";
 import { Thesis as DealDeskThesis } from "./pages/deal-desk/Thesis";
 // DEAL DESK: Phase 8 — pre-built role templates page.
 import { HireRoles as DealDeskHireRoles } from "./pages/deal-desk/HireRoles";
@@ -127,9 +126,8 @@ function boardRoutes() {
       <Route path="execution-workspaces/:workspaceId/runtime-logs" element={<ExecutionWorkspaceDetail />} />
       <Route path="execution-workspaces/:workspaceId/issues" element={<ExecutionWorkspaceDetail />} />
       <Route path="execution-workspaces/:workspaceId/routines" element={<ExecutionWorkspaceDetail />} />
-      <Route path="goals" element={<Goals />} />
-      <Route path="goals/:goalId" element={<GoalDetail />} />
       {/* DEAL DESK: Phase 7 dashboard routes */}
+      <Route path="deal-desk/pipeline" element={<DealDeskPipeline />} />
       <Route path="deal-desk/targets" element={<DealDeskTargets />} />
       <Route path="deal-desk/intermediaries" element={<DealDeskIntermediaries />} />
       <Route path="deal-desk/theses/:thesisId" element={<DealDeskThesis />} />

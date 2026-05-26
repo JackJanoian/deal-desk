@@ -12,12 +12,12 @@ import type {
   HeartbeatRun,
   Approval,
   AgentConfigRevision,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import type {
   AdapterModelProfileDefinition,
   AdapterModelProfileKey,
-} from "@paperclipai/adapter-utils";
-import { isUuidLike, normalizeAgentUrlKey } from "@paperclipai/shared";
+} from "@dealdesk/adapter-utils";
+import { isUuidLike, normalizeAgentUrlKey } from "@dealdesk/shared";
 import { ApiError, api } from "./client";
 
 export interface AgentKey {
@@ -229,5 +229,5 @@ export const agentsApi = {
 export interface AvailableSkill {
   name: string;
   description: string;
-  isPaperclipManaged: boolean;
+  isDealDeskManaged: boolean;
 }

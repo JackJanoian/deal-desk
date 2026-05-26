@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@dealdesk/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { IssuesList } from "@/components/IssuesList";
 import { queryKeys } from "@/lib/queryKeys";
@@ -11,7 +11,7 @@ import {
   storybookCompanies,
   storybookIssueLabels,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/dealDeskData";
 
 const companyId = "company-storybook";
 const parentId = "issue-pap-1953";
@@ -185,7 +185,7 @@ function hydrateQueries(client: ReturnType<typeof useQueryClient>) {
         status: "active",
         user: {
           id: "user-board",
-          email: "riley@paperclip.local",
+          email: "riley@dealdesk.local",
           name: "Riley Board",
           image: null,
         },

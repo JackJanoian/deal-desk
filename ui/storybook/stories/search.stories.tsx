@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { CompanySearchResult, CompanySearchResponse } from "@paperclipai/shared";
+import type { CompanySearchResult, CompanySearchResponse } from "@dealdesk/shared";
 import { Badge } from "@/components/ui/badge";
 import { IssueGroupHeader } from "@/components/IssueGroupHeader";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { StatusBadge } from "@/components/StatusBadge";
-import { storybookAgents, storybookProjects, storybookIssues } from "../fixtures/paperclipData";
+import { storybookAgents, storybookProjects, storybookIssues } from "../fixtures/dealDeskData";
 
 const agentsById = new Map(storybookAgents.map((agent) => [agent.id, agent]));
 

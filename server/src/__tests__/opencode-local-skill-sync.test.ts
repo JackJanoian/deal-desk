@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listOpenCodeSkills,
   syncOpenCodeSkills,
-} from "@paperclipai/adapter-opencode-local/server";
+} from "@dealdesk/adapter-opencode-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("opencode local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const dealdeskKey = "dealdesk/dealdesk/dealdesk";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -27,12 +27,12 @@ describe("opencode local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("installs converted Deal Desk skills that keep Paperclip-compatible keys", async () => {
-    const home = await makeTempDir("paperclip-opencode-skill-sync-");
-    const runtimeSkills = await makeTempDir("paperclip-opencode-skill-src-");
+  it("installs converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+    const home = await makeTempDir("dealdesk-opencode-skill-sync-");
+    const runtimeSkills = await makeTempDir("dealdesk-opencode-skill-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const ctx = {
       agentId: "agent-1",
@@ -42,12 +42,12 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
@@ -57,21 +57,21 @@ describe("opencode local skill sync", () => {
     const before = await listOpenCodeSkills(ctx);
     expect(before.mode).toBe("persistent");
     expect(before.warnings).toContain("OpenCode currently uses the shared Claude skills home (~/.claude/skills).");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(dealdeskKey);
+    expect(before.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("missing");
 
-    const after = await syncOpenCodeSkills(ctx, [paperclipKey]);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    const after = await syncOpenCodeSkills(ctx, [dealdeskKey]);
+    expect(after.desiredSkills).toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("installed");
+    expect((await fs.lstat(path.join(home, ".claude", "skills", "dealdesk"))).isSymbolicLink()).toBe(true);
   });
 
   it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclip-opencode-skill-prune-");
-    const runtimeSkills = await makeTempDir("paperclip-opencode-skill-prune-src-");
+    const home = await makeTempDir("dealdesk-opencode-skill-prune-");
+    const runtimeSkills = await makeTempDir("dealdesk-opencode-skill-prune-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
-    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
+    const paperclipDir = await createSkillDir(runtimeSkills, "dealdesk");
 
     const configuredCtx = {
       agentId: "agent-2",
@@ -81,19 +81,19 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        dealdeskSkillSync: {
+          desiredSkills: [dealdeskKey],
         },
-        paperclipRuntimeSkills: [{
-          key: paperclipKey,
-          runtimeName: "paperclip",
+        dealDeskRuntimeSkills: [{
+          key: dealdeskKey,
+          runtimeName: "dealdesk",
           source: paperclipDir,
           sourceKind: "deal_desk",
         }],
       },
     } as const;
 
-    await syncOpenCodeSkills(configuredCtx, [paperclipKey]);
+    await syncOpenCodeSkills(configuredCtx, [dealdeskKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -101,17 +101,17 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        dealdeskSkillSync: {
           desiredSkills: [],
         },
-        paperclipRuntimeSkills: configuredCtx.config.paperclipRuntimeSkills,
+        dealDeskRuntimeSkills: configuredCtx.config.dealDeskRuntimeSkills,
       },
     } as const;
 
     const after = await syncOpenCodeSkills(clearedCtx, []);
-    expect(after.desiredSkills).not.toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("available");
-    await expect(fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).rejects.toMatchObject({
+    expect(after.desiredSkills).not.toContain(dealdeskKey);
+    expect(after.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("available");
+    await expect(fs.lstat(path.join(home, ".claude", "skills", "dealdesk"))).rejects.toMatchObject({
       code: "ENOENT",
     });
   });

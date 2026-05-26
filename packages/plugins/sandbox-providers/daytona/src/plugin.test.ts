@@ -150,7 +150,7 @@ describe("Daytona sandbox provider plugin", () => {
     });
 
     expect(mockCreate).toHaveBeenCalled();
-    expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/paperclip-workspace", "755");
+    expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/dealdesk-workspace", "755");
     expect(sandbox.delete).toHaveBeenCalledWith(300);
     expect(result).toMatchObject({
       ok: true,
@@ -158,7 +158,7 @@ describe("Daytona sandbox provider plugin", () => {
         provider: "daytona",
         shellCommand: "bash",
         sandboxId: "sandbox-123",
-        remoteCwd: "/home/daytona/paperclip-workspace",
+        remoteCwd: "/home/daytona/dealdesk-workspace",
       },
     });
   });
@@ -186,7 +186,7 @@ describe("Daytona sandbox provider plugin", () => {
         provider: "daytona",
         shellCommand: "bash",
         sandboxId: "sandbox-123",
-        remoteCwd: "/home/daytona/paperclip-workspace",
+        remoteCwd: "/home/daytona/dealdesk-workspace",
         reuseLease: true,
       },
     });

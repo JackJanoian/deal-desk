@@ -1,7 +1,6 @@
 import {
   Inbox,
   CircleDot,
-  Target,
   LayoutDashboard,
   DollarSign,
   History,
@@ -14,7 +13,7 @@ import {
   Settings,
   // DEAL DESK: Phase 7 — Deal Sourcing nav icons.
   Crosshair,
-  Users,
+  Handshake,
   // DEAL DESK: Phase 8 — Hire roles icon.
   Briefcase,
 } from "lucide-react";
@@ -57,15 +56,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
-      {/* Top bar: Company name (bold) + Search — aligned with top sections (no visible border) */}
-      <div className="flex items-center gap-1 px-3 h-12 shrink-0">
+    <aside className="dd-shell w-full h-full min-h-0 border-r border-sidebar-border flex flex-col">
+      {/* Top bar: Company name + Search, visually anchored as the operator rail header. */}
+      <div className="flex items-center gap-1 border-b border-sidebar-border/70 px-3 h-12 shrink-0">
         <SidebarCompanyMenu />
         <Button
           asChild
           variant="ghost"
           size="icon-sm"
-          className="text-muted-foreground shrink-0"
+          className="text-muted-foreground shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           aria-label="Search"
           title="Search"
         >
@@ -75,12 +74,12 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 px-3 py-2">
+      <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 px-3 py-3">
         <div className="flex flex-col gap-0.5">
           {/* New Issue button aligned with nav items */}
           <button
             onClick={() => openNewIssue()}
-            className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            className="dd-interactive flex items-center gap-2.5 rounded-md border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-muted-foreground hover:text-foreground"
           >
             <SquarePen className="h-4 w-4 shrink-0" />
             <span className="truncate">New Issue</span>
@@ -106,7 +105,6 @@ export function Sidebar() {
         <SidebarSection label="Work">
           <SidebarNavItem to="/issues" label="Issues" icon={CircleDot} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
-          <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
@@ -118,8 +116,9 @@ export function Sidebar() {
 
         {/* DEAL DESK: Phase 7 — Deal Sourcing nav section */}
         <SidebarSection label="Deal Sourcing">
+          <SidebarNavItem to="/deal-desk/pipeline" label="Pipeline" icon={GitBranch} />
           <SidebarNavItem to="/deal-desk/targets" label="Targets" icon={Crosshair} />
-          <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Users} />
+          <SidebarNavItem to="/deal-desk/intermediaries" label="Intermediaries" icon={Handshake} />
           {/* DEAL DESK: Phase 8 — pre-built role templates */}
           <SidebarNavItem to="/deal-desk/hire" label="Hire a Role" icon={Briefcase} />
           {/* DEAL DESK: Phase 12-14 — Outreach tools */}
@@ -140,7 +139,7 @@ export function Sidebar() {
           slotTypes={["sidebarPanel"]}
           context={pluginContext}
           className="flex flex-col gap-3"
-          itemClassName="rounded-lg border border-border p-3"
+          itemClassName="dd-panel-subtle rounded-lg p-3"
           missingBehavior="placeholder"
         />
       </nav>

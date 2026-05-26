@@ -3,10 +3,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, asc, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { companies, companySkills } from "@paperclipai/db";
-import { readPaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
-import type { PaperclipSkillEntry } from "@paperclipai/adapter-utils/server-utils";
+import type { Db } from "@dealdesk/db";
+import { companies, companySkills } from "@dealdesk/db";
+import { readDealDeskSkillSyncPreference } from "@dealdesk/adapter-utils/server-utils";
+import type { DealDeskSkillEntry } from "@dealdesk/adapter-utils/server-utils";
 import type {
   CompanySkill,
   CompanySkillCreateRequest,
@@ -25,9 +25,9 @@ import type {
   CompanySkillTrustLevel,
   CompanySkillUpdateStatus,
   CompanySkillUsageAgent,
-} from "@paperclipai/shared";
-import { normalizeAgentUrlKey } from "@paperclipai/shared";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+} from "@dealdesk/shared";
+import { normalizeAgentUrlKey } from "@dealdesk/shared";
+import { resolveDealDeskInstanceRoot } from "../home-paths.js";
 import { notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
 import { agentService } from "./agents.js";
@@ -302,7 +302,7 @@ function uniqueImportedSkillKey(companyId: string, baseSlug: string, usedKeys: S
 }
 
 function buildSkillRuntimeName(key: string, slug: string) {
-  if (key.startsWith("paperclipai/paperclip/")) return slug;
+  if (key.startsWith("dealdesk/dealdesk/")) return slug;
   return `${slug}--${hashSkillValue(key)}`;
 }
 
@@ -312,13 +312,13 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
     ?? asString(frontmatter.skillKey)
     ?? asString(metadata?.skillKey)
     ?? asString(metadata?.canonicalKey)
-    ?? asString(metadata?.paperclipSkillKey),
+    ?? asString(metadata?.dealDeskSkillKey),
   );
   if (direct) return direct;
-  const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
+  const dealdesk = isPlainRecord(metadata?.dealDesk) ? metadata?.dealDesk as Record<string, unknown> : null;
   return normalizeSkillKey(
-    asString(paperclip?.skillKey)
-    ?? asString(paperclip?.key),
+    asString(dealdesk?.skillKey)
+    ?? asString(dealdesk?.key),
   );
 }
 
@@ -332,8 +332,8 @@ function deriveCanonicalSkillKey(
   if (explicitKey) return explicitKey;
 
   const sourceKind = asString(metadata?.sourceKind);
-  if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+  if (sourceKind === "dealdesk_bundled") {
+    return `dealdesk/dealdesk/${slug}`;
   }
 
   const owner = normalizeSkillSlug(asString(metadata?.owner));
@@ -1259,9 +1259,9 @@ function isDealDeskSkillMarkdown(markdown: string): boolean {
   return /^\s*domain\s*:\s*deal-desk\s*$/m.test(markdown);
 }
 
-function isPaperclipRuntimeToolSkill(skill: Pick<CompanySkill, "metadata">): boolean {
+function isDealDeskRuntimeToolSkill(skill: Pick<CompanySkill, "metadata">): boolean {
   const sourceKind = asString(getSkillMeta(skill).sourceKind);
-  return sourceKind === "paperclip_bundled";
+  return sourceKind === "dealdesk_bundled";
 }
 
 function resolveSkillReference(
@@ -1309,7 +1309,7 @@ function resolveRequestedSkillKeysOrThrow(
   const missing = new Set<string>();
   const ambiguous = new Set<string>();
   const resolved = new Set<string>();
-  const assignableSkills = skills.filter((skill) => !isPaperclipRuntimeToolSkill(skill));
+  const assignableSkills = skills.filter((skill) => !isDealDeskRuntimeToolSkill(skill));
 
   for (const reference of requestedReferences) {
     const trimmed = reference.trim();
@@ -1347,8 +1347,8 @@ function resolveDesiredSkillKeys(
   skills: SkillReferenceTarget[],
   config: Record<string, unknown>,
 ): string[] {
-  const preference = readPaperclipSkillSyncPreference(config);
-  const assignableSkills = skills.filter((skill) => !isPaperclipRuntimeToolSkill(skill));
+  const preference = readDealDeskSkillSyncPreference(config);
+  const assignableSkills = skills.filter((skill) => !isDealDeskRuntimeToolSkill(skill));
   return Array.from(new Set(
     preference.desiredSkills
       .map((reference) => resolveSkillReference(assignableSkills, reference).skill?.key ?? normalizeSkillKey(reference))
@@ -1395,7 +1395,7 @@ export async function findMissingLocalSkillIds(
 }
 
 function resolveManagedSkillsRoot(companyId: string) {
-  return path.resolve(resolvePaperclipInstanceRoot(), "skills", companyId);
+  return path.resolve(resolveDealDeskInstanceRoot(), "skills", companyId);
 }
 
 function resolveLocalSkillFilePath(skill: CompanySkill, relativePath: string) {
@@ -1441,12 +1441,12 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
 } {
   const metadata = getSkillMeta(skill);
   const localSkillDir = normalizeSkillDirectory(skill);
-  if (metadata.sourceKind === "paperclip_bundled") {
+  if (metadata.sourceKind === "dealdesk_bundled") {
     return {
       editable: false,
-      editableReason: "Bundled Paperclip skills are read-only.",
-      sourceLabel: "Paperclip bundled",
-      sourceBadge: "paperclip",
+      editableReason: "Bundled DealDesk skills are read-only.",
+      sourceLabel: "DealDesk bundled",
+      sourceBadge: "dealdesk",
       sourcePath: null,
     };
   }
@@ -1494,8 +1494,8 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
       return {
         editable: true,
         editableReason: null,
-        sourceLabel: "Paperclip workspace",
-        sourceBadge: "paperclip",
+        sourceLabel: "DealDesk workspace",
+        sourceBadge: "dealdesk",
         sourcePath: managedRoot,
       };
     }
@@ -1567,11 +1567,11 @@ export function companySkillService(db: Db) {
       if (!stats?.isDirectory()) continue;
       const bundledSkills = await readLocalSkillImports(companyId, skillsRoot)
         .then((skills) => skills.map((skill) => {
-          const sourceKind = isDealDeskSkillMarkdown(skill.markdown) ? "deal_desk" : "paperclip_bundled";
+          const sourceKind = isDealDeskSkillMarkdown(skill.markdown) ? "deal_desk" : "dealdesk_bundled";
           const metadata = {
             ...(skill.metadata ?? {}),
             sourceKind,
-            ...(sourceKind === "deal_desk" ? { skillKey: `paperclipai/paperclip/${skill.slug}` } : {}),
+            ...(sourceKind === "deal_desk" ? { skillKey: `dealdesk/dealdesk/${skill.slug}` } : {}),
           };
           return {
             ...skill,
@@ -2181,12 +2181,12 @@ export function companySkillService(db: Db) {
   async function listRuntimeSkillEntries(
     companyId: string,
     options: RuntimeSkillEntryOptions = {},
-  ): Promise<PaperclipSkillEntry[]> {
+  ): Promise<DealDeskSkillEntry[]> {
     const skills = await listFull(companyId);
 
-    const out: PaperclipSkillEntry[] = [];
+    const out: DealDeskSkillEntry[] = [];
     for (const skill of skills) {
-      if (isPaperclipRuntimeToolSkill(skill)) continue;
+      if (isDealDeskRuntimeToolSkill(skill)) continue;
 
       let source = normalizeSkillDirectory(skill);
       if (!source) {
@@ -2342,10 +2342,10 @@ export function companySkillService(db: Db) {
       const incomingKind = asString(incomingMeta.sourceKind);
       if (
         existing
-        && existingMeta.sourceKind === "paperclip_bundled"
+        && existingMeta.sourceKind === "dealdesk_bundled"
         && incomingKind === "github"
-        && incomingOwner === "paperclipai"
-        && incomingRepo === "paperclip"
+        && incomingOwner === "dealdesk"
+        && incomingRepo === "dealdesk"
       ) {
         out.push(existing);
         continue;

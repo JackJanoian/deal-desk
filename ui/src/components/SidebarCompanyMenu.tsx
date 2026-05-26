@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Check,
   ChevronsUpDown,
@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Company } from "@paperclipai/shared";
+import type { Company } from "@dealdesk/shared";
 import { Link, useLocation, useNavigate } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import {
 import { useCompany } from "@/context/CompanyContext";
 import { useDialogActions } from "@/context/DialogContext";
 import { useCompanyOrder } from "@/hooks/useCompanyOrder";
+import { useSignOut } from "@/hooks/useSignOut";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../context/SidebarContext";
@@ -131,7 +132,6 @@ function SortableCompanyItem({
 export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompanyMenuProps = {}) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
-  const queryClient = useQueryClient();
   const { companies, selectedCompany, setSelectedCompanyId } = useCompany();
   const { openOnboarding } = useDialogActions();
   const { isMobile, setSidebarOpen } = useSidebar();
@@ -162,14 +162,16 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
     userId: currentUserId,
   });
 
-  const signOutMutation = useMutation({
-    mutationFn: () => authApi.signOut(),
-    onSuccess: async () => {
-      setOpen(false);
-      if (isMobile) setSidebarOpen(false);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-    },
-  });
+  const signOutMutation = useSignOut();
+
+  function handleSignOut() {
+    signOutMutation.mutate(undefined, {
+      onSuccess: () => {
+        setOpen(false);
+        if (isMobile) setSidebarOpen(false);
+      },
+    });
+  }
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) setIsEditingOrder(false);
@@ -325,7 +327,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => signOutMutation.mutate()}
+              onClick={handleSignOut}
               disabled={isEditingOrder || signOutMutation.isPending}
             >
               <LogOut className="size-4" />

@@ -73,13 +73,15 @@ export function AuthPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex bg-background">
+    <div className="dd-main-surface fixed inset-0 flex">
       {/* Left half — form */}
-      <div className="w-full md:w-1/2 flex flex-col overflow-y-auto">
+      <div className="flex w-full flex-col overflow-y-auto md:w-1/2">
         <div className="w-full max-w-md mx-auto my-auto px-8 py-12">
-          <div className="flex items-center gap-2 mb-8">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-            {/* DEAL DESK: wordmark "Paperclip" → "Deal Desk" */}
+          <div className="mb-8 flex items-center gap-2">
+            <span className="rounded-md border border-primary/25 bg-primary/10 p-1 text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+            </span>
+            {/* DEAL DESK: wordmark "DealDesk" → "Deal Desk" */}
             <span className="text-sm font-medium">Deal Desk</span>
           </div>
 
@@ -94,7 +96,7 @@ export function AuthPage() {
           </p>
 
           <form
-            className="mt-6 space-y-4"
+            className="dd-panel-subtle mt-6 space-y-4 rounded-xl p-4"
             method="post"
             action={mode === "sign_up" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email"}
             onSubmit={(event) => {
@@ -113,7 +115,7 @@ export function AuthPage() {
                 <input
                   id="name"
                   name="name"
-                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                  className="w-full rounded-md border border-border/75 bg-card/55 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   autoComplete="name"
@@ -126,7 +128,7 @@ export function AuthPage() {
               <input
                 id="email"
                 name="email"
-                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                className="w-full rounded-md border border-border/75 bg-card/55 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -139,7 +141,7 @@ export function AuthPage() {
               <input
                 id="password"
                 name="password"
-                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                className="w-full rounded-md border border-border/75 bg-card/55 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-primary/75 focus:ring-2 focus:ring-primary/25"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -178,7 +180,7 @@ export function AuthPage() {
       </div>
 
       {/* Right half — ASCII art animation (hidden on mobile) */}
-      <div className="hidden md:block w-1/2 overflow-hidden">
+      <div className="hidden w-1/2 overflow-hidden border-l border-border/70 md:block">
         <AsciiArtAnimation />
       </div>
     </div>

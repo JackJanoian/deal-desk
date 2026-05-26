@@ -8,7 +8,7 @@ import {
   issues,
   projectWorkspaces,
   projects,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -32,7 +32,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-authz-");
+    tempDb = await startEmbeddedPostgresTestDatabase("dealdesk-workspace-runtime-authz-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -53,7 +53,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     const companyId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "DealDesk",
       issuePrefix: `PAP-${companyId.slice(0, 8)}`,
       requireBoardApprovalForNewAgents: false,
     });

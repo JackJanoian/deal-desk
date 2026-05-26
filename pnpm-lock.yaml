@@ -37,43 +37,43 @@ importers:
       '@clack/prompts':
         specifier: ^0.10.0
         version: 0.10.1
-      '@paperclipai/adapter-acpx-local':
+      '@dealdesk/adapter-acpx-local':
         specifier: workspace:*
         version: link:../packages/adapters/acpx-local
-      '@paperclipai/adapter-claude-local':
+      '@dealdesk/adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
-      '@paperclipai/adapter-codex-local':
+      '@dealdesk/adapter-codex-local':
         specifier: workspace:*
         version: link:../packages/adapters/codex-local
-      '@paperclipai/adapter-cursor-cloud':
+      '@dealdesk/adapter-cursor-cloud':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-cloud
-      '@paperclipai/adapter-cursor-local':
+      '@dealdesk/adapter-cursor-local':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-local
-      '@paperclipai/adapter-gemini-local':
+      '@dealdesk/adapter-gemini-local':
         specifier: workspace:*
         version: link:../packages/adapters/gemini-local
-      '@paperclipai/adapter-openclaw-gateway':
+      '@dealdesk/adapter-openclaw-gateway':
         specifier: workspace:*
         version: link:../packages/adapters/openclaw-gateway
-      '@paperclipai/adapter-opencode-local':
+      '@dealdesk/adapter-opencode-local':
         specifier: workspace:*
         version: link:../packages/adapters/opencode-local
-      '@paperclipai/adapter-pi-local':
+      '@dealdesk/adapter-pi-local':
         specifier: workspace:*
         version: link:../packages/adapters/pi-local
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../packages/adapter-utils
-      '@paperclipai/db':
+      '@dealdesk/db':
         specifier: workspace:*
         version: link:../packages/db
-      '@paperclipai/server':
+      '@dealdesk/server':
         specifier: workspace:*
         version: link:../server
-      '@paperclipai/shared':
+      '@dealdesk/shared':
         specifier: workspace:*
         version: link:../packages/shared
       commander:
@@ -116,7 +116,7 @@ importers:
       '@agentclientprotocol/claude-agent-acp':
         specifier: ^0.31.4
         version: 0.31.4
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       '@zed-industries/codex-acp':
@@ -138,7 +138,7 @@ importers:
 
   packages/adapters/claude-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -154,7 +154,7 @@ importers:
 
   packages/adapters/codex-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -173,9 +173,12 @@ importers:
       '@cursor/sdk':
         specifier: ^1.0.12
         version: 1.0.12
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
+      '@dealdesk/shared':
+        specifier: workspace:*
+        version: link:../../shared
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -189,7 +192,7 @@ importers:
 
   packages/adapters/cursor-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -205,7 +208,7 @@ importers:
 
   packages/adapters/gemini-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -221,7 +224,7 @@ importers:
 
   packages/adapters/openclaw-gateway:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -243,7 +246,7 @@ importers:
 
   packages/adapters/opencode-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -259,7 +262,7 @@ importers:
 
   packages/adapters/pi-local:
     dependencies:
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -275,7 +278,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@paperclipai/shared':
+      '@dealdesk/shared':
         specifier: workspace:*
         version: link:../shared
       drizzle-orm:
@@ -306,12 +309,12 @@ importers:
 
   packages/mcp-server:
     dependencies:
+      '@dealdesk/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
-      '@paperclipai/shared':
-        specifier: workspace:*
-        version: link:../shared
       zod:
         specifier: ^3.24.2
         version: 3.25.76
@@ -326,9 +329,9 @@ importers:
         specifier: ^3.0.5
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.0)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@2.0.1))(lightningcss@1.30.2)(tsx@4.21.0)
 
-  packages/plugins/create-paperclip-plugin:
+  packages/plugins/create-dealdesk-plugin:
     dependencies:
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../sdk
     devDependencies:
@@ -339,9 +342,25 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/plugins/dealdesk-plugin-fake-sandbox:
+    dependencies:
+      '@dealdesk/plugin-sdk':
+        specifier: workspace:*
+        version: link:../sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^24.6.0
+        version: 24.12.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.0)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@2.0.1))(lightningcss@1.30.2)(tsx@4.21.0)
+
   packages/plugins/examples/plugin-authoring-smoke-example:
     dependencies:
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
       react:
@@ -390,12 +409,12 @@ importers:
       '@codemirror/view':
         specifier: ^6.28.0
         version: 6.39.15
+      '@dealdesk/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../sdk
       '@lezer/highlight':
         specifier: ^1.2.1
         version: 1.2.3
-      '@paperclipai/plugin-sdk':
-        specifier: workspace:*
-        version: link:../../sdk
       codemirror:
         specifier: ^6.0.1
         version: 6.0.2
@@ -424,7 +443,7 @@ importers:
 
   packages/plugins/examples/plugin-hello-world-example:
     dependencies:
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
     devDependencies:
@@ -449,10 +468,10 @@ importers:
 
   packages/plugins/examples/plugin-kitchen-sink-example:
     dependencies:
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
-      '@paperclipai/shared':
+      '@dealdesk/shared':
         specifier: workspace:*
         version: link:../../../shared
     devDependencies:
@@ -478,29 +497,13 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  packages/plugins/paperclip-plugin-fake-sandbox:
-    dependencies:
-      '@paperclipai/plugin-sdk':
-        specifier: workspace:*
-        version: link:../sdk
-    devDependencies:
-      '@types/node':
-        specifier: ^24.6.0
-        version: 24.12.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.0)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@2.0.1))(lightningcss@1.30.2)(tsx@4.21.0)
-
   packages/plugins/plugin-llm-wiki:
     dependencies:
       react:
         specifier: '>=18'
         version: 19.2.4
     devDependencies:
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../sdk
       '@rollup/plugin-node-resolve':
@@ -539,7 +542,7 @@ importers:
 
   packages/plugins/sdk:
     dependencies:
-      '@paperclipai/shared':
+      '@dealdesk/shared':
         specifier: workspace:*
         version: link:../../shared
       react:
@@ -574,43 +577,43 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.888.0
         version: 3.994.0
-      '@paperclipai/adapter-acpx-local':
+      '@dealdesk/adapter-acpx-local':
         specifier: workspace:*
         version: link:../packages/adapters/acpx-local
-      '@paperclipai/adapter-claude-local':
+      '@dealdesk/adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
-      '@paperclipai/adapter-codex-local':
+      '@dealdesk/adapter-codex-local':
         specifier: workspace:*
         version: link:../packages/adapters/codex-local
-      '@paperclipai/adapter-cursor-cloud':
+      '@dealdesk/adapter-cursor-cloud':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-cloud
-      '@paperclipai/adapter-cursor-local':
+      '@dealdesk/adapter-cursor-local':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-local
-      '@paperclipai/adapter-gemini-local':
+      '@dealdesk/adapter-gemini-local':
         specifier: workspace:*
         version: link:../packages/adapters/gemini-local
-      '@paperclipai/adapter-openclaw-gateway':
+      '@dealdesk/adapter-openclaw-gateway':
         specifier: workspace:*
         version: link:../packages/adapters/openclaw-gateway
-      '@paperclipai/adapter-opencode-local':
+      '@dealdesk/adapter-opencode-local':
         specifier: workspace:*
         version: link:../packages/adapters/opencode-local
-      '@paperclipai/adapter-pi-local':
+      '@dealdesk/adapter-pi-local':
         specifier: workspace:*
         version: link:../packages/adapters/pi-local
-      '@paperclipai/adapter-utils':
+      '@dealdesk/adapter-utils':
         specifier: workspace:*
         version: link:../packages/adapter-utils
-      '@paperclipai/db':
+      '@dealdesk/db':
         specifier: workspace:*
         version: link:../packages/db
-      '@paperclipai/plugin-sdk':
+      '@dealdesk/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugins/sdk
-      '@paperclipai/shared':
+      '@dealdesk/shared':
         specifier: workspace:*
         version: link:../packages/shared
       ajv:
@@ -731,6 +734,39 @@ importers:
       '@assistant-ui/react':
         specifier: 0.12.23
         version: 0.12.23(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
+      '@dealdesk/adapter-acpx-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/acpx-local
+      '@dealdesk/adapter-claude-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/claude-local
+      '@dealdesk/adapter-codex-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/codex-local
+      '@dealdesk/adapter-cursor-cloud':
+        specifier: workspace:*
+        version: link:../packages/adapters/cursor-cloud
+      '@dealdesk/adapter-cursor-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/cursor-local
+      '@dealdesk/adapter-gemini-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/gemini-local
+      '@dealdesk/adapter-openclaw-gateway':
+        specifier: workspace:*
+        version: link:../packages/adapters/openclaw-gateway
+      '@dealdesk/adapter-opencode-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/opencode-local
+      '@dealdesk/adapter-pi-local':
+        specifier: workspace:*
+        version: link:../packages/adapters/pi-local
+      '@dealdesk/adapter-utils':
+        specifier: workspace:*
+        version: link:../packages/adapter-utils
+      '@dealdesk/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -746,39 +782,6 @@ importers:
       '@mdxeditor/editor':
         specifier: ^3.52.4
         version: 3.52.4(@codemirror/language@6.12.1)(@lezer/highlight@1.2.3)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(yjs@13.6.29)
-      '@paperclipai/adapter-acpx-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/acpx-local
-      '@paperclipai/adapter-claude-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/claude-local
-      '@paperclipai/adapter-codex-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/codex-local
-      '@paperclipai/adapter-cursor-cloud':
-        specifier: workspace:*
-        version: link:../packages/adapters/cursor-cloud
-      '@paperclipai/adapter-cursor-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/cursor-local
-      '@paperclipai/adapter-gemini-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/gemini-local
-      '@paperclipai/adapter-openclaw-gateway':
-        specifier: workspace:*
-        version: link:../packages/adapters/openclaw-gateway
-      '@paperclipai/adapter-opencode-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/opencode-local
-      '@paperclipai/adapter-pi-local':
-        specifier: workspace:*
-        version: link:../packages/adapters/pi-local
-      '@paperclipai/adapter-utils':
-        specifier: workspace:*
-        version: link:../packages/adapter-utils
-      '@paperclipai/shared':
-        specifier: workspace:*
-        version: link:../packages/shared
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.14)(react@19.2.4)
@@ -11101,14 +11104,6 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))':
-    dependencies:
-      '@vitest/spy': 3.2.4
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
-
   '@vitest/mocker@3.2.4(vite@7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -14824,7 +14819,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
+      '@vitest/mocker': 3.2.4(vite@7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Paperclip",
-  "short_name": "Paperclip",
-  "description": "AI-powered project management and agent coordination platform",
+  "name": "DealDesk",
+  "short_name": "DealDesk",
+  "description": "AI-powered deal sourcing for private equity teams",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

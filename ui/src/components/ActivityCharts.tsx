@@ -1,4 +1,4 @@
-import type { DashboardRunActivityDay, HeartbeatRun } from "@paperclipai/shared";
+import type { DashboardRunActivityDay, HeartbeatRun } from "@dealdesk/shared";
 
 /* ---- Utilities ---- */
 
@@ -46,9 +46,9 @@ function ChartLegend({ items }: { items: { color: string; label: string }[] }) {
 
 export function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="border border-border rounded-lg p-4 space-y-3">
+    <div className="dd-panel-subtle rounded-lg p-4 space-y-3">
       <div>
-        <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
+        <h3 className="dd-kicker">{title}</h3>
         {subtitle && <span className="text-[10px] text-muted-foreground/60">{subtitle}</span>}
       </div>
       {children}

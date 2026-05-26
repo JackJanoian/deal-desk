@@ -3948,7 +3948,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'paperclip_managed'"
+          "default": "'dealdesk_managed'"
         },
         "external_ref": {
           "name": "external_ref",
@@ -4808,8 +4808,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -4924,7 +4924,7 @@
           "name": "dd_contacts_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4968,8 +4968,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -5088,7 +5088,7 @@
           "name": "dd_intermediaries_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5133,8 +5133,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -5205,7 +5205,7 @@
           "name": "dd_outreach_campaigns_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5249,8 +5249,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -5362,7 +5362,7 @@
           "name": "dd_outreach_sends_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5576,8 +5576,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -5608,7 +5608,7 @@
           "name": "dd_suppression_list_company_email_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5644,8 +5644,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -5813,7 +5813,7 @@
           "name": "dd_targets_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5873,7 +5873,7 @@
           "name": "dd_targets_company_name_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5923,8 +5923,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "paperclip_company_id": {
-          "name": "paperclip_company_id",
+        "deal_desk_company_id": {
+          "name": "deal_desk_company_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -6051,7 +6051,7 @@
           "name": "dd_theses_company_id_idx",
           "columns": [
             {
-              "expression": "paperclip_company_id",
+              "expression": "deal_desk_company_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -7402,21 +7402,21 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'paperclip-feedback-envelope-v2'"
+          "default": "'dealdesk-feedback-envelope-v2'"
         },
         "bundle_version": {
           "name": "bundle_version",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'paperclip-feedback-bundle-v2'"
+          "default": "'dealdesk-feedback-bundle-v2'"
         },
         "payload_version": {
           "name": "payload_version",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'paperclip-feedback-v1'"
+          "default": "'dealdesk-feedback-v1'"
         },
         "payload_digest": {
           "name": "payload_digest",

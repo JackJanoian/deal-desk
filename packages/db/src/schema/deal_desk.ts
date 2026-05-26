@@ -1,13 +1,13 @@
-// DEAL DESK: All PE-specific tables. Additive only — no Paperclip tables modified.
+// DEAL DESK: All PE-specific tables. Additive only — no DealDesk tables modified.
 //
 // Naming convention: every table is `dd_<name>` to namespace cleanly away from
-// Paperclip's tables and to keep upstream merges unambiguous.
+// DealDesk's tables and to keep upstream merges unambiguous.
 //
-// FKs to Paperclip tables (companies, agents, issues) are intentionally NOT
+// FKs to DealDesk tables (companies, agents, issues) are intentionally NOT
 // declared at the SQL level — they're tracked by varchar/uuid columns named
-// paperclipCompanyId / sourcedByAgentId / sourceTicketId so that schema changes
-// in Paperclip don't cascade into Deal Desk. The values are always valid
-// Paperclip IDs by application convention.
+// dealDeskCompanyId / sourcedByAgentId / sourceTicketId so that schema changes
+// in DealDesk don't cascade into Deal Desk. The values are always valid
+// DealDesk IDs by application convention.
 
 import {
   pgTable,
@@ -71,14 +71,14 @@ export const ddOutreachSendStatusEnum = pgEnum("dd_outreach_send_status", [
 ]);
 
 // ── dd_theses ──────────────────────────────────────────────────────────────────
-// An investment mandate. Linked to Paperclip's companies via paperclipCompanyId
+// An investment mandate. Linked to DealDesk's companies via dealDeskCompanyId
 // (no FK constraint — merge-safe).
 
 export const ddTheses = pgTable(
   "dd_theses",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     sector: varchar("sector", { length: 255 }).notNull(),
     subSectors: jsonb("sub_sectors").notNull().default([]),
@@ -100,7 +100,7 @@ export const ddTheses = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("dd_theses_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_theses_company_id_idx").on(table.dealDeskCompanyId),
     statusIdx: index("dd_theses_status_idx").on(table.status),
   }),
 );
@@ -112,7 +112,7 @@ export const ddTargets = pgTable(
   "dd_targets",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     thesisId: uuid("thesis_id")
       .notNull()
       .references(() => ddTheses.id, { onDelete: "cascade" }),
@@ -142,12 +142,12 @@ export const ddTargets = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("dd_targets_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_targets_company_id_idx").on(table.dealDeskCompanyId),
     thesisIdx: index("dd_targets_thesis_id_idx").on(table.thesisId),
     statusIdx: index("dd_targets_status_idx").on(table.status),
     fitScoreIdx: index("dd_targets_fit_score_idx").on(table.fitScore),
     companyNameUq: uniqueIndex("dd_targets_company_name_idx").on(
-      table.paperclipCompanyId,
+      table.dealDeskCompanyId,
       table.companyName,
     ),
   }),
@@ -159,7 +159,7 @@ export const ddIntermediaries = pgTable(
   "dd_intermediaries",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     firm: varchar("firm", { length: 255 }),
     title: varchar("title", { length: 255 }),
@@ -179,7 +179,7 @@ export const ddIntermediaries = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("dd_intermediaries_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_intermediaries_company_id_idx").on(table.dealDeskCompanyId),
     nextTouchDueIdx: index("dd_intermediaries_next_touch_due_idx").on(table.nextTouchDue),
   }),
 );
@@ -193,7 +193,7 @@ export const ddContacts = pgTable(
     targetId: uuid("target_id")
       .notNull()
       .references(() => ddTargets.id, { onDelete: "cascade" }),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     firstName: varchar("first_name", { length: 255 }).notNull(),
     lastName: varchar("last_name", { length: 255 }),
     title: varchar("title", { length: 255 }),
@@ -211,7 +211,7 @@ export const ddContacts = pgTable(
   },
   (table) => ({
     targetIdx: index("dd_contacts_target_id_idx").on(table.targetId),
-    companyIdx: index("dd_contacts_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_contacts_company_id_idx").on(table.dealDeskCompanyId),
   }),
 );
 
@@ -221,7 +221,7 @@ export const ddOutreachCampaigns = pgTable(
   "dd_outreach_campaigns",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     thesisId: uuid("thesis_id").references(() => ddTheses.id, { onDelete: "set null" }),
     name: varchar("name", { length: 255 }).notNull(),
     cadenceSteps: jsonb("cadence_steps").notNull().default([]),
@@ -233,7 +233,7 @@ export const ddOutreachCampaigns = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("dd_outreach_campaigns_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_outreach_campaigns_company_id_idx").on(table.dealDeskCompanyId),
   }),
 );
 
@@ -243,14 +243,15 @@ export const ddOutreachSends = pgTable(
   "dd_outreach_sends",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
-    campaignId: uuid("campaign_id")
-      .notNull()
-      .references(() => ddOutreachCampaigns.id, { onDelete: "cascade" }),
-    targetId: uuid("target_id")
-      .notNull()
-      .references(() => ddTargets.id, { onDelete: "cascade" }),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
+    campaignId: uuid("campaign_id").references(() => ddOutreachCampaigns.id, {
+      onDelete: "cascade",
+    }),
+    targetId: uuid("target_id").references(() => ddTargets.id, { onDelete: "cascade" }),
     contactId: uuid("contact_id").references(() => ddContacts.id, { onDelete: "set null" }),
+    intermediaryId: uuid("intermediary_id").references(() => ddIntermediaries.id, {
+      onDelete: "cascade",
+    }),
     cadenceStep: integer("cadence_step").notNull().default(0),
     subject: varchar("subject", { length: 500 }).notNull(),
     body: text("body").notNull(),
@@ -268,8 +269,9 @@ export const ddOutreachSends = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("dd_outreach_sends_company_id_idx").on(table.paperclipCompanyId),
+    companyIdx: index("dd_outreach_sends_company_id_idx").on(table.dealDeskCompanyId),
     campaignIdx: index("dd_outreach_sends_campaign_id_idx").on(table.campaignId),
+    intermediaryIdx: index("dd_outreach_sends_intermediary_id_idx").on(table.intermediaryId),
     statusIdx: index("dd_outreach_sends_status_idx").on(table.status),
     campaignContactStepUq: uniqueIndex(
       "dd_outreach_sends_campaign_contact_step_idx",
@@ -283,14 +285,14 @@ export const ddSuppressionList = pgTable(
   "dd_suppression_list",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    paperclipCompanyId: uuid("paperclip_company_id").notNull(),
+    dealDeskCompanyId: uuid("deal_desk_company_id").notNull(),
     emailOrDomain: varchar("email_or_domain", { length: 255 }).notNull(),
     reason: ddSuppressionReasonEnum("reason").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
     companyEmailUq: uniqueIndex("dd_suppression_list_company_email_idx").on(
-      table.paperclipCompanyId,
+      table.dealDeskCompanyId,
       table.emailOrDomain,
     ),
   }),

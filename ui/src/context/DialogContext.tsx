@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { IssueWorkMode } from "@paperclipai/shared";
+import type { IssueWorkMode } from "@dealdesk/shared";
 
 interface NewIssueDefaults {
   status?: string;
@@ -20,10 +20,6 @@ interface NewIssueDefaults {
   description?: string;
 }
 
-interface NewGoalDefaults {
-  parentId?: string;
-}
-
 interface OnboardingOptions {
   initialStep?: 1 | 2 | 3 | 4;
   companyId?: string;
@@ -37,10 +33,6 @@ interface DialogContextValue {
   newProjectOpen: boolean;
   openNewProject: () => void;
   closeNewProject: () => void;
-  newGoalOpen: boolean;
-  newGoalDefaults: NewGoalDefaults;
-  openNewGoal: (defaults?: NewGoalDefaults) => void;
-  closeNewGoal: () => void;
   newAgentOpen: boolean;
   openNewAgent: () => void;
   closeNewAgent: () => void;
@@ -55,8 +47,6 @@ type DialogStateValue = Pick<
   | "newIssueOpen"
   | "newIssueDefaults"
   | "newProjectOpen"
-  | "newGoalOpen"
-  | "newGoalDefaults"
   | "newAgentOpen"
   | "onboardingOpen"
   | "onboardingOptions"
@@ -71,8 +61,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   const [newIssueOpen, setNewIssueOpen] = useState(false);
   const [newIssueDefaults, setNewIssueDefaults] = useState<NewIssueDefaults>({});
   const [newProjectOpen, setNewProjectOpen] = useState(false);
-  const [newGoalOpen, setNewGoalOpen] = useState(false);
-  const [newGoalDefaults, setNewGoalDefaults] = useState<NewGoalDefaults>({});
   const [newAgentOpen, setNewAgentOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [onboardingOptions, setOnboardingOptions] = useState<OnboardingOptions>({});
@@ -93,16 +81,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
   const closeNewProject = useCallback(() => {
     setNewProjectOpen(false);
-  }, []);
-
-  const openNewGoal = useCallback((defaults: NewGoalDefaults = {}) => {
-    setNewGoalDefaults(defaults);
-    setNewGoalOpen(true);
-  }, []);
-
-  const closeNewGoal = useCallback(() => {
-    setNewGoalOpen(false);
-    setNewGoalDefaults({});
   }, []);
 
   const openNewAgent = useCallback(() => {
@@ -128,8 +106,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       newIssueOpen,
       newIssueDefaults,
       newProjectOpen,
-      newGoalOpen,
-      newGoalDefaults,
       newAgentOpen,
       onboardingOpen,
       onboardingOptions,
@@ -138,8 +114,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       newIssueOpen,
       newIssueDefaults,
       newProjectOpen,
-      newGoalOpen,
-      newGoalDefaults,
       newAgentOpen,
       onboardingOpen,
       onboardingOptions,
@@ -152,8 +126,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       closeNewIssue,
       openNewProject,
       closeNewProject,
-      openNewGoal,
-      closeNewGoal,
       openNewAgent,
       closeNewAgent,
       openOnboarding,
@@ -164,8 +136,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       closeNewIssue,
       openNewProject,
       closeNewProject,
-      openNewGoal,
-      closeNewGoal,
       openNewAgent,
       closeNewAgent,
       openOnboarding,

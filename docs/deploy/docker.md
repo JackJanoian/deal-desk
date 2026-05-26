@@ -3,7 +3,7 @@ title: Docker
 summary: Docker Compose quickstart
 ---
 
-Run Paperclip in Docker without installing Node or pnpm locally.
+Run DealDesk in Docker without installing Node or pnpm locally.
 
 ## Compose Quickstart (Recommended)
 
@@ -21,20 +21,20 @@ Defaults:
 Override with environment variables:
 
 ```sh
-PAPERCLIP_PORT=3200 PAPERCLIP_DATA_DIR=../data/pc \
+DEALDESK_PORT=3200 DEALDESK_DATA_DIR=../data/pc \
   docker compose -f docker/docker-compose.quickstart.yml up --build
 ```
 
-**Note:** `PAPERCLIP_DATA_DIR` is resolved relative to the compose file (`docker/`), so `../data/pc` maps to `data/pc` in the project root.
+**Note:** `DEALDESK_DATA_DIR` is resolved relative to the compose file (`docker/`), so `../data/pc` maps to `data/pc` in the project root.
 
 ## Manual Docker Build
 
 ```sh
 docker build -t paperclip-local .
-docker run --name paperclip \
+docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
+  -e DEALDESK_HOME=/paperclip \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \
   paperclip-local
 ```
@@ -58,10 +58,10 @@ The Docker image pre-installs:
 Pass API keys to enable local adapter runs inside the container:
 
 ```sh
-docker run --name paperclip \
+docker run --name dealdesk \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
+  -e DEALDESK_HOME=/paperclip \
   -e OPENAI_API_KEY=sk-... \
   -e ANTHROPIC_API_KEY=sk-... \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \

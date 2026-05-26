@@ -1,19 +1,20 @@
 {
-  "name": "@paperclipai/server",
+  "name": "@dealdesk/server",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/dealdesk/paperclip",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/dealdesk/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/dealdesk/paperclip",
     "directory": "server"
   },
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./cost-backfill": "./src/services/cost-backfill.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -33,30 +34,30 @@
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "dev:watch": "cross-env PAPERCLIP_MIGRATION_PROMPT=never PAPERCLIP_MIGRATION_AUTO_APPLY=true tsx ./scripts/dev-watch.ts",
+    "dev:watch": "cross-env DEALDESK_MIGRATION_PROMPT=never DEALDESK_MIGRATION_AUTO_APPLY=true tsx ./scripts/dev-watch.ts",
     "prepare:ui-dist": "bash ../scripts/prepare-server-ui-dist.sh",
     "build": "tsc && mkdir -p dist/onboarding-assets && cp -R src/onboarding-assets/. dist/onboarding-assets/",
     "prepack": "pnpm run prepare:ui-dist",
     "postpack": "rm -rf ui-dist",
     "clean": "rm -rf dist",
     "start": "node dist/index.js",
-    "typecheck": "pnpm --filter @paperclipai/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @dealdesk/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
-    "@paperclipai/adapter-acpx-local": "workspace:*",
-    "@paperclipai/adapter-claude-local": "workspace:*",
-    "@paperclipai/adapter-codex-local": "workspace:*",
-    "@paperclipai/adapter-cursor-cloud": "workspace:*",
-    "@paperclipai/adapter-cursor-local": "workspace:*",
-    "@paperclipai/adapter-gemini-local": "workspace:*",
-    "@paperclipai/adapter-openclaw-gateway": "workspace:*",
-    "@paperclipai/adapter-opencode-local": "workspace:*",
-    "@paperclipai/adapter-pi-local": "workspace:*",
-    "@paperclipai/adapter-utils": "workspace:*",
-    "@paperclipai/db": "workspace:*",
-    "@paperclipai/plugin-sdk": "workspace:*",
-    "@paperclipai/shared": "workspace:*",
+    "@dealdesk/adapter-acpx-local": "workspace:*",
+    "@dealdesk/adapter-claude-local": "workspace:*",
+    "@dealdesk/adapter-codex-local": "workspace:*",
+    "@dealdesk/adapter-cursor-cloud": "workspace:*",
+    "@dealdesk/adapter-cursor-local": "workspace:*",
+    "@dealdesk/adapter-gemini-local": "workspace:*",
+    "@dealdesk/adapter-openclaw-gateway": "workspace:*",
+    "@dealdesk/adapter-opencode-local": "workspace:*",
+    "@dealdesk/adapter-pi-local": "workspace:*",
+    "@dealdesk/adapter-utils": "workspace:*",
+    "@dealdesk/db": "workspace:*",
+    "@dealdesk/plugin-sdk": "workspace:*",
+    "@dealdesk/shared": "workspace:*",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "better-auth": "1.4.18",

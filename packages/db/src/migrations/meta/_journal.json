@@ -631,6 +631,20 @@
       "when": 1747267200000,
       "tag": "0089_dd_outreach_sends_edit_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1747353600000,
+      "tag": "0090_dealdesk_rebrand",
+      "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1779670757626,
+      "tag": "0091_worthless_randall_flagg",
+      "breakpoints": true
     }
   ]
 }

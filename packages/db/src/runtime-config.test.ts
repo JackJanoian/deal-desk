@@ -41,17 +41,17 @@ describe("resolveDatabaseTarget", () => {
     });
   });
 
-  it("uses DATABASE_URL from repo-local .paperclip/.env", () => {
+  it("uses DATABASE_URL from repo-local .dealdesk/.env", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const projectDir = path.join(tempDir, "repo");
     fs.mkdirSync(projectDir, { recursive: true });
     process.chdir(projectDir);
-    delete process.env.PAPERCLIP_CONFIG;
-    writeJson(path.join(projectDir, ".paperclip", "config.json"), {
+    delete process.env.DEALDESK_CONFIG;
+    writeJson(path.join(projectDir, ".dealdesk", "config.json"), {
       database: { mode: "embedded-postgres", embeddedPostgresPort: 54329 },
     });
     writeText(
-      path.join(projectDir, ".paperclip", ".env"),
+      path.join(projectDir, ".dealdesk", ".env"),
       'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/paperclip"\n',
     );
 
@@ -60,14 +60,14 @@ describe("resolveDatabaseTarget", () => {
     expect(target).toMatchObject({
       mode: "postgres",
       connectionString: "postgres://file-user:file-pass@db.example.com:6543/paperclip",
-      source: "paperclip-env",
+      source: "dealdesk-env",
     });
   });
 
   it("uses config postgres connection string when configured", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.PAPERCLIP_CONFIG = configPath;
+    process.env.DEALDESK_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "postgres",
@@ -87,7 +87,7 @@ describe("resolveDatabaseTarget", () => {
   it("falls back to embedded postgres settings from config", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.PAPERCLIP_CONFIG = configPath;
+    process.env.DEALDESK_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "embedded-postgres",
@@ -110,9 +110,9 @@ describe("resolveDatabaseTarget", () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-home-"));
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-cwd-"));
     process.chdir(cwd);
-    process.env.PAPERCLIP_HOME = home;
-    delete process.env.PAPERCLIP_CONFIG;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.DEALDESK_HOME = home;
+    delete process.env.DEALDESK_CONFIG;
+    delete process.env.DEALDESK_INSTANCE_ID;
     delete process.env.DATABASE_URL;
 
     const target = resolveDatabaseTarget();

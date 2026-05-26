@@ -9,7 +9,7 @@ description: >
   "create a team of agents", "hire some agents", or when given a repo URL and
   asked to turn it into a company. Do NOT use for importing an existing company
   package (use the CLI import command instead) or for modifying a company that
-  is already running in Paperclip.
+  is already running in DealDesk.
 ---
 
 # Company Creator
@@ -122,7 +122,7 @@ Create the directory structure and all files. Follow the spec's conventions exac
 │   └── <slug>/TASK.md        (if tasks are needed)
 ├── skills/
 │   └── <slug>/SKILL.md       (if custom skills are needed)
-└── .paperclip.yaml            (Paperclip vendor extension)
+└── .paperclip.yaml            (DealDesk vendor extension)
 ```
 
 **Rules:**
@@ -135,7 +135,7 @@ Create the directory structure and all files. Follow the spec's conventions exac
 - Do not export secrets, machine-local paths, or database IDs
 - Omit empty/default fields
 - For companies generated from a repo, add a references footer at the bottom of COMPANY.md body:
-  `Generated from [repo-name](repo-url) with the company-creator skill from [Paperclip](https://github.com/paperclipai/paperclip)`
+  `Generated from [repo-name](repo-url) with the company-creator skill from [DealDesk](https://github.com/dealdesk/paperclip)`
 
 **Reporting structure:**
 
@@ -178,8 +178,8 @@ Ask the user where to write the package. Common options:
 - The workflow / how the company operates
 - Org chart as a markdown list or table showing agents, titles, reporting structure, and skills
 - Brief description of each agent's role
-- Citations and references: link to the source repo (if from-repo), link to the Agent Companies spec (https://agentcompanies.io/specification), and link to Paperclip (https://github.com/paperclipai/paperclip)
-- A "Getting Started" section explaining how to import: `paperclipai company import --from <path>`
+- Citations and references: link to the source repo (if from-repo), link to the Agent Companies spec (https://agentcompanies.io/specification), and link to DealDesk (https://github.com/dealdesk/paperclip)
+- A "Getting Started" section explaining how to import: `dealdesk company import --from <path>`
 
 **LICENSE** — include a LICENSE file. The copyright holder is the user creating the company, not the upstream repo author (they made the skills, the user is making the company). Use the same license type as the source repo (if from-repo) or ask the user (if from-scratch). Default to MIT if unclear.
 
@@ -195,13 +195,13 @@ Write all files, then give a brief summary:
 
 ## .paperclip.yaml Guidelines
 
-The `.paperclip.yaml` file is the Paperclip vendor extension. It configures adapters and env inputs per agent.
+The `.paperclip.yaml` file is the DealDesk vendor extension. It configures adapters and env inputs per agent.
 
 ### Adapter Rules
 
-**Do not specify an adapter unless the repo or user context warrants it.** If you don't know what adapter the user wants, omit the adapter block entirely — Paperclip will use its default. Specifying an unknown adapter type causes an import error.
+**Do not specify an adapter unless the repo or user context warrants it.** If you don't know what adapter the user wants, omit the adapter block entirely — DealDesk will use its default. Specifying an unknown adapter type causes an import error.
 
-Paperclip's supported adapter types (these are the ONLY valid values):
+DealDesk's supported adapter types (these are the ONLY valid values):
 - `claude_local` — Claude Code CLI
 - `codex_local` — Codex CLI
 - `opencode_local` — OpenCode CLI

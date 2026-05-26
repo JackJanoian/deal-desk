@@ -2,24 +2,13 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { ddTargets } from "@paperclipai/db";
-
-const targetStatusEnum = z.enum([
-  "sourced",
-  "qualified",
-  "contacted",
-  "replied",
-  "meeting_booked",
-  "in_diligence",
-  "passed",
-  "closed_won",
-  "closed_lost",
-]);
+import type { Db } from "@dealdesk/db";
+import { ddTargets } from "@dealdesk/db";
+import { targetStatusValues } from "../target-service.js";
 
 export const listTargetsQuerySchema = z.object({
   thesisId: z.string().uuid(),
-  status: targetStatusEnum.optional(),
+  status: z.enum(targetStatusValues).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
@@ -45,12 +34,12 @@ export function listTargetsHandler(db: Db) {
 
     const whereExpr = status
       ? and(
-          eq(ddTargets.paperclipCompanyId, companyId),
+          eq(ddTargets.dealDeskCompanyId, companyId),
           eq(ddTargets.thesisId, thesisId),
           eq(ddTargets.status, status),
         )
       : and(
-          eq(ddTargets.paperclipCompanyId, companyId),
+          eq(ddTargets.dealDeskCompanyId, companyId),
           eq(ddTargets.thesisId, thesisId),
         );
 
@@ -59,9 +48,13 @@ export function listTargetsHandler(db: Db) {
         id: ddTargets.id,
         companyName: ddTargets.companyName,
         website: ddTargets.website,
+        sector: ddTargets.sector,
         fitScore: ddTargets.fitScore,
+        fitRationale: ddTargets.fitRationale,
         status: ddTargets.status,
         hqState: ddTargets.hqState,
+        notes: ddTargets.notes,
+        statusChangedAt: ddTargets.statusChangedAt,
         createdAt: ddTargets.createdAt,
       })
       .from(ddTargets)
@@ -75,9 +68,13 @@ export function listTargetsHandler(db: Db) {
         id: t.id,
         name: t.companyName,
         website: t.website,
+        sector: t.sector,
         fitScore: t.fitScore,
+        fitRationale: t.fitRationale,
         status: t.status,
         state: t.hqState,
+        notes: t.notes,
+        statusChangedAt: t.statusChangedAt,
         sourcedAt: t.createdAt,
       })),
     });

@@ -1,7 +1,8 @@
 // DEAL DESK: Phase 7 — Targets dashboard page.
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Target as TargetIcon, Plus, ExternalLink } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Target as TargetIcon, Plus, GitBranch } from "lucide-react";
+import { Link } from "@/lib/router";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
 import { useToastActions } from "../../context/ToastContext";
@@ -10,11 +11,8 @@ import { useNavigate } from "@/lib/router";
 import {
   dealDeskApi,
   type DdTarget,
-  type DdTargetStatus,
-  type DdSource,
   type Thesis,
 } from "../../api/dealDesk";
-// DEAL DESK: Phase 7 v0.2 — wire 'Source targets now' to issue creation
 import { agentsApi } from "../../api/agents";
 import { issuesApi } from "../../api/issues";
 import { EmptyState } from "../../components/EmptyState";
@@ -22,53 +20,19 @@ import { PageSkeleton } from "../../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const TARGET_STATUSES: DdTargetStatus[] = [
-  "sourced",
-  "qualified",
-  "contacted",
-  "replied",
-  "meeting_booked",
-  "in_diligence",
-  "passed",
-  "closed_won",
-  "closed_lost",
-];
-
-function fitScoreClasses(score: number | null): string {
-  if (score == null) return "bg-muted text-muted-foreground";
-  if (score >= 80) return "bg-green-600/20 text-green-600 border-green-600/30";
-  if (score >= 60)
-    return "bg-yellow-500/20 text-yellow-600 border-yellow-500/30";
-  if (score >= 40)
-    return "bg-orange-500/20 text-orange-600 border-orange-500/30";
-  return "bg-muted text-muted-foreground";
-}
-
-function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString();
-}
+import { TargetDetailSheet } from "../../components/deal-desk/TargetDetailSheet";
+import { FitScoreBadge } from "../../components/deal-desk/TargetStatusBadge";
+import { formatTargetDate } from "../../components/deal-desk/target-utils";
 
 export function Targets() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const navigate = useNavigate();
   const [selectedTarget, setSelectedTarget] = useState<DdTarget | null>(null);
@@ -172,20 +136,6 @@ export function Targets() {
     },
   });
 
-  const updateStatus = useMutation({
-    mutationFn: ({ targetId, status }: { targetId: string; status: DdTargetStatus }) =>
-      dealDeskApi.updateTargetStatus(selectedCompanyId!, targetId, status),
-    onSuccess: (updated) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dealDesk.thesisTargets(
-          selectedCompanyId!,
-          effectiveThesisId!,
-        ),
-      });
-      setSelectedTarget(updated);
-    },
-  });
-
   if (!selectedCompanyId) {
     return (
       <EmptyState icon={TargetIcon} message="Select a fund to view targets." />
@@ -205,7 +155,7 @@ export function Targets() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="dd-panel-subtle flex flex-wrap items-center justify-between gap-3 rounded-lg p-3">
         <div className="flex items-center gap-2">
           <Select
             value={effectiveThesisId ?? undefined}
@@ -222,6 +172,12 @@ export function Targets() {
               ))}
             </SelectContent>
           </Select>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/deal-desk/pipeline">
+              <GitBranch className="h-3.5 w-3.5 mr-1.5" />
+              Pipeline board
+            </Link>
+          </Button>
         </div>
         <div className="flex flex-col items-end">
           <Button
@@ -258,9 +214,9 @@ export function Targets() {
           message="No targets yet for this thesis."
         />
       ) : (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card/45">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/40">
               <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Company</th>
                 <th className="px-3 py-2 font-medium">Sector</th>
@@ -274,10 +230,10 @@ export function Targets() {
               {targets.map((t) => (
                 <tr
                   key={t.id}
-                  className="border-t border-border cursor-pointer hover:bg-accent/40"
+                  className="cursor-pointer border-t border-border/60 hover:bg-accent/40"
                   onClick={() => setSelectedTarget(t)}
                 >
-                  <td className="px-3 py-2 font-medium">{t.companyName}</td>
+                  <td className="px-3 py-2 font-medium text-foreground/92">{t.companyName}</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {t.sector ?? "—"}
                   </td>
@@ -285,18 +241,13 @@ export function Targets() {
                     {t.hqState ?? "—"}
                   </td>
                   <td className="px-3 py-2">
-                    <Badge
-                      variant="outline"
-                      className={fitScoreClasses(t.fitScore)}
-                    >
-                      {t.fitScore ?? "—"}
-                    </Badge>
+                    <FitScoreBadge score={t.fitScore} />
                   </td>
                   <td className="px-3 py-2">
                     <Badge variant="secondary">{t.status}</Badge>
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {formatDate(t.createdAt)}
+                    {formatTargetDate(t.createdAt)}
                   </td>
                 </tr>
               ))}
@@ -305,129 +256,18 @@ export function Targets() {
         </div>
       )}
 
-      <Sheet
-        open={!!selectedTarget}
-        onOpenChange={(open) => {
-          if (!open) setSelectedTarget(null);
-        }}
-      >
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          {selectedTarget && (
-            <>
-              <SheetHeader>
-                <SheetTitle>{selectedTarget.companyName}</SheetTitle>
-                <SheetDescription>
-                  {selectedTarget.sector ?? "—"}
-                  {selectedTarget.hqState ? ` · ${selectedTarget.hqState}` : ""}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="px-4 pb-6 space-y-4 text-sm">
-                {selectedTarget.website && (
-                  <div>
-                    <a
-                      href={selectedTarget.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-primary hover:underline"
-                    >
-                      {selectedTarget.website}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                )}
-
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                    Fit
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={fitScoreClasses(selectedTarget.fitScore)}
-                  >
-                    {selectedTarget.fitScore ?? "—"}
-                  </Badge>
-                </div>
-
-                {selectedTarget.description && (
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                      Description
-                    </div>
-                    <p>{selectedTarget.description}</p>
-                  </div>
-                )}
-
-                {selectedTarget.fitRationale && (
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                      Fit rationale
-                    </div>
-                    <p>{selectedTarget.fitRationale}</p>
-                  </div>
-                )}
-
-                {Array.isArray(selectedTarget.sources) &&
-                  (selectedTarget.sources as DdSource[]).length > 0 && (
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                        Sources
-                      </div>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(selectedTarget.sources as DdSource[]).map((s, i) => (
-                          <li key={i}>
-                            <a
-                              href={s.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-primary hover:underline"
-                            >
-                              {s.description || s.url}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                    Status
-                  </div>
-                  <Select
-                    value={selectedTarget.status}
-                    onValueChange={(v) =>
-                      updateStatus.mutate({
-                        targetId: selectedTarget.id,
-                        status: v as DdTargetStatus,
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-[220px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TARGET_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedTarget.notes && (
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                      Notes
-                    </div>
-                    <p className="whitespace-pre-wrap">{selectedTarget.notes}</p>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+      {effectiveThesisId && (
+        <TargetDetailSheet
+          target={selectedTarget}
+          companyId={selectedCompanyId}
+          thesisId={effectiveThesisId}
+          open={!!selectedTarget}
+          onOpenChange={(open) => {
+            if (!open) setSelectedTarget(null);
+          }}
+          onTargetUpdated={setSelectedTarget}
+        />
+      )}
     </div>
   );
 }

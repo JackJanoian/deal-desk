@@ -1,4 +1,4 @@
-# @paperclipai/shared
+# @dealdesk/shared
 
 ## 0.3.1
 

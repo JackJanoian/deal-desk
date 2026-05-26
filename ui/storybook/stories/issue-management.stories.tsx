@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@dealdesk/shared";
 import type { RunForIssue } from "@/api/activity";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -47,7 +47,7 @@ import {
   storybookIssueRuns,
   storybookIssues,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/dealDeskData";
 
 const companyId = "company-storybook";
 const issueListViewKey = "storybook:issue-management:list";
@@ -105,7 +105,7 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
         status: "active",
         user: {
           id: "user-board",
-          email: "riley@paperclip.local",
+          email: "riley@dealdesk.local",
           name: "Riley Board",
           image: null,
         },

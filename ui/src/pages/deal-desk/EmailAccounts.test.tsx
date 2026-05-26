@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { EmailAccounts } from "./EmailAccounts";
@@ -16,7 +16,24 @@ const defaultClientConfigProps = {
   onResetClientConfig: vi.fn(),
 };
 
+function mockApolloFetch(configured = false) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ configured }),
+    }),
+  );
+}
+
 describe("EmailAccounts", () => {
+  beforeEach(() => {
+    mockApolloFetch();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
   it("shows the connect button when no accounts are connected", () => {
     render(
       <EmailAccounts

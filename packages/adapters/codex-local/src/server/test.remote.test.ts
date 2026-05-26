@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@dealdesk/adapter-utils/execution-target";
 
 const {
   ensureAdapterExecutionTargetDirectory,
@@ -42,10 +42,10 @@ const {
     }),
     prepareAdapterExecutionTargetRuntime: vi.fn(async () => ({
       target: null,
-      workspaceRemoteDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace",
-      runtimeRootDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex",
+      workspaceRemoteDir: "/remote/workspace/.dealdesk-runtime/runs/test/workspace",
+      runtimeRootDir: "/remote/workspace/.dealdesk-runtime/runs/test/workspace/.dealdesk-runtime/codex",
       assetDirs: {
-        home: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex/home",
+        home: "/remote/workspace/.dealdesk-runtime/runs/test/workspace/.dealdesk-runtime/codex/home",
       },
       restoreWorkspace,
     })),
@@ -54,9 +54,9 @@ const {
   };
 });
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@dealdesk/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@dealdesk/adapter-utils/execution-target")>(
+    "@dealdesk/adapter-utils/execution-target",
   );
   return {
     ...actual,
@@ -125,7 +125,7 @@ describe("codex remote environment diagnostics", () => {
       },
     ]>;
     const runtimeInput = runtimeCalls[0]?.[0];
-    expect(runtimeInput?.workspaceLocalDir).toContain(`${os.tmpdir()}/paperclip-codex-envtest-`);
+    expect(runtimeInput?.workspaceLocalDir).toContain(`${os.tmpdir()}/dealdesk-codex-envtest-`);
     expect(runtimeInput?.workspaceLocalDir).not.toBe("/remote/workspace");
     expect(await fs.stat(runtimeInput!.workspaceLocalDir).catch(() => null)).toBeNull();
     expect(runtimeInput?.target?.remoteCwd).toBe("/remote/workspace");
@@ -145,7 +145,7 @@ describe("codex remote environment diagnostics", () => {
     expect(probeCall?.[4]).toMatchObject({
       cwd: "/remote/workspace",
       env: expect.objectContaining({
-        CODEX_HOME: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex/home",
+        CODEX_HOME: "/remote/workspace/.dealdesk-runtime/runs/test/workspace/.dealdesk-runtime/codex/home",
       }),
     });
     expect(restoreWorkspace).toHaveBeenCalledTimes(1);
@@ -187,7 +187,7 @@ describe("codex remote environment diagnostics", () => {
     const probeCall = runAdapterExecutionTargetProcess.mock.calls[0] as unknown as
       | [string, AdapterExecutionTarget, string, string[], { cwd: string; env: Record<string, string> }]
       | undefined;
-    expect(probeCall?.[4].env.CODEX_HOME).toContain("/remote/workspace/.paperclip-runtime/codex/probe-home-codex-envtest-");
+    expect(probeCall?.[4].env.CODEX_HOME).toContain("/remote/workspace/.dealdesk-runtime/codex/probe-home-codex-envtest-");
     expect(probeCall?.[4].env.CODEX_HOME?.startsWith("/tmp/")).toBe(false);
     expect(probeCall?.[3]).toContain("--skip-git-repo-check");
   });

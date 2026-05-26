@@ -3,17 +3,17 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   pluginDatabaseNamespaces,
   pluginMigrations,
   plugins,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import type {
-  PaperclipPluginManifestV1,
+  DealDeskPluginManifestV1,
   PluginDatabaseCoreReadTable,
   PluginMigrationRecord,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const MAX_POSTGRES_IDENTIFIER_LENGTH = 63;
@@ -326,7 +326,7 @@ export function pluginDatabaseService(db: PluginDatabaseRootClient) {
   async function ensureNamespaceWithClient(
     client: PluginDatabaseClient,
     pluginId: string,
-    manifest: PaperclipPluginManifestV1,
+    manifest: DealDeskPluginManifestV1,
   ) {
     if (!manifest.database) return null;
     const namespaceName = derivePluginDatabaseNamespace(
@@ -357,7 +357,7 @@ export function pluginDatabaseService(db: PluginDatabaseRootClient) {
     return rows[0] ?? null;
   }
 
-  async function ensureNamespace(pluginId: string, manifest: PaperclipPluginManifestV1) {
+  async function ensureNamespace(pluginId: string, manifest: DealDeskPluginManifestV1) {
     return ensureNamespaceWithClient(db, pluginId, manifest);
   }
 
@@ -422,7 +422,7 @@ export function pluginDatabaseService(db: PluginDatabaseRootClient) {
 
     async applyMigrations(
       pluginId: string,
-      manifest: PaperclipPluginManifestV1,
+      manifest: DealDeskPluginManifestV1,
       packageRoot: string,
       options: ApplyPluginMigrationsOptions = {},
     ) {

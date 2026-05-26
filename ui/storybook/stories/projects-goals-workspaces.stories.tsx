@@ -1,10 +1,8 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Goal, Project } from "@paperclipai/shared";
-import { Archive, Boxes, FolderGit2, GitBranch, Network, Play, RotateCcw, Square } from "lucide-react";
-import { GoalProperties } from "@/components/GoalProperties";
-import { GoalTree } from "@/components/GoalTree";
+import type { Project } from "@dealdesk/shared";
+import { Archive, Boxes, FolderGit2, GitBranch, Play, RotateCcw, Square } from "lucide-react";
 import { ProjectProperties, type ProjectConfigFieldKey, type ProjectFieldSaveState } from "@/components/ProjectProperties";
 import { ProjectWorkspacesContent } from "@/components/ProjectWorkspacesContent";
 import { ProjectWorkspaceSummaryCard } from "@/components/ProjectWorkspaceSummaryCard";
@@ -23,26 +21,16 @@ import {
   storybookAuthSession,
   storybookCompanies,
   storybookExecutionWorkspaces,
-  storybookGoals,
   storybookIssues,
   storybookProjectWorkspaces,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/dealDeskData";
 
 const COMPANY_ID = "company-storybook";
 const boardProject = storybookProjects.find((project) => project.id === "project-board-ui") ?? storybookProjects[0]!;
 const archivedProject =
   storybookProjects.find((project) => project.id === "project-archived-import")
   ?? storybookProjects[storybookProjects.length - 1]!;
-
-const goalProgress = new Map<string, number>([
-  ["goal-company", 62],
-  ["goal-board-ux", 74],
-  ["goal-agent-runtime", 48],
-  ["goal-storybook", 88],
-  ["goal-budget-safety", 100],
-  ["goal-archived-import", 18],
-]);
 
 function Section({
   eyebrow,
@@ -72,10 +60,6 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
   queryClient.setQueryData(queryKeys.projects.detail(boardProject.id), boardProject);
   queryClient.setQueryData(queryKeys.projects.detail(boardProject.urlKey), boardProject);
   queryClient.setQueryData(queryKeys.projects.detail(archivedProject.id), archivedProject);
-  queryClient.setQueryData(queryKeys.goals.list(COMPANY_ID), storybookGoals);
-  for (const goal of storybookGoals) {
-    queryClient.setQueryData(queryKeys.goals.detail(goal.id), goal);
-  }
   queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
   queryClient.setQueryData(queryKeys.issues.listByProject(COMPANY_ID, boardProject.id), storybookIssues);
   queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), []);
@@ -158,7 +142,7 @@ function ProjectPropertiesMatrix() {
         </div>
         <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
           {[
-            { label: "Goals linked", value: boardProject.goalIds.length, icon: Network },
+            { label: "Issues", value: storybookIssues.filter((issue) => issue.projectId === boardProject.id).length, icon: FolderGit2 },
             { label: "Workspaces", value: boardProject.workspaces.length, icon: Boxes },
             { label: "Runtime services", value: boardProject.primaryWorkspace?.runtimeServices?.length ?? 0, icon: Play },
           ].map((item) => {
@@ -218,99 +202,6 @@ function WorkspacesMatrix() {
           projectRef={archivedProject.urlKey}
           summaries={[]}
         />
-      </div>
-    </div>
-  );
-}
-
-function GoalProgressRow({ goal }: { goal: Goal }) {
-  const progress = goalProgress.get(goal.id) ?? 0;
-  const childCount = storybookGoals.filter((candidate) => candidate.parentId === goal.id).length;
-
-  return (
-    <div className="rounded-lg border border-border bg-background p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-medium">{goal.title}</div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {goal.level} · {childCount} child goal{childCount === 1 ? "" : "s"}
-          </div>
-        </div>
-        <span className="font-mono text-xs text-muted-foreground">{progress}%</span>
-      </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" aria-label={`${progress}% complete`}>
-        <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function GoalPropertiesMatrix() {
-  const selectedGoal = storybookGoals.find((goal) => goal.id === "goal-board-ux") ?? storybookGoals[0]!;
-  const childGoals = storybookGoals.filter((goal) => goal.parentId === selectedGoal.id);
-  const linkedProjects = storybookProjects.filter((project) => project.goalIds.includes(selectedGoal.id));
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="space-y-4">
-        <div className="rounded-lg border border-border bg-background p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="paperclip-story__label">Goal detail composition</div>
-              <h3 className="mt-2 text-xl font-semibold">{selectedGoal.title}</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{selectedGoal.description}</p>
-            </div>
-            <Badge variant="outline">{selectedGoal.status}</Badge>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <GoalProgressRow goal={selectedGoal} />
-            <div className="rounded-lg border border-border bg-background p-3">
-              <div className="text-2xl font-semibold">{childGoals.length}</div>
-              <div className="text-xs text-muted-foreground">Child goals</div>
-            </div>
-            <div className="rounded-lg border border-border bg-background p-3">
-              <div className="text-2xl font-semibold">{linkedProjects.length}</div>
-              <div className="text-xs text-muted-foreground">Linked projects</div>
-            </div>
-          </div>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {childGoals.map((goal) => (
-            <GoalProgressRow key={goal.id} goal={goal} />
-          ))}
-        </div>
-      </div>
-      <div className="rounded-lg border border-border bg-background p-4">
-        <GoalProperties goal={selectedGoal} onUpdate={() => undefined} />
-      </div>
-    </div>
-  );
-}
-
-function GoalTreeMatrix() {
-  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(storybookGoals[1] ?? null);
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="overflow-hidden rounded-lg border border-border bg-background">
-        <GoalTree
-          goals={storybookGoals}
-          onSelect={setSelectedGoal}
-        />
-      </div>
-      <div className="rounded-lg border border-border bg-background p-4">
-        <div className="paperclip-story__label">Selected goal</div>
-        {selectedGoal ? (
-          <div className="mt-3 space-y-3">
-            <div>
-              <div className="text-sm font-medium">{selectedGoal.title}</div>
-              <div className="mt-1 text-xs text-muted-foreground">{selectedGoal.description}</div>
-            </div>
-            <GoalProgressRow goal={selectedGoal} />
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-muted-foreground">Select a goal row to inspect its progress state.</p>
-        )}
       </div>
     </div>
   );
@@ -413,10 +304,10 @@ function setWorktreeMeta(name: string, content: string) {
 }
 
 function WorktreeBannerMatrix() {
-  setWorktreeMeta("paperclip-worktree-enabled", "true");
-  setWorktreeMeta("paperclip-worktree-name", "PAP-1675-projects-goals-workspaces");
-  setWorktreeMeta("paperclip-worktree-color", "#0f766e");
-  setWorktreeMeta("paperclip-worktree-text-color", "#ecfeff");
+  setWorktreeMeta("dealdesk-worktree-enabled", "true");
+  setWorktreeMeta("dealdesk-worktree-name", "PAP-1675-projects-goals-workspaces");
+  setWorktreeMeta("dealdesk-worktree-color", "#0f766e");
+  setWorktreeMeta("dealdesk-worktree-text-color", "#ecfeff");
 
   return (
     <div className="space-y-4">
@@ -451,11 +342,11 @@ function ProjectsGoalsWorkspacesStories() {
           <section className="paperclip-story__frame p-6">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="paperclip-story__label">Projects, goals, and workspaces</div>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Hierarchical planning and runtime surfaces</h1>
+                <div className="paperclip-story__label">Projects and workspaces</div>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight">Thesis planning and runtime surfaces</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                  Fixture-backed project and goal stories cover editable project properties, local and remote workspace
-                  cards, cleanup failures, goal hierarchy states, and runtime command controls.
+                  Fixture-backed project stories cover editable project properties, local and remote workspace
+                  cards, cleanup failures, and runtime command controls.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -467,20 +358,12 @@ function ProjectsGoalsWorkspacesStories() {
             </div>
           </section>
 
-          <Section eyebrow="ProjectProperties" title="Full project detail panels with codebase, goals, env, and archive states">
+          <Section eyebrow="ProjectProperties" title="Full project detail panels with codebase, env, and archive states">
             <ProjectPropertiesMatrix />
           </Section>
 
           <Section eyebrow="ProjectWorkspacesContent" title="Workspace list with local, remote, cleanup-failed, and empty states">
             <WorkspacesMatrix />
-          </Section>
-
-          <Section eyebrow="GoalProperties" title="Goal detail panel with progress and child goal context">
-            <GoalPropertiesMatrix />
-          </Section>
-
-          <Section eyebrow="GoalTree" title="Hierarchical goal tree with expand/collapse and progress sidecar">
-            <GoalTreeMatrix />
           </Section>
 
           <Section eyebrow="WorkspaceRuntimeControls" title="Runtime start, stop, restart, and disabled command states">
@@ -497,13 +380,13 @@ function ProjectsGoalsWorkspacesStories() {
 }
 
 const meta = {
-  title: "Product/Projects Goals Workspaces",
+  title: "Product/Projects Workspaces",
   component: ProjectsGoalsWorkspacesStories,
   parameters: {
     docs: {
       description: {
         component:
-          "Projects, goals, and workspaces stories cover project properties, workspace cards/lists, goal hierarchy panels, runtime controls, and worktree branding states.",
+          "Project and workspace stories cover project properties, workspace cards/lists, runtime controls, and worktree branding states.",
       },
     },
   },

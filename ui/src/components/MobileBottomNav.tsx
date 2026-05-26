@@ -4,7 +4,7 @@ import {
   House,
   CircleDot,
   SquarePen,
-  Users,
+  Crosshair,
   Inbox,
 } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
@@ -45,7 +45,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
       { type: "link", to: "/dashboard", label: "Home", icon: House },
       { type: "link", to: "/issues", label: "Issues", icon: CircleDot },
       { type: "action", label: "Create", icon: SquarePen, onClick: () => openNewIssue() },
-      { type: "link", to: "/agents/all", label: "Agents", icon: Users },
+      { type: "link", to: "/deal-desk/pipeline", label: "Deals", icon: Crosshair },
       {
         type: "link",
         to: "/inbox",
@@ -60,7 +60,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 transition-transform duration-200 ease-out md:hidden pb-[env(safe-area-inset-bottom)]",
+        "fixed bottom-0 left-0 right-0 z-30 border-t border-border/75 bg-background/92 shadow-[0_-18px_48px_color-mix(in_oklab,black_24%,transparent)] backdrop-blur supports-[backdrop-filter]:bg-background/82 transition-transform duration-200 ease-out md:hidden pb-[env(safe-area-inset-bottom)]",
         visible ? "translate-y-0" : "translate-y-full",
       )}
       aria-label="Mobile navigation"
@@ -78,7 +78,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 className={cn(
                   "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-colors",
                   active
-                    ? "text-foreground"
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -98,7 +98,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 cn(
                   "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-colors",
                   isActive
-                    ? "text-foreground"
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )
               }

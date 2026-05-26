@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { and, asc, desc, eq, gt, inArray, isNull, like, lt, ne, notInArray, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
 import {
   activityLog,
   agentWakeupRequests,
@@ -27,7 +27,7 @@ import {
   labels,
   projectWorkspaces,
   projects,
-} from "@paperclipai/db";
+} from "@dealdesk/db";
 import type {
   IssueCommentAuthorType,
   IssueCommentMetadata,
@@ -36,7 +36,7 @@ import type {
   IssueProductivityReview,
   IssueProductivityReviewTrigger,
   IssueRelationIssueSummary,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import {
   clampIssueRequestDepth,
   extractAgentMentionIds,
@@ -46,7 +46,7 @@ import {
   issueCommentPresentationSchema,
   isUuidLike,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { parseObject } from "../adapters/utils.js";
 import {
@@ -62,7 +62,6 @@ import { instanceSettingsService } from "./instance-settings.js";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { resolveIssueGoalId, resolveNextIssueGoalId } from "./issue-goal-fallback.js";
 import { getRunLogStore } from "./run-log-store.js";
-import { getDefaultCompanyGoal } from "./goals.js";
 import {
   isVerifiedIssueTreeControlInteractionWake,
   issueTreeControlService,
@@ -439,20 +438,6 @@ async function listUnresolvedBlockerIssueIds(
     )
     .then((rows) => rows.map((row) => row.id));
 }
-async function getProjectDefaultGoalId(
-  db: ProjectGoalReader,
-  companyId: string,
-  projectId: string | null | undefined,
-) {
-  if (!projectId) return null;
-  const row = await db
-    .select({ goalId: projects.goalId })
-    .from(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.companyId, companyId)))
-    .then((rows) => rows[0] ?? null);
-  return row?.goalId ?? null;
-}
-
 async function getWorkspaceInheritanceIssue(
   db: DbReader,
   companyId: string,
@@ -1943,6 +1928,11 @@ export function issueService(db: Db) {
     }, null);
     if (minCommentCreatedAtMs === null || maxCommentCreatedAtMs === null) return comments;
 
+    const minRunEndBound = new Date(minCommentCreatedAtMs).toISOString();
+    const maxRunStartBound = new Date(
+      maxCommentCreatedAtMs + ISSUE_COMMENT_RUN_LOG_DERIVATION_END_SLACK_MS,
+    ).toISOString();
+
     const runs = await db
       .select({
         runId: heartbeatRuns.id,
@@ -1969,8 +1959,8 @@ export function issueService(db: Db) {
                 and ${activityLog.runId} = ${heartbeatRuns.id}
             )`,
           ),
-          sql`coalesce(${heartbeatRuns.finishedAt}, ${heartbeatRuns.createdAt}) >= ${new Date(minCommentCreatedAtMs)}`,
-          sql`coalesce(${heartbeatRuns.startedAt}, ${heartbeatRuns.createdAt}) <= ${new Date(maxCommentCreatedAtMs + ISSUE_COMMENT_RUN_LOG_DERIVATION_END_SLACK_MS)}`,
+          sql`coalesce(${heartbeatRuns.finishedAt}, ${heartbeatRuns.createdAt}) >= ${minRunEndBound}::timestamptz`,
+          sql`coalesce(${heartbeatRuns.startedAt}, ${heartbeatRuns.createdAt}) <= ${maxRunStartBound}::timestamptz`,
         ),
       )
       .orderBy(desc(heartbeatRuns.createdAt));
@@ -3040,8 +3030,7 @@ export function issueService(db: Db) {
         throw unprocessable("in_progress issues require an assignee");
       }
       return db.transaction(async (tx) => {
-        const defaultCompanyGoal = await getDefaultCompanyGoal(tx, companyId);
-        const projectGoalId = await getProjectDefaultGoalId(tx, companyId, issueData.projectId);
+        const projectGoalId = null;
         let projectWorkspaceId = issueData.projectWorkspaceId ?? null;
         let executionWorkspaceId = issueData.executionWorkspaceId ?? null;
         let executionWorkspacePreference = issueData.executionWorkspacePreference ?? null;
@@ -3194,7 +3183,7 @@ export function issueService(db: Db) {
             projectId: issueData.projectId,
             goalId: issueData.goalId,
             projectGoalId,
-            defaultGoalId: defaultCompanyGoal?.id ?? null,
+            defaultGoalId: null,
           }),
           ...(projectWorkspaceId ? { projectWorkspaceId } : {}),
           ...(executionWorkspaceId ? { executionWorkspaceId } : {}),
@@ -3360,15 +3349,8 @@ export function issueService(db: Db) {
       }
 
       const runUpdate = async (tx: any) => {
-        const defaultCompanyGoal = await getDefaultCompanyGoal(tx, existing.companyId);
-        const [currentProjectGoalId, nextProjectGoalId] = await Promise.all([
-          getProjectDefaultGoalId(tx, existing.companyId, existing.projectId),
-          getProjectDefaultGoalId(
-            tx,
-            existing.companyId,
-            issueData.projectId !== undefined ? issueData.projectId : existing.projectId,
-          ),
-        ]);
+        const currentProjectGoalId = null;
+        const nextProjectGoalId = null;
 
         // Mirror the create() path: when the assignee changes to a non-null
         // agent, default the issue's executionWorkspaceSettings.environmentId
@@ -3464,7 +3446,7 @@ export function issueService(db: Db) {
           projectId: issueData.projectId,
           goalId: issueData.goalId,
           projectGoalId: nextProjectGoalId,
-          defaultGoalId: defaultCompanyGoal?.id ?? null,
+          defaultGoalId: null,
         });
         const updated = await tx
           .update(issues)

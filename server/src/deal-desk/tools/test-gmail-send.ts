@@ -3,8 +3,8 @@
 import type { Request, Response } from "express";
 import { eq, and, isNull, desc } from "drizzle-orm";
 import { z } from "zod";
-import type { Db } from "@paperclipai/db";
-import { ddEmailAccounts } from "@paperclipai/db";
+import type { Db } from "@dealdesk/db";
+import { ddEmailAccounts } from "@dealdesk/db";
 import type { GmailClientConfig } from "../gmail/client-config.js";
 import type { GmailTokensRecord } from "../gmail/tokens.js";
 import {
@@ -52,7 +52,7 @@ export function testGmailSendHandler(deps: TestGmailSendDeps) {
 
     const account = await deps.db.query.ddEmailAccounts.findFirst({
       where: and(
-        eq(ddEmailAccounts.paperclipCompanyId, companyId),
+        eq(ddEmailAccounts.dealDeskCompanyId, companyId),
         isNull(ddEmailAccounts.revokedAt),
       ),
       orderBy: [desc(ddEmailAccounts.connectedAt)],

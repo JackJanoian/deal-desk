@@ -8,7 +8,7 @@ import { companySkillsApi } from "../api/companySkills";
 // DEAL DESK: Phase 8 v0.2 — prefill from role templates
 import { dealDeskApi } from "../api/dealDesk";
 import { queryKeys } from "../lib/queryKeys";
-import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@paperclipai/shared";
+import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@dealdesk/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -33,10 +33,10 @@ import { buildNewAgentHirePayload } from "../lib/new-agent-hire-payload";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@paperclipai/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@paperclipai/adapter-opencode-local";
+} from "@dealdesk/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@dealdesk/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@dealdesk/adapter-gemini-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@dealdesk/adapter-opencode-local";
 
 function createValuesForAdapterType(
   adapterType: CreateConfigValues["adapterType"],
@@ -189,7 +189,7 @@ export function NewAgent() {
     );
   }
 
-  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("paperclipai/paperclip/"));
+  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("dealdesk/dealdesk/"));
 
   function toggleSkill(key: string, checked: boolean) {
     setSelectedSkillKeys((prev) => {

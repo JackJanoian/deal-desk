@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import type { Agent, Issue, IssueComment, LiveEvent } from "@paperclipai/shared";
+import type { Agent, Issue, IssueComment, LiveEvent } from "@dealdesk/shared";
 import type { RunForIssue } from "../api/activity";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import type { CompanyUserDirectoryResponse } from "../api/access";
@@ -706,12 +706,6 @@ function invalidateActivityQueries(
   if (entityType === "project") {
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(companyId) });
     if (entityId) queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(entityId) });
-    return;
-  }
-
-  if (entityType === "goal") {
-    queryClient.invalidateQueries({ queryKey: queryKeys.goals.list(companyId) });
-    if (entityId) queryClient.invalidateQueries({ queryKey: queryKeys.goals.detail(entityId) });
     return;
   }
 

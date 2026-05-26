@@ -1,7 +1,7 @@
 ---
 name: design-guide
 description: >
-  Paperclip UI design system guide for building consistent, reusable frontend
+  DealDesk UI design system guide for building consistent, reusable frontend
   components. Use when creating new UI components, modifying existing ones,
   adding pages or features to the frontend, styling UI elements, or when you
   need to understand the design language and conventions. Covers: component
@@ -11,9 +11,9 @@ description: >
   web-design-guidelines skill (for web best practices).
 ---
 
-# Paperclip Design Guide
+# DealDesk Design Guide
 
-Paperclip's UI is a professional-grade control plane — dense, keyboard-driven, dark-themed by default. Every pixel earns its place.
+DealDesk's UI is a professional-grade control plane — dense, keyboard-driven, dark-themed by default. Every pixel earns its place.
 
 **Always use with:** `frontend-design` (visual polish) and `web-design-guidelines` (web best practices).
 
@@ -24,7 +24,7 @@ Paperclip's UI is a professional-grade control plane — dense, keyboard-driven,
 - **Dense but scannable.** Maximum information without clicks to reveal. Whitespace separates, not pads.
 - **Keyboard-first.** Global shortcuts (Cmd+K, C, [, ]). Power users rarely touch the mouse.
 - **Contextual, not modal.** Inline editing over dialog boxes. Dropdowns over page navigations.
-- **Dark theme default.** Neutral grays (OKLCH), not pure black. Accent colors for status/priority only. Text is the primary visual element.
+- **Dark theme default.** Blue-black OKLCH neutrals, not pure black. Layer surfaces deliberately: canvas, sidebar rail, panel, raised dialog/sheet, selected row. Accent colors are for action, selection, focus, and semantic status.
 - **Component-driven.** Prefer reusable components that capture style conventions. Build at the right abstraction — not too granular, not too monolithic.
 
 ---
@@ -67,17 +67,17 @@ Use semantic token names, never raw color values:
 
 ### Radius
 
-Single `--radius` variable (0.625rem) with derived sizes:
+Single `--radius` variable (0.5rem) with derived sizes:
 
-- `rounded-sm` — small inputs, pills
-- `rounded-md` — buttons, inputs, small components
-- `rounded-lg` — cards, dialogs
-- `rounded-xl` — card containers, large components
+- `rounded-sm` — compact controls and inline affordances
+- `rounded-md` — buttons, inputs, nav items, small components
+- `rounded-lg` — cards, panels, kanban cards
+- `rounded-xl` — dialogs, sheets, major empty states
 - `rounded-full` — badges, avatars, status dots
 
 ### Shadows
 
-Minimal shadows: `shadow-xs` (outline buttons), `shadow-sm` (cards). No heavy shadows.
+Minimal shadows by default. Prefer surface contrast and borders. Use the shared `dd-panel` / `dd-panel-subtle` surface classes before adding custom shadows.
 
 ---
 
@@ -133,7 +133,7 @@ Inline colored dots: running (cyan, animate-pulse), active (green), paused (yell
 Three tiers:
 
 1. **shadcn/ui primitives** (`ui/src/components/ui/`) — Button, Card, Input, Badge, Dialog, Tabs, etc. Do not modify these directly; extend via composition.
-2. **Custom composites** (`ui/src/components/`) — StatusBadge, EntityRow, MetricCard, etc. These capture Paperclip-specific design language.
+2. **Custom composites** (`ui/src/components/`) — StatusBadge, EntityRow, MetricCard, etc. These capture DealDesk-specific design language.
 3. **Page components** (`ui/src/pages/`) — Compose primitives and composites into full views.
 
 **See [references/component-index.md](references/component-index.md) for the complete component inventory with usage guidance.**

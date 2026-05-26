@@ -3,32 +3,32 @@ import os from "node:os";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@paperclipai/adapter-utils";
-import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@dealdesk/adapter-utils";
+import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@dealdesk/adapter-utils/execution-target";
 import {
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  applyPaperclipWorkspaceEnv,
+  DEFAULT_DEALDESK_AGENT_PROMPT_TEMPLATE,
+  applyDealDeskWorkspaceEnv,
   asNumber,
   asString,
   buildInvocationEnvForLogs,
-  buildPaperclipEnv,
+  buildDealDeskEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
   joinPromptSections,
-  materializePaperclipSkillCopy,
+  materializeDealDeskSkillCopy,
   parseObject,
-  readPaperclipRuntimeSkillEntries,
-  readPaperclipIssueWorkModeFromContext,
-  renderPaperclipWakePrompt,
+  readDealDeskRuntimeSkillEntries,
+  readDealDeskIssueWorkModeFromContext,
+  renderDealDeskWakePrompt,
   renderTemplate,
-  resolvePaperclipInstanceRootForAdapter,
-  resolvePaperclipDesiredSkillNames,
+  resolveDealDeskInstanceRootForAdapter,
+  resolveDealDeskDesiredSkillNames,
   rewriteWorkspaceCwdEnvVarsForExecution,
-  shapePaperclipWorkspaceEnvForExecution,
-  stringifyPaperclipWakePayload,
-  type PaperclipSkillEntry,
-} from "@paperclipai/adapter-utils/server-utils";
-import { shellQuote } from "@paperclipai/adapter-utils/ssh";
+  shapeDealDeskWorkspaceEnvForExecution,
+  stringifyDealDeskWakePayload,
+  type DealDeskSkillEntry,
+} from "@dealdesk/adapter-utils/server-utils";
+import { shellQuote } from "@dealdesk/adapter-utils/ssh";
 import {
   createAcpRuntime,
   createAgentRegistry,
@@ -53,7 +53,7 @@ import {
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const WRAPPER_CLEANUP_RETENTION_MS = 15 * 60 * 1000;
-const PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
+const DEALDESK_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
 
 type AcpxRuntimeFactory = (options: AcpRuntimeOptions) => AcpRuntime;
 
@@ -113,21 +113,21 @@ function shortHash(value: unknown): string {
   return createHash("sha256").update(stableJson(value)).digest("hex").slice(0, 16);
 }
 
-function defaultPaperclipInstanceDir(): string {
-  const home = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip");
-  const instanceId = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
-  return resolvePaperclipInstanceRootForAdapter({
+function defaultDealDeskInstanceDir(): string {
+  const home = process.env.DEALDESK_HOME?.trim() || path.join(os.homedir(), ".dealdesk");
+  const instanceId = process.env.DEALDESK_INSTANCE_ID?.trim() || "default";
+  return resolveDealDeskInstanceRootForAdapter({
     homeDir: home,
     instanceId,
   });
 }
 
 function defaultStateDir(companyId: string, agentId: string): string {
-  return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "acpx-local", "agents", agentId);
+  return path.join(defaultDealDeskInstanceDir(), "companies", companyId, "acpx-local", "agents", agentId);
 }
 
 function resolveManagedCodexHomeDir(companyId: string): string {
-  return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "codex-home");
+  return path.join(defaultDealDeskInstanceDir(), "companies", companyId, "codex-home");
 }
 
 function packageRootDir(): string {
@@ -230,7 +230,7 @@ async function prepareManagedCodexHome(input: {
 
   await onLog(
     "stdout",
-    `[paperclip] Using Paperclip-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+    `[dealdesk] Using DealDesk-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;
 }
@@ -276,11 +276,11 @@ async function hashPathContents(
 }
 
 async function buildSkillSetKey(input: {
-  skills: PaperclipSkillEntry[];
+  skills: DealDeskSkillEntry[];
   label: string;
 }): Promise<string> {
   const hash = createHash("sha256");
-  hash.update(`paperclip-acpx-${input.label}-skills:v1\n`);
+  hash.update(`dealdesk-acpx-${input.label}-skills:v1\n`);
   const sorted = [...input.skills].sort((left, right) => left.runtimeName.localeCompare(right.runtimeName));
   for (const entry of sorted) {
     hash.update(`skill:${entry.key}:${entry.runtimeName}\n`);
@@ -291,9 +291,9 @@ async function buildSkillSetKey(input: {
 
 async function resolveSelectedRuntimeSkills(
   config: Record<string, unknown>,
-): Promise<{ allSkills: PaperclipSkillEntry[]; selectedSkills: PaperclipSkillEntry[]; desiredSkillNames: string[] }> {
-  const allSkills = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkillNames = resolvePaperclipDesiredSkillNames(config, allSkills);
+): Promise<{ allSkills: DealDeskSkillEntry[]; selectedSkills: DealDeskSkillEntry[]; desiredSkillNames: string[] }> {
+  const allSkills = await readDealDeskRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkillNames = resolveDealDeskDesiredSkillNames(config, allSkills);
   const desiredSet = new Set(desiredSkillNames);
   return {
     allSkills,
@@ -320,17 +320,17 @@ async function prepareClaudeSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperclipSkillCopy(entry.source, target);
+      const result = await materializeDealDeskSkillCopy(entry.source, target);
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
-          `[paperclip] Materialized ACPX Claude skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
+          `[dealdesk] Materialized ACPX Claude skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
         );
       }
     } catch (err) {
       await input.onLog(
         "stderr",
-        `[paperclip] Failed to materialize ACPX Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[dealdesk] Failed to materialize ACPX Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -338,7 +338,7 @@ async function prepareClaudeSkillRuntime(input: {
   const selectedNames = selectedSkills.map((entry) => entry.runtimeName).sort();
   const promptInstructions = selectedSkills.length > 0
     ? [
-        "Paperclip has materialized selected runtime skills for this ACPX Claude session.",
+        "DealDesk has materialized selected runtime skills for this ACPX Claude session.",
         `Skill root: ${skillsHome}`,
         selectedNames.length > 0 ? `Selected skills: ${selectedNames.join(", ")}` : "",
         "When a task calls for one of these skills, read its SKILL.md from that root and follow it.",
@@ -355,13 +355,13 @@ async function prepareClaudeSkillRuntime(input: {
     },
     promptInstructions,
     commandNotes: selectedSkills.length > 0
-      ? [`Materialized ${selectedSkills.length} Paperclip skill(s) for ACPX Claude at ${skillsHome}.`]
+      ? [`Materialized ${selectedSkills.length} DealDesk skill(s) for ACPX Claude at ${skillsHome}.`]
       : [],
   };
 }
 
 async function readManagedCodexSkillsManifest(skillsHome: string): Promise<Set<string>> {
-  const manifestPath = path.join(skillsHome, PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST);
+  const manifestPath = path.join(skillsHome, DEALDESK_MANAGED_CODEX_SKILLS_MANIFEST);
   try {
     const raw = JSON.parse(await fs.readFile(manifestPath, "utf8")) as unknown;
     const parsed = parseObject(raw);
@@ -377,7 +377,7 @@ async function readManagedCodexSkillsManifest(skillsHome: string): Promise<Set<s
 async function writeManagedCodexSkillsManifest(skillsHome: string, skillNames: Iterable<string>): Promise<void> {
   const managedSkillNames = Array.from(new Set(skillNames)).sort();
   await fs.writeFile(
-    path.join(skillsHome, PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST),
+    path.join(skillsHome, DEALDESK_MANAGED_CODEX_SKILLS_MANIFEST),
     `${JSON.stringify({ version: 1, managedSkillNames }, null, 2)}\n`,
     "utf8",
   );
@@ -392,8 +392,8 @@ async function removeSkillTarget(target: string): Promise<boolean> {
 
 async function reconcileManagedCodexSkills(input: {
   skillsHome: string;
-  allSkills: PaperclipSkillEntry[];
-  selectedSkills: PaperclipSkillEntry[];
+  allSkills: DealDeskSkillEntry[];
+  selectedSkills: DealDeskSkillEntry[];
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<void> {
   const desired = new Set(input.selectedSkills.map((entry) => entry.runtimeName));
@@ -403,7 +403,7 @@ async function reconcileManagedCodexSkills(input: {
   for (const name of managed) {
     if (desired.has(name)) continue;
     if (await removeSkillTarget(path.join(input.skillsHome, name))) {
-      await input.onLog("stdout", `[paperclip] Revoked ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[dealdesk] Revoked ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
     }
   }
 
@@ -417,14 +417,14 @@ async function reconcileManagedCodexSkills(input: {
     const resolvedLinkedPath = path.resolve(path.dirname(target), linkedPath);
     if (resolvedLinkedPath !== path.resolve(entry.source)) continue;
     if (await removeSkillTarget(target)) {
-      await input.onLog("stdout", `[paperclip] Revoked legacy ACPX Codex skill "${entry.runtimeName}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[dealdesk] Revoked legacy ACPX Codex skill "${entry.runtimeName}" from ${input.skillsHome}\n`);
     }
   }
 
   for (const name of managed) {
     if (desired.has(name) || availableByRuntimeName.has(name)) continue;
     if (await removeSkillTarget(path.join(input.skillsHome, name))) {
-      await input.onLog("stdout", `[paperclip] Revoked unavailable ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[dealdesk] Revoked unavailable ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
     }
   }
 }
@@ -466,17 +466,17 @@ async function prepareCodexSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperclipSkillCopy(entry.source, target);
+      const result = await materializeDealDeskSkillCopy(entry.source, target);
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
-          `[paperclip] Materialized ACPX Codex skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
+          `[dealdesk] Materialized ACPX Codex skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
         );
       }
     } catch (err) {
       await input.onLog(
         "stderr",
-        `[paperclip] Failed to inject ACPX Codex skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[dealdesk] Failed to inject ACPX Codex skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -631,7 +631,7 @@ async function buildRuntime(input: {
   ctx: AdapterExecutionContext;
 }): Promise<AcpxPreparedRuntime> {
   const { runId, agent, config, context, authToken } = input.ctx;
-  const workspaceContext = parseObject(context.paperclipWorkspace);
+  const workspaceContext = parseObject(context.dealDeskWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
   const workspaceStrategy = asString(workspaceContext.strategy, "");
@@ -655,7 +655,7 @@ async function buildRuntime(input: {
       ? remoteExecutionIdentity.remoteCwd
       : cwd;
   const executionTargetIsRemote = remoteExecutionIdentity !== null;
-  const shapedWorkspaceEnv = shapePaperclipWorkspaceEnvForExecution({
+  const shapedWorkspaceEnv = shapeDealDeskWorkspaceEnvForExecution({
     workspaceCwd: effectiveWorkspaceCwd,
     workspaceWorktreePath,
     executionTargetIsRemote,
@@ -676,8 +676,8 @@ async function buildRuntime(input: {
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
-    typeof envConfig.PAPERCLIP_API_KEY === "string" && envConfig.PAPERCLIP_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent), PAPERCLIP_RUN_ID: runId };
+    typeof envConfig.DEALDESK_API_KEY === "string" && envConfig.DEALDESK_API_KEY.trim().length > 0;
+  const env: Record<string, string> = { ...buildDealDeskEnv(agent), DEALDESK_RUN_ID: runId };
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim()) ||
     (typeof context.issueId === "string" && context.issueId.trim()) ||
@@ -692,17 +692,17 @@ async function buildRuntime(input: {
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const wakePayloadJson = stringifyPaperclipWakePayload(context.paperclipWake);
-  const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
-  if (wakeTaskId) env.PAPERCLIP_TASK_ID = wakeTaskId;
-  if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
-  if (wakeReason) env.PAPERCLIP_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.PAPERCLIP_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (wakePayloadJson) env.PAPERCLIP_WAKE_PAYLOAD_JSON = wakePayloadJson;
-  applyPaperclipWorkspaceEnv(env, {
+  const wakePayloadJson = stringifyDealDeskWakePayload(context.dealDeskWake);
+  const issueWorkMode = readDealDeskIssueWorkModeFromContext(context);
+  if (wakeTaskId) env.DEALDESK_TASK_ID = wakeTaskId;
+  if (issueWorkMode) env.DEALDESK_ISSUE_WORK_MODE = issueWorkMode;
+  if (wakeReason) env.DEALDESK_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.DEALDESK_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.DEALDESK_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.DEALDESK_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.DEALDESK_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (wakePayloadJson) env.DEALDESK_WAKE_PAYLOAD_JSON = wakePayloadJson;
+  applyDealDeskWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
     workspaceStrategy,
@@ -722,7 +722,7 @@ async function buildRuntime(input: {
   for (const [key, value] of Object.entries(shapedEnvConfig)) {
     if (typeof value === "string") env[key] = value;
   }
-  if (!hasExplicitApiKey && authToken) env.PAPERCLIP_API_KEY = authToken;
+  if (!hasExplicitApiKey && authToken) env.DEALDESK_API_KEY = authToken;
 
   let skillPromptInstructions = "";
   let skillsIdentity: Record<string, unknown> = { mode: "unsupported" };
@@ -746,10 +746,10 @@ async function buildRuntime(input: {
     skillsIdentity = preparedSkills.identity;
     skillCommandNotes.push(...preparedSkills.commandNotes);
   } else {
-    const desired = resolvePaperclipDesiredSkillNames(config, await readPaperclipRuntimeSkillEntries(config, __moduleDir));
+    const desired = resolveDealDeskDesiredSkillNames(config, await readDealDeskRuntimeSkillEntries(config, __moduleDir));
     skillsIdentity = { mode: "custom_unsupported", desiredSkillNames: desired };
     if (desired.length > 0) {
-      skillCommandNotes.push("Selected Paperclip skills are tracked only; ACPX custom commands do not expose a runtime skill contract yet.");
+      skillCommandNotes.push("Selected DealDesk skills are tracked only; ACPX custom commands do not expose a runtime skill contract yet.");
     }
   }
 
@@ -849,7 +849,7 @@ async function applySessionConfigOptions(input: {
   if (!input.runtime.setConfigOption) {
     const message =
       "ACPX runtime does not expose session config controls; upgrade ACPX or remove configured model, effort, and fast mode overrides.";
-    await input.onLog("stderr", `[paperclip] ${message}\n`);
+    await input.onLog("stderr", `[dealdesk] ${message}\n`);
     throw new Error(message);
   }
   for (const option of options) {
@@ -860,7 +860,7 @@ async function applySessionConfigOptions(input: {
     });
     await input.onLog(
       "stdout",
-      `[paperclip] Applied ACPX ${input.prepared.acpxAgent} config ${option.key}=${option.value}\n`,
+      `[dealdesk] Applied ACPX ${input.prepared.acpxAgent} config ${option.key}=${option.value}\n`,
     );
   }
 }
@@ -871,7 +871,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
   commandNotes: string[];
 }> {
   const { agent, runId, config, context, onLog } = ctx;
-  const promptTemplate = asString(config.promptTemplate, DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
+  const promptTemplate = asString(config.promptTemplate, DEFAULT_DEALDESK_AGENT_PROMPT_TEMPLATE);
   const instructionsFilePath = asString(config.instructionsFilePath, "").trim();
   const instructionsDir = instructionsFilePath ? `${path.dirname(instructionsFilePath)}/` : "";
   let instructionsPrefix = "";
@@ -891,7 +891,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       const reason = err instanceof Error ? err.message : String(err);
       await onLog(
         "stderr",
-        `[paperclip] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
+        `[dealdesk] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
       );
       commandNotes.push(`Configured instructionsFilePath ${instructionsFilePath}, but file could not be read.`);
     }
@@ -911,12 +911,12 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     !resumedSession && bootstrapPromptTemplate.trim().length > 0
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
-  const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, { resumedSession });
+  const wakePrompt = renderDealDeskWakePrompt(context.dealDeskWake, { resumedSession });
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
   const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
-  const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
-  const taskContextNote = asString(context.paperclipTaskMarkdown, "").trim();
+  const sessionHandoffNote = asString(context.dealDeskSessionHandoffMarkdown, "").trim();
+  const taskContextNote = asString(context.dealDeskTaskMarkdown, "").trim();
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
     renderedBootstrapPrompt,
@@ -1142,7 +1142,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
     if (!canResume && asString(previousParams.runtimeSessionName, "")) {
       await ctx.onLog(
         "stdout",
-        `[paperclip] ACPX session "${asString(previousParams.runtimeSessionName, "")}" does not match the current agent/cwd/mode/runtime identity; starting fresh in "${prepared.cwd}".\n`,
+        `[dealdesk] ACPX session "${asString(previousParams.runtimeSessionName, "")}" does not match the current agent/cwd/mode/runtime identity; starting fresh in "${prepared.cwd}".\n`,
       );
     }
 
@@ -1166,7 +1166,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
           resumedSession = false;
           await ctx.onLog(
             "stdout",
-            `[paperclip] ACPX resume session "${resumeSessionId}" is unavailable; retrying with a fresh session.\n`,
+            `[dealdesk] ACPX resume session "${resumeSessionId}" is unavailable; retrying with a fresh session.\n`,
           );
           handle = await runtime.ensureSession({
             sessionKey: prepared.sessionKey,
@@ -1269,7 +1269,7 @@ export function createAcpxLocalExecutor(deps: ExecuteDeps = {}) {
         command: prepared.agentCommand ?? prepared.acpxAgent,
         cwd: prepared.cwd,
         commandNotes: [
-          `ACPX runtime embedded in Paperclip with ${prepared.mode} session mode.`,
+          `ACPX runtime embedded in DealDesk with ${prepared.mode} session mode.`,
           `Effective ACPX permission mode: ${prepared.permissionMode}.`,
           ...(prepared.requestedModel ? [`Requested ACPX model: ${prepared.requestedModel}.`] : []),
           ...(prepared.requestedThinkingEffort ? [`Requested ACPX thinking effort: ${prepared.requestedThinkingEffort}.`] : []),

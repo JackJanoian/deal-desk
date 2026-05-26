@@ -76,7 +76,7 @@ export { pluginDatabaseNamespaces, pluginMigrations } from "./plugin_database.js
 export { pluginJobs, pluginJobRuns } from "./plugin_jobs.js";
 export { pluginWebhookDeliveries } from "./plugin_webhooks.js";
 export { pluginLogs } from "./plugin_logs.js";
-// DEAL DESK: PE-specific tables (additive, no Paperclip tables modified)
+// DEAL DESK: PE-specific tables (additive, no DealDesk tables modified)
 export {
   ddTheses,
   ddTargets,

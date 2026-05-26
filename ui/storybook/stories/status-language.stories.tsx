@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AGENT_STATUSES, ISSUE_PRIORITIES, ISSUE_STATUSES } from "@paperclipai/shared";
+import { AGENT_STATUSES, ISSUE_PRIORITIES, ISSUE_STATUSES } from "@dealdesk/shared";
 import type {
   IssueBlockerAttention,
   IssueProductivityReview,
   IssueRelationIssueSummary,
-} from "@paperclipai/shared";
+} from "@dealdesk/shared";
 import { Bot, CheckCircle2, Clock3, DollarSign, FolderKanban, Inbox, MessageSquare, Users } from "lucide-react";
 import { CopyText } from "@/components/CopyText";
 import { EmptyState } from "@/components/EmptyState";
@@ -19,7 +19,7 @@ import { QuotaBar } from "@/components/QuotaBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { StatusIcon } from "@/components/StatusIcon";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createIssue } from "../fixtures/paperclipData";
+import { createIssue } from "../fixtures/dealDeskData";
 
 function Section({
   eyebrow,
