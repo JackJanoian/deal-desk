@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import express from "express";
 import request from "supertest";
-import { outreachApproveHandler } from "../outreach-approve.js";
+import { outreachApproveHandler, outreachRejectHandler } from "../outreach-approve.js";
 
 const loadContactForEnrichmentMock = vi.fn();
 const ensureContactEmailFromApolloMock = vi.fn();
@@ -159,5 +159,93 @@ describe("POST /outreach/sends/:id/approve", () => {
     }));
     const res = await request(app).post("/outreach/sends/s-1/approve");
     expect(res.status).toBe(412);
+  });
+
+  it("returns 404 when sendId belongs to a different company (IDOR guard)", async () => {
+    // Simulate scoped DB: findFirst only returns the send when the where clause
+    // restricts by BOTH id and dealDeskCompanyId. The send belongs to co-B but
+    // the URL is /companies/co-A/.../sends/send-B/approve — so the scoped query
+    // returns undefined and the handler responds 404.
+    const SEND = {
+      id: "send-B",
+      dealDeskCompanyId: "co-B",
+      subject: "Hello",
+      body: "Hi",
+      contactId: "c-1",
+      status: "awaiting_approval" as const,
+    };
+    const findFirst = vi.fn(async (_args: unknown) => {
+      // A correctly-scoped handler asks for (id=send-B AND companyId=co-A) -> undefined.
+      // A buggy handler that only filters by id would get the send and proceed.
+      // We emulate the post-fix DB by always returning undefined for this URL,
+      // because no row exists for (send-B, co-A).
+      return undefined;
+    });
+    const fakeDb = {
+      query: {
+        ddOutreachSends: { findFirst },
+      },
+    };
+    const fakeSendGmail = vi.fn();
+    const app = express();
+    app.use((req, _res, next) => {
+      (req as any).actor = { type: "board", userId: "u-1", source: "session" };
+      // Inject URL companyId param the way the real router does.
+      (req as any).params = { ...(req as any).params, companyId: "co-A" };
+      next();
+    });
+    app.post("/companies/:companyId/outreach/sends/:id/approve", outreachApproveHandler({
+      db: fakeDb as never,
+      loadClientConfig: async () => ({ clientId: "c", clientSecret: "s" }),
+      sendGmail: fakeSendGmail,
+    }));
+    app.post("/companies/:companyId/outreach/sends/:id/reject", outreachRejectHandler({
+      db: fakeDb as never,
+    }));
+
+    const approveRes = await request(app)
+      .post("/companies/co-A/outreach/sends/send-B/approve");
+    expect(approveRes.status).toBe(404);
+    expect(approveRes.body).toMatchObject({ ok: false });
+    expect(fakeSendGmail).not.toHaveBeenCalled();
+
+    const rejectRes = await request(app)
+      .post("/companies/co-A/outreach/sends/send-B/reject");
+    expect(rejectRes.status).toBe(404);
+    expect(rejectRes.body).toMatchObject({ ok: false });
+
+    // Assert the handler actually requested a scoped lookup — the where clause
+    // is the result of and(eq(id), eq(dealDeskCompanyId)). Pre-fix the where
+    // was just eq(id), so the captured call would not contain "co-A" anywhere
+    // in its param values. We walk the drizzle SQL object and collect string
+    // params, avoiding circular column<->table refs.
+    function collectStringParams(node: unknown, seen = new Set<unknown>()): string[] {
+      if (node === null || node === undefined) return [];
+      if (typeof node === "string") return [node];
+      if (typeof node !== "object") return [];
+      if (seen.has(node)) return [];
+      seen.add(node);
+      const out: string[] = [];
+      // Skip drizzle internal back-refs that cause cycles (column.table).
+      const SKIP = new Set(["table", "_", "schema"]);
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (SKIP.has(k)) continue;
+        if (Array.isArray(v)) {
+          for (const item of v) out.push(...collectStringParams(item, seen));
+        } else {
+          out.push(...collectStringParams(v, seen));
+        }
+      }
+      return out;
+    }
+    expect(findFirst).toHaveBeenCalledTimes(2);
+    for (const call of findFirst.mock.calls) {
+      const [args] = call as [{ where: unknown }];
+      const params = collectStringParams(args.where);
+      expect(params).toContain("co-A");
+      expect(params).toContain("send-B");
+      // sanity: we never queried for co-B (the send's real owner)
+      expect(params).not.toContain(SEND.dealDeskCompanyId);
+    }
   });
 });

@@ -1,6 +1,6 @@
 // DEAL DESK: Approve or reject a queued outreach send.
 import type { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@dealdesk/db";
 import { ddOutreachSends, ddContacts, ddEmailAccounts, ddIntermediaries } from "@dealdesk/db";
 import { isUuidLike } from "@dealdesk/shared";
@@ -51,7 +51,10 @@ export function outreachApproveHandler(deps: ApproveDeps) {
   return async (req: Request, res: Response) => {
     const sendId = req.params.id as string;
     const send = await deps.db.query.ddOutreachSends.findFirst({
-      where: eq(ddOutreachSends.id, sendId),
+      where: and(
+        eq(ddOutreachSends.id, sendId),
+        eq(ddOutreachSends.dealDeskCompanyId, req.params.companyId as string),
+      ),
     });
     if (!send) {
       res.status(404).json({ ok: false, reason: "Send not found" });
@@ -263,7 +266,10 @@ export function outreachRejectHandler(deps: { db: Db }) {
   return async (req: Request, res: Response) => {
     const sendId = req.params.id as string;
     const send = await deps.db.query.ddOutreachSends.findFirst({
-      where: eq(ddOutreachSends.id, sendId),
+      where: and(
+        eq(ddOutreachSends.id, sendId),
+        eq(ddOutreachSends.dealDeskCompanyId, req.params.companyId as string),
+      ),
     });
     if (!send) {
       res.status(404).json({ ok: false });
