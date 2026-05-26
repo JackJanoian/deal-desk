@@ -1,6 +1,6 @@
 // DEAL DESK: Tool handler — enrich a contact via Apollo.io when an API key is configured.
 import type { Request, Response, RequestHandler } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ddContacts } from "@dealdesk/db";
 import type { Db } from "@dealdesk/db";
 import {
@@ -80,7 +80,7 @@ export function enrichContactHandler(deps: EnrichContactDeps): RequestHandler {
       return;
     }
 
-    await deps.db
+    const updated = await deps.db
       .update(ddContacts)
       .set({
         email: resolved.email,
@@ -90,7 +90,17 @@ export function enrichContactHandler(deps: EnrichContactDeps): RequestHandler {
         enrichedByAgentId: resolveEnrichedByAgentId(req),
         updatedAt: new Date(),
       })
-      .where(eq(ddContacts.id, contactId));
+      .where(
+        and(
+          eq(ddContacts.id, contactId),
+          eq(ddContacts.dealDeskCompanyId, companyId),
+        ),
+      )
+      .returning({ id: ddContacts.id });
+    if (updated.length === 0) {
+      res.status(404).json({ ok: false, reason: "Contact not found", code: "contact_not_found" });
+      return;
+    }
 
     res.status(200).json({
       ok: true,

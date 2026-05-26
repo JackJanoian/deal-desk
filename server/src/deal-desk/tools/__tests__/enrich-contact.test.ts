@@ -2,6 +2,7 @@ import express from "express";
 import request from "supertest";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { enrichContactHandler } from "../enrich-contact.js";
+import { collectStringParams } from "./helpers/where-introspection.js";
 
 const resolveContactEmailMock = vi.fn();
 
@@ -23,15 +24,17 @@ function makeApp(deps: Parameters<typeof enrichContactHandler>[0]) {
 describe("enrich-contact handler", () => {
   let updateSet: ReturnType<typeof vi.fn>;
   let updateWhere: ReturnType<typeof vi.fn>;
+  let updateReturning: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     resolveContactEmailMock.mockReset();
-    updateSet = vi.fn().mockReturnThis();
-    updateWhere = vi.fn().mockResolvedValue([{ id: "contact-1" }]);
+    updateReturning = vi.fn().mockResolvedValue([{ id: "contact-1" }]);
+    updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    updateSet = vi.fn().mockReturnValue({ where: updateWhere });
   });
 
   const db = (): any => ({
-    update: () => ({ set: updateSet, where: updateWhere }),
+    update: () => ({ set: updateSet }),
   });
 
   it("returns 412 when no Apollo key configured", async () => {
@@ -132,5 +135,62 @@ describe("enrich-contact handler", () => {
     const res = await request(app).post("/c/c1/enrich/contact-1").send({});
     expect(res.status).toBe(422);
     expect(res.body.code).toBe("apollo_plan_blocked");
+  });
+
+  it("returns 404 (IDOR guard) when UPDATE matches zero rows for the URL companyId", async () => {
+    // Simulate worst case: resolveContactEmail returned ok (e.g. helper bypassed),
+    // but the tenant-scoped UPDATE finds no row for the URL companyId "co-A".
+    resolveContactEmailMock.mockResolvedValueOnce({
+      ok: true,
+      email: "victim@target.com",
+      emailStatus: "verified",
+      source: "apollo",
+      contactId: "contact-foreign",
+      firstName: "V",
+      lastName: "Ictim",
+      companyDomain: "target.com",
+    });
+    // The UPDATE's where clause should contain the URL companyId "co-A".
+    // When it does, return [] to mimic "no row matched" (i.e. contact belongs to another tenant).
+    updateWhere.mockImplementationOnce((whereNode: unknown) => {
+      const params = collectStringParams(whereNode);
+      if (params.includes("co-A")) {
+        return { returning: vi.fn().mockResolvedValue([]) };
+      }
+      return { returning: vi.fn().mockResolvedValue([{ id: "contact-foreign" }]) };
+    });
+    const app = makeApp({
+      db: db(),
+      loadApolloKey: async () => "key-xyz",
+    });
+    const res = await request(app).post("/c/co-A/enrich/contact-foreign").send({});
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe("contact_not_found");
+  });
+
+  it("UPDATE where clause includes URL companyId for tenant scoping", async () => {
+    resolveContactEmailMock.mockResolvedValueOnce({
+      ok: true,
+      email: "alice@acme.com",
+      emailStatus: "verified",
+      source: "apollo",
+      contactId: "contact-1",
+      firstName: "Alice",
+      lastName: "Smith",
+      companyDomain: "acme.com",
+    });
+    let capturedParams: string[] = [];
+    updateWhere.mockImplementationOnce((whereNode: unknown) => {
+      capturedParams = collectStringParams(whereNode);
+      return { returning: vi.fn().mockResolvedValue([{ id: "contact-1" }]) };
+    });
+    const app = makeApp({
+      db: db(),
+      loadApolloKey: async () => "key-xyz",
+    });
+    const res = await request(app).post("/c/co-tenant-1/enrich/contact-1").send({});
+    expect(res.status).toBe(200);
+    expect(capturedParams).toContain("co-tenant-1");
+    expect(capturedParams).toContain("contact-1");
   });
 });
