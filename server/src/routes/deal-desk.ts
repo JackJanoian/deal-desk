@@ -89,6 +89,42 @@ const updateThesisSchema = z.object({
   attachments: attachmentSchema,
 });
 
+// DEAL DESK: M3 — Explicit whitelist of columns that PATCH thesis is allowed
+// to update. Keep in sync with `updateThesisSchema` above. This prevents a
+// future schema addition (e.g. `dealDeskCompanyId`, `createdByUserId`) from
+// silently becoming tenant-overridable via the request body.
+const ALLOWED_THESIS_UPDATE_KEYS = [
+  "name",
+  "sector",
+  "subSectors",
+  "geos",
+  "revenueMin",
+  "revenueMax",
+  "ebitdaMin",
+  "ebitdaMax",
+  "dealSizeMin",
+  "dealSizeMax",
+  "ownershipPreferences",
+  "exclusionCriteria",
+  "narrative",
+  "templateSlug",
+  "status",
+  "attachments",
+] as const;
+
+export function buildThesisUpdateValues(
+  body: Partial<z.infer<typeof updateThesisSchema>>,
+): Record<string, unknown> {
+  const updateValues: Record<string, unknown> = {};
+  for (const key of ALLOWED_THESIS_UPDATE_KEYS) {
+    const value = (body as Record<string, unknown>)[key];
+    if (value !== undefined) {
+      updateValues[key] = value;
+    }
+  }
+  return updateValues;
+}
+
 export function dealDeskRoutes(db: Db) {
   const router = Router({ mergeParams: true });
 
@@ -172,12 +208,10 @@ export function dealDeskRoutes(db: Db) {
       assertCompanyAccess(req, companyId);
 
       const body = req.body as z.infer<typeof updateThesisSchema>;
-      const updateValues: Record<string, unknown> = { updatedAt: new Date() };
-      for (const [key, value] of Object.entries(body)) {
-        if (value !== undefined) {
-          updateValues[key] = value;
-        }
-      }
+      const updateValues: Record<string, unknown> = {
+        ...buildThesisUpdateValues(body),
+        updatedAt: new Date(),
+      };
 
       const [updated] = await db
         .update(ddTheses)
