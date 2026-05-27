@@ -1,4 +1,4 @@
-# Deal Desk
+# DealDesk
 
 > The human control plane for AI deal sourcing.
 
@@ -40,8 +40,8 @@ Then open http://localhost:3100
 
 ## Built on DealDesk
 
-Deal Desk is a fork of [DealDesk](https://github.com/dealdesk/dealdesk),
-the open-source AI company orchestration platform. We use its heartbeat
+This project is a fork of the open-source [DealDesk platform](https://github.com/dealdesk/dealdesk)
+for AI company orchestration. We use its heartbeat
 engine, adapter system, budget enforcement, and governance layer — and add
 PE-specific primitives on top.
 
@@ -51,7 +51,7 @@ Claude Code · OpenClaw · Codex · Cursor · Any HTTP endpoint
 
 ## Privacy & telemetry
 
-Deal Desk is local-first: your thesis, targets, contacts, and all other data
+DealDesk is local-first: your thesis, targets, contacts, and all other data
 stay in the bundled PostgreSQL database on your machine. Nothing is sent to a
 central server as part of normal operation.
 
