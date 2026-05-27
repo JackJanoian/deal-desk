@@ -21,7 +21,7 @@ DealDesk AI. They are **not** licensed under MIT.
 ## Upstream marks
 
 This project is derived from
-[DealDesk](https://github.com/dealdesk/dealdesk). **DealDesk** and
+[DealDesk](https://github.com/JackJanoian/deal-desk). **DealDesk** and
 related DealDesk branding are trademarks of DealDesk AI. DealDesk does not
 grant any rights to DealDesk marks. Use DealDesk branding only in accurate,
 attributive references to the upstream project.

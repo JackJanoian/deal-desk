@@ -40,7 +40,7 @@ Then open http://localhost:3100
 
 ## Built on DealDesk
 
-This project is a fork of the open-source [DealDesk platform](https://github.com/dealdesk/dealdesk)
+This project is a fork of the open-source [DealDesk platform](https://github.com/JackJanoian/deal-desk)
 for AI company orchestration. We use its heartbeat
 engine, adapter system, budget enforcement, and governance layer — and add
 PE-specific primitives on top.
@@ -69,7 +69,7 @@ Outbound connections only happen for integrations you explicitly configure
 MIT © 2026 DealDesk AI. See [LICENSE](LICENSE) for the full text.
 
 Portions of this software are derived from
-[DealDesk](https://github.com/dealdesk/dealdesk) (MIT © 2025 DealDesk AI).
+[DealDesk](https://github.com/JackJanoian/deal-desk) (MIT © 2025 DealDesk AI).
 See [NOTICE](NOTICE) for upstream attribution.
 
 Trademarks and logos are not covered by the MIT License. See [TRADEMARK.md](TRADEMARK.md).
