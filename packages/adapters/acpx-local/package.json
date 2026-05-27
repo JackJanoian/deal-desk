@@ -2,13 +2,13 @@
   "name": "@dealdesk/adapter-acpx-local",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/dealdesk",
+  "homepage": "https://github.com/JackJanoian/deal-desk",
   "bugs": {
-    "url": "https://github.com/dealdesk/dealdesk/issues"
+    "url": "https://github.com/JackJanoian/deal-desk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/dealdesk",
+    "url": "https://github.com/JackJanoian/deal-desk",
     "directory": "packages/adapters/acpx-local"
   },
   "type": "module",

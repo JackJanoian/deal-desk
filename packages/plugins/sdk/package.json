@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Stable public API for DealDesk plugins — worker-side context and UI bridge hooks",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/dealdesk",
+  "homepage": "https://github.com/JackJanoian/deal-desk",
   "bugs": {
-    "url": "https://github.com/dealdesk/dealdesk/issues"
+    "url": "https://github.com/JackJanoian/deal-desk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/dealdesk",
+    "url": "https://github.com/JackJanoian/deal-desk",
     "directory": "packages/plugins/sdk"
   },
   "type": "module",

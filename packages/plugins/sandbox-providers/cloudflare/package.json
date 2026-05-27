@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "description": "Cloudflare sandbox provider plugin for DealDesk environments",
   "license": "MIT",
-  "homepage": "https://github.com/dealdesk/dealdesk",
+  "homepage": "https://github.com/JackJanoian/deal-desk",
   "bugs": {
-    "url": "https://github.com/dealdesk/dealdesk/issues"
+    "url": "https://github.com/JackJanoian/deal-desk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dealdesk/dealdesk",
+    "url": "https://github.com/JackJanoian/deal-desk",
     "directory": "packages/plugins/sandbox-providers/cloudflare"
   },
   "type": "module",
