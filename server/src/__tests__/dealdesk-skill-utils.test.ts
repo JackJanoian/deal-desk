@@ -55,7 +55,7 @@ describe("dealdesk skill utils", () => {
     await expect(readDealDeskRuntimeSkillEntries({}, moduleDir)).resolves.toEqual([]);
   });
 
-  it("keeps converted Deal Desk runtime skills while dropping true bundled DealDesk tools", async () => {
+  it("keeps converted DealDesk runtime skills while dropping true bundled DealDesk tools", async () => {
     const root = await makeTempDir("dealdesk-skill-runtime-config-");
     cleanupDirs.add(root);
 

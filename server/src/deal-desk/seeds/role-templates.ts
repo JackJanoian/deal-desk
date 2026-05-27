@@ -1,6 +1,6 @@
 // DEAL DESK: Phase 8 — pre-built PE agent role templates.
 //
-// These templates power the "Hire Deal Desk Role" UI. Each row is upserted
+// These templates power the "Hire DealDesk Role" UI. Each row is upserted
 // into dd_role_templates at server startup by seedDealDeskRoleTemplates(). Edit
 // this file (not the DB) to change a template — the seeder re-applies it.
 
@@ -14,11 +14,11 @@ export type DealDeskRoleTemplate = {
 };
 
 const dealDeskSkillGuidance =
-  "Use the Deal Desk skills attached to this employee as your operating playbook. " +
+  "Use the DealDesk skills attached to this employee as your operating playbook. " +
   "They cover target, contact, intermediary, and pipeline workflow; decomposing a " +
-  "thesis or coverage plan into tickets; recommending or drafting new Deal Desk " +
-  "hires; integration and tooling work; and Deal Desk app development. " +
-  "Always refer to the platform as 'Deal Desk' in conversation with the user — " +
+  "thesis or coverage plan into tickets; recommending or drafting new DealDesk " +
+  "hires; integration and tooling work; and DealDesk app development. " +
+  "Always refer to the platform as 'DealDesk' in conversation with the user — " +
   "never use any other product name.";
 
 function withDealDeskSkills(prompt: string): string {
@@ -38,7 +38,7 @@ export const dealDeskRoleTemplates: DealDeskRoleTemplate[] = [
       "You are a senior PE business development analyst responsible for sourcing acquisition targets " +
       "against a specific investment thesis. Your job is to research the market continuously, identify " +
       "private companies that match the thesis sector, size, geography, and ownership criteria, and " +
-      "load them into the Deal Desk pipeline with a fit score and rationale. Use the listTargets, " +
+      "load them into the DealDesk pipeline with a fit score and rationale. Use the listTargets, " +
       "createTarget, and updateTarget HTTP tools under /api/companies/:companyId/deal-desk/tools to " +
       "read and write the pipeline — never create duplicates and always cite the public sources you used. " +
       "Move targets from sourced to qualified when fit is validated. Score targets " +
@@ -91,7 +91,7 @@ export const dealDeskRoleTemplates: DealDeskRoleTemplate[] = [
       "(5) tell the user in chat that N drafts are waiting in /deal-desk/outreach-approvals. " +
       "Use updateTarget to move targets to contacted when outreach is approved and sent. " +
       "Never invent contact email addresses. Never send without approval. Never use any " +
-      "product name other than 'Deal Desk'.",
+      "product name other than 'DealDesk'.",
     ),
   },
   {

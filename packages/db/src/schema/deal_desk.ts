@@ -6,7 +6,7 @@
 // FKs to DealDesk tables (companies, agents, issues) are intentionally NOT
 // declared at the SQL level — they're tracked by varchar/uuid columns named
 // dealDeskCompanyId / sourcedByAgentId / sourceTicketId so that schema changes
-// in DealDesk don't cascade into Deal Desk. The values are always valid
+// in DealDesk don't cascade into DealDesk. The values are always valid
 // DealDesk IDs by application convention.
 
 import {

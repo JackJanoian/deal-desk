@@ -14,9 +14,9 @@ import {
 } from "../gmail/tokens.js";
 import { sendGmail as sendGmailReal } from "../gmail/send.js";
 
-const DEFAULT_SUBJECT = "Deal Desk smoke test";
+const DEFAULT_SUBJECT = "DealDesk smoke test";
 const DEFAULT_BODY =
-  "This is a smoke test from the Deal Desk Outreach Analyst pipeline. " +
+  "This is a smoke test from the DealDesk Outreach Analyst pipeline. " +
   "If you're reading this, the Gmail send chain works end-to-end.";
 
 const bodySchema = z.object({

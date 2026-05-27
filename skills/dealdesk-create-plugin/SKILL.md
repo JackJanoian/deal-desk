@@ -2,17 +2,17 @@
 slug: dealdesk-create-plugin
 name: deal-desk-create-plugin
 description: >
-  Design Deal Desk integrations and workflow extensions for PE sourcing,
+  Design DealDesk integrations and workflow extensions for PE sourcing,
   diligence, contact enrichment, intermediary coverage, and reporting. Use when
-  connecting external data sources, adding Deal Desk tools, or shaping a plugin
+  connecting external data sources, adding DealDesk tools, or shaping a plugin
   that improves acquisition-target workflow.
 domain: deal-desk
 required: false
 ---
 
-# Deal Desk Integration Skill
+# DealDesk Integration Skill
 
-Use this skill when the user asks to add a Deal Desk tool, data integration, workflow extension, or plugin-like capability.
+Use this skill when the user asks to add a DealDesk tool, data integration, workflow extension, or plugin-like capability.
 
 The focus is PE workflow value, not generic platform extension. Every integration should improve sourcing, diligence, contact quality, intermediary coverage, or partner reporting.
 
@@ -27,13 +27,13 @@ The focus is PE workflow value, not generic platform extension. Every integratio
 - Data-room or diligence document summarizers.
 - Portfolio or thesis reporting exports.
 
-Avoid building a plugin when a small Deal Desk route, seed, field, or UI addition solves the job.
+Avoid building a plugin when a small DealDesk route, seed, field, or UI addition solves the job.
 
 ## Discovery Questions
 
 Answer these before proposing implementation:
 
-- Which Deal Desk object is affected: thesis, target, contact, intermediary, outreach draft, or report?
+- Which DealDesk object is affected: thesis, target, contact, intermediary, outreach draft, or report?
 - Is the integration read-only, draft-only, or allowed to mutate records?
 - What external credentials or secrets are required?
 - What is the dedupe key?
@@ -43,7 +43,7 @@ Answer these before proposing implementation:
 
 ## Integration Contract
 
-Any new Deal Desk integration should define:
+Any new DealDesk integration should define:
 
 - Input schema.
 - Output schema.
@@ -56,7 +56,7 @@ Any new Deal Desk integration should define:
 
 ## Data Safety
 
-- Never store raw secrets in Deal Desk records.
+- Never store raw secrets in DealDesk records.
 - Do not send outreach automatically without explicit authorization.
 - Tag imported or enriched data with its source.
 - Keep confidence separate from facts.
@@ -66,7 +66,7 @@ Any new Deal Desk integration should define:
 
 For a small in-app workflow:
 
-1. Add or update the server route under the Deal Desk API.
+1. Add or update the server route under the DealDesk API.
 2. Add validation and company scoping.
 3. Update the DB schema/migration if new persisted fields are needed.
 4. Add UI affordances only where operators need to inspect or approve the output.
@@ -84,7 +84,7 @@ For a true plugin-style integration:
 
 The integration is ready when:
 
-- It improves a specific Deal Desk workflow.
+- It improves a specific DealDesk workflow.
 - It writes structured records or draft outputs, not just prose.
 - It can be re-run without duplicate records.
 - It exposes source provenance.

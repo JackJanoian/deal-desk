@@ -6,7 +6,7 @@ We really appreciate both small fixes and thoughtful larger changes.
 
 ## Local Development Setup
 
-Deal Desk is a pnpm monorepo. Everything runs locally — the database is a
+DealDesk is a pnpm monorepo. Everything runs locally — the database is a
 bundled embedded PostgreSQL, so there is no external database to provision.
 
 **Prerequisites**

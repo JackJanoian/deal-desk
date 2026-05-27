@@ -1,6 +1,6 @@
-# Deal Desk API Reference
+# DealDesk API Reference
 
-Detailed reference for the Deal Desk control plane API. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
+Detailed reference for the DealDesk control plane API. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
 ---
 
@@ -241,7 +241,7 @@ Interpretation:
 - `returnAssignee` is who gets the task back when changes are requested
 - `lastDecisionOutcome` shows the latest gate decision
 
-There is **no separate execution-decision endpoint**. Review and approval decisions are submitted through `PATCH /api/issues/:issueId`, and Deal Desk records the decision row automatically.
+There is **no separate execution-decision endpoint**. Review and approval decisions are submitted through `PATCH /api/issues/:issueId`, and DealDesk records the decision row automatically.
 
 ---
 
@@ -340,7 +340,7 @@ PATCH /api/issues/issue-77
 { "status": "done", "comment": "QA signoff complete. Verified the regression and test coverage." }
 ```
 
-Deal Desk writes the execution decision automatically. If another stage remains, the issue stays in `in_review` and is reassigned to the next participant. If this was the final stage, the issue reaches actual `done`.
+DealDesk writes the execution decision automatically. If another stage remains, the issue stays in `in_review` and is reassigned to the next participant. If this was the final stage, the issue reaches actual `done`.
 
 To request changes, use a non-`done` status with a required comment. Prefer `in_progress`:
 
@@ -349,7 +349,7 @@ PATCH /api/issues/issue-77
 { "status": "in_progress", "comment": "Changes requested: add a regression test for the empty-state path." }
 ```
 
-Deal Desk converts that into a `changes_requested` decision, reassigns the issue to `returnAssignee`, and routes it back to the same stage when the executor resubmits.
+DealDesk converts that into a `changes_requested` decision, reassigns the issue to `returnAssignee`, and routes it back to the same stage when the executor resubmits.
 
 ---
 
@@ -388,7 +388,7 @@ POST /api/companies/company-1/issues
 
 POST /api/companies/company-1/issues
 { "title": "Write load test suite", "assigneeAgentId": "agent-55", "parentId": "issue-30", "status": "blocked", "priority": "medium", "goalId": "goal-1", "blockedByIssueIds": ["<caching-layer-issue-id>"] }
-# ^ Load tests depend on caching layer being done first. Deal Desk will auto-wake agent-55 when the blocker resolves.
+# ^ Load tests depend on caching layer being done first. DealDesk will auto-wake agent-55 when the blocker resolves.
 
 PATCH /api/issues/issue-30
 { "status": "done", "comment": "Broke down into subtasks for caching layer and load testing." }
@@ -736,7 +736,7 @@ Terminal states: `done`, `cancelled`
 - `parentId` is structural and does not create a blocker relationship by itself.
 - Use formal approvals for governed actions such as hires, budget overrides, or CEO strategy gates.
 - Use issue-thread interactions for issue-scoped board/user decisions such as plan acceptance, proposed task breakdowns, or missing-answer questions.
-- Use `blockedByIssueIds` for real work dependencies between issues so Deal Desk can wake the blocked assignee when all blockers resolve.
+- Use `blockedByIssueIds` for real work dependencies between issues so DealDesk can wake the blocked assignee when all blockers resolve.
 
 ---
 
@@ -896,4 +896,4 @@ Terminal states: `done`, `cancelled`
 | @-mention agents for no reason              | Each mention triggers a budget-consuming heartbeat    | Only mention agents who need to act                     |
 | Sit silently on blocked work                | Nobody knows you're stuck; the task rots              | Comment the blocker and escalate immediately            |
 | Leave tasks in ambiguous states             | Others can't tell if work is progressing              | Always update status: `blocked`, `in_review`, or `done` |
-| Block on another task without `blockedByIssueIds` | No automatic wake when blocker resolves; manual follow-up needed | Set `blockedByIssueIds` so Deal Desk auto-wakes the assignee when all blockers are done |
+| Block on another task without `blockedByIssueIds` | No automatic wake when blocker resolves; manual follow-up needed | Set `blockedByIssueIds` so DealDesk auto-wakes the assignee when all blockers are done |

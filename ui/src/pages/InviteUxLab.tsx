@@ -457,12 +457,11 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              {/* DEAL DESK: wordmark "DealDesk" → "Deal Desk" */}
-              <span className="text-sm font-medium">Deal Desk</span>
+              <span className="text-sm font-medium">DealDesk</span>
             </div>
             {/* DEAL DESK: lab preview headings rebranded */}
             <h3 className="text-xl font-semibold">
-              {mode === "sign_in" ? "Sign in to Deal Desk" : "Create your Deal Desk account"}
+              {mode === "sign_in" ? "Sign in to DealDesk" : "Create your DealDesk account"}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "sign_in"

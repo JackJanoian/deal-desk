@@ -59,20 +59,20 @@ describe("BreadcrumbContext", () => {
     expect(renderCounts).toHaveLength(2);
   });
 
-  it("builds page titles with the selected company name before Deal Desk", () => {
+  it("builds page titles with the selected company name before DealDesk", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
-      "Inbox • Anachronist Wiki • Deal Desk",
+      "Inbox • Anachronist Wiki • DealDesk",
     );
     expect(
       buildDocumentTitle(
         [{ label: "Issues", href: "/issues" }, { label: "PAP-3515" }],
         "Anachronist Wiki",
       ),
-    ).toBe("PAP-3515 • Issues • Anachronist Wiki • Deal Desk");
+    ).toBe("PAP-3515 • Issues • Anachronist Wiki • DealDesk");
   });
 
   it("omits blank company names from page titles", () => {
-    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • Deal Desk");
-    expect(buildDocumentTitle([], null)).toBe("Deal Desk");
+    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • DealDesk");
+    expect(buildDocumentTitle([], null)).toBe("DealDesk");
   });
 });

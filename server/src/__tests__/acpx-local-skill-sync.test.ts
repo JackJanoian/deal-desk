@@ -13,7 +13,7 @@ describe("acpx local skill sync", () => {
     sourceKind: "deal_desk",
   }];
 
-  it("reports ACPX Claude converted Deal Desk skills", async () => {
+  it("reports ACPX Claude converted DealDesk skills", async () => {
     const snapshot = await listAcpxSkills({
       agentId: "agent-1",
       companyId: "company-1",
@@ -35,7 +35,7 @@ describe("acpx local skill sync", () => {
     expect(snapshot.warnings).toEqual([]);
   });
 
-  it("normalizes ACPX Codex legacy flat refs for converted Deal Desk skills", async () => {
+  it("normalizes ACPX Codex legacy flat refs for converted DealDesk skills", async () => {
     const snapshot = await syncAcpxSkills({
       agentId: "agent-2",
       companyId: "company-1",

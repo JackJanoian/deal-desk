@@ -1,7 +1,7 @@
 /** Central DealDesk product branding constants. */
 
 export const PRODUCT_NAME = "DealDesk";
-export const PRODUCT_DISPLAY_NAME = "Deal Desk";
+export const PRODUCT_DISPLAY_NAME = "DealDesk";
 export const CLI_NAME = "dealdesk";
 export const TAGLINE = "AI-powered deal sourcing for private equity";
 

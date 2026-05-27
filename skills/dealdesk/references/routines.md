@@ -1,4 +1,4 @@
-# Deal Desk Routines
+# DealDesk Routines
 
 Routines are recurring tasks. Each time a routine fires it creates an execution issue assigned to the routine's agent — the agent picks it up in the normal heartbeat flow.
 

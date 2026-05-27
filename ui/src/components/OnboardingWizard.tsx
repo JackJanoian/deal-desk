@@ -817,7 +817,7 @@ export function OnboardingWizard() {
                   letterSpacing: "-0.02em"
                 }}
               >
-                Deal Desk
+                DealDesk
               </div>
               <div
                 style={{
@@ -1522,7 +1522,7 @@ export function OnboardingWizard() {
                       {loading ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : null}
-                      {loading ? "Launching…" : "Open Deal Desk →"}
+                      {loading ? "Launching…" : "Open DealDesk →"}
                     </button>
                   )}
                 </div>
@@ -1611,7 +1611,7 @@ function StepHeader({ step }: { step: Step }) {
     3: {
       title: "Connect your AI runtime",
       subtitle:
-        "Deal Desk works with any agent. Bring your own — or connect one now."
+        "DealDesk works with any agent. Bring your own — or connect one now."
     },
     4: {
       title: "Give your analyst something to do",

@@ -1,9 +1,9 @@
 ---
 name: deal-desk-outreach
-description: How to draft and queue outreach emails through Deal Desk's approval workflow. Use whenever you need to email a target or intermediary.
+description: How to draft and queue outreach emails through DealDesk's approval workflow. Use whenever you need to email a target or intermediary.
 ---
 
-# Deal Desk Outreach
+# DealDesk Outreach
 
 You draft outreach emails. You **never send** — every send is queued for the user to approve in the Outreach Approvals UI.
 

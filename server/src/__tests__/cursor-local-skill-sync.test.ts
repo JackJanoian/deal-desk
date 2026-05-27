@@ -27,7 +27,7 @@ describe("cursor local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("installs converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+  it("installs converted DealDesk skills that keep DealDesk-compatible keys", async () => {
     const home = await makeTempDir("dealdesk-cursor-skill-sync-");
     const runtimeSkills = await makeTempDir("dealdesk-cursor-skill-src-");
     cleanupDirs.add(home);
@@ -116,7 +116,7 @@ describe("cursor local skill sync", () => {
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "ascii-heart"))).isSymbolicLink()).toBe(true);
   });
 
-  it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
+  it("does not keep converted DealDesk skills installed when the desired set is emptied", async () => {
     const home = await makeTempDir("dealdesk-cursor-skill-prune-");
     const runtimeSkills = await makeTempDir("dealdesk-cursor-skill-prune-src-");
     cleanupDirs.add(home);

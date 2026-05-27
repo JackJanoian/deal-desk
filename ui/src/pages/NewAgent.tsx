@@ -227,7 +227,7 @@ export function NewAgent() {
       {/* DEAL DESK: Phase 8 v0.2 — prefill source notice */}
       {presetDealDeskTemplate && (
         <div className="rounded-md border border-teal-500/30 bg-teal-500/5 p-3 text-sm">
-          Pre-filled from the Deal Desk role template{" "}
+          Pre-filled from the DealDesk role template{" "}
           <span className="font-medium">{presetDealDeskTemplate.name}</span>. Adjust
           anything before creating the agent.
         </div>

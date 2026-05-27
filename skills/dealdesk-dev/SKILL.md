@@ -3,17 +3,17 @@ slug: dealdesk-dev
 name: deal-desk-dev
 required: false
 description: >
-  Develop and operate the Deal Desk application. Use when changing Deal Desk
+  Develop and operate the DealDesk application. Use when changing DealDesk
   routes, schema, seeds, tools, UI pages, Quick Hire behavior, role templates,
   or PE workflow tests.
 domain: deal-desk
 ---
 
-# Deal Desk Dev Skill
+# DealDesk Dev Skill
 
-Use this skill when working on the Deal Desk application itself.
+Use this skill when working on the DealDesk application itself.
 
-Deal Desk is a PE-focused layer in this repository. It includes thesis setup, target tracking, intermediary coverage, contact enrichment, role templates, Quick Hire, and Deal Desk-specific agent instructions.
+DealDesk is a PE-focused layer in this repository. It includes thesis setup, target tracking, intermediary coverage, contact enrichment, role templates, Quick Hire, and DealDesk-specific agent instructions.
 
 ## Key Areas
 
@@ -22,19 +22,19 @@ Deal Desk is a PE-focused layer in this repository. It includes thesis setup, ta
 - Server tools: `server/src/deal-desk/tools/`
 - Role templates: `server/src/deal-desk/seeds/role-templates.ts`
 - Quick Hire UI: `ui/src/pages/deal-desk/QuickHire.tsx`
-- Deal Desk pages: `ui/src/pages/deal-desk/`
-- Deal Desk API client: `ui/src/api/dealDesk.ts`
+- DealDesk pages: `ui/src/pages/deal-desk/`
+- DealDesk API client: `ui/src/api/dealDesk.ts`
 - Tests: `server/src/routes/deal-desk.test.ts`, `packages/db/src/deal-desk.test.ts`, and focused UI tests where available
 
 ## Engineering Rules
 
-- Keep every Deal Desk entity company-scoped.
+- Keep every DealDesk entity company-scoped.
 - Preserve PE language: thesis, target, intermediary, owner, CEO, contact, outreach draft, pipeline, partner review.
 - Prefer structured fields over prose blobs.
 - Add migrations for persisted schema changes.
 - Keep role templates idempotent through the seeder.
 - Do not resurrect retired memo-only flows.
-- Keep Quick Hire simple: name, title, instructions, budget, and attached Deal Desk skills.
+- Keep Quick Hire simple: name, title, instructions, budget, and attached DealDesk skills.
 
 ## Development Workflow
 
@@ -46,7 +46,7 @@ Deal Desk is a PE-focused layer in this repository. It includes thesis setup, ta
 
 ## Common Tasks
 
-### Add A Deal Desk Field
+### Add A DealDesk Field
 
 - Update `packages/db/src/schema/deal_desk.ts`.
 - Generate or add the migration.
@@ -54,7 +54,7 @@ Deal Desk is a PE-focused layer in this repository. It includes thesis setup, ta
 - Update the UI form/table/card.
 - Add DB and route tests.
 
-### Add A Deal Desk Tool
+### Add A DealDesk Tool
 
 - Add the handler under `server/src/deal-desk/tools/`.
 - Export/register it in `server/src/deal-desk/tools/index.ts`.
@@ -66,14 +66,14 @@ Deal Desk is a PE-focused layer in this repository. It includes thesis setup, ta
 
 - Edit `server/src/deal-desk/seeds/role-templates.ts`.
 - Keep prompts concise and role-specific.
-- Mention relevant Deal Desk skills.
+- Mention relevant DealDesk skills.
 - Run server startup/seed tests if touched.
 
 ### Update Quick Hire
 
 - Keep the UX minimal.
 - Send instructions through `instructionsBundle`, not legacy prompt fields.
-- Attach the Deal Desk skill set through `desiredSkills`.
+- Attach the DealDesk skill set through `desiredSkills`.
 - Verify the payload includes budget, role, adapter config, instructions, and desired skills.
 
 ## Verification Checklist
@@ -97,7 +97,7 @@ pnpm build
 
 Report:
 
-- What Deal Desk workflow changed.
+- What DealDesk workflow changed.
 - Which records/routes/UI surfaces are affected.
 - Tests and typechecks run.
 - Any remaining product or data migration risk.

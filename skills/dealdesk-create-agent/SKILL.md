@@ -2,23 +2,23 @@
 slug: dealdesk-create-agent
 name: deal-desk-create-agent
 description: >
-  Hire or configure Deal Desk employees such as Sector Sourcers, Contact
+  Hire or configure DealDesk employees such as Sector Sourcers, Contact
   Enrichers, Intermediary Coverage Analysts, Heads of BD, and custom PE
-  analysts. Use when creating a Deal Desk agent, choosing a role template,
-  drafting AGENTS.md instructions, or applying Deal Desk skills to a new hire.
+  analysts. Use when creating a DealDesk agent, choosing a role template,
+  drafting AGENTS.md instructions, or applying DealDesk skills to a new hire.
 domain: deal-desk
 required: false
 ---
 
-# Deal Desk Create Agent Skill
+# DealDesk Create Agent Skill
 
-Use this skill when the user asks to hire, create, or configure a Deal Desk employee.
+Use this skill when the user asks to hire, create, or configure a DealDesk employee.
 
-The output should be a PE-relevant agent with clear role boundaries, Deal Desk skills attached, and instructions that update the application records rather than producing disconnected prose.
+The output should be a PE-relevant agent with clear role boundaries, DealDesk skills attached, and instructions that update the application records rather than producing disconnected prose.
 
 ## Default Skill Set
 
-Deal Desk hires should receive these skills unless the user asks for a narrower configuration:
+DealDesk hires should receive these skills unless the user asks for a narrower configuration:
 
 - `dealdesk`
 - `dealdesk-converting-plans-to-tasks`
@@ -26,11 +26,11 @@ Deal Desk hires should receive these skills unless the user asks for a narrower 
 - `dealdesk-create-plugin`
 - `dealdesk-dev`
 
-These keys are intentionally preserved for compatibility, but their content is Deal Desk-specific.
+These keys are intentionally preserved for compatibility, but their content is DealDesk-specific.
 
 ## Role Selection
 
-Prefer an existing Deal Desk role template when possible:
+Prefer an existing DealDesk role template when possible:
 
 - **Sector Sourcer**: finds and scores acquisition targets.
 - **Contact Enricher**: identifies owners, CEOs, founders, bankers, brokers, and advisors.
@@ -50,28 +50,28 @@ Collect or infer conservatively:
 - Adapter type and execution settings.
 - Monthly budget.
 - Whether scheduled heartbeats are needed.
-- Which Deal Desk skills to attach.
+- Which DealDesk skills to attach.
 - Instructions bundle content.
 
 Leave scheduled heartbeats off unless the role truly needs recurring work. Sourcing and enrichment roles often do; one-off analysts often do not.
 
 ## Instruction Requirements
 
-Every Deal Desk agent instruction bundle should include:
+Every DealDesk agent instruction bundle should include:
 
 - The active fund/thesis context if known.
-- The exact Deal Desk records the agent may update.
+- The exact DealDesk records the agent may update.
 - Dedupe and citation rules.
 - Outreach approval boundary.
 - Fit scoring guidance.
 - Completion/reporting expectations.
-- The attached Deal Desk skills and when to use each one.
+- The attached DealDesk skills and when to use each one.
 
-Avoid broad platform-maintenance instructions unless the role is explicitly a Deal Desk app developer/operator.
+Avoid broad platform-maintenance instructions unless the role is explicitly a DealDesk app developer/operator.
 
 ## Quick Hire Payload Shape
 
-When creating a Deal Desk agent through the app/API, include:
+When creating a DealDesk agent through the app/API, include:
 
 ```json
 {
@@ -106,8 +106,8 @@ Use `role: "general"` for PE employees when the app’s authorization path expec
 Before creating the hire, confirm:
 
 - The role has a specific PE mandate.
-- The agent knows which Deal Desk records to read and update.
-- The desired skill list includes the converted Deal Desk skills.
+- The agent knows which DealDesk records to read and update.
+- The desired skill list includes the converted DealDesk skills.
 - The instructions forbid duplicate targets and fabricated data.
 - Outreach is draft-only unless the user explicitly authorizes sending.
 - The budget and heartbeat cadence match the job.
@@ -118,7 +118,7 @@ Before creating the hire, confirm:
 Report:
 
 - Agent name and role.
-- Attached Deal Desk skills.
+- Attached DealDesk skills.
 - Budget and heartbeat posture.
 - First recommended task or mandate.
 - Any missing thesis/context needed before useful work begins.

@@ -1,12 +1,12 @@
 # Apollo Contact Enrichment
 
-Deal Desk uses your company's Apollo.io API key to find recipient email addresses before outreach sends go out.
+DealDesk uses your company's Apollo.io API key to find recipient email addresses before outreach sends go out.
 
 ## Setup
 
 1. Open **Email Accounts** at `/deal-desk/email-accounts`.
 2. Paste your Apollo API key under **Apollo.io enrichment**.
-3. Save the key. Deal Desk validates whether your plan supports email reveal.
+3. Save the key. DealDesk validates whether your plan supports email reveal.
 
 ## How enrichment runs
 
@@ -26,7 +26,7 @@ Agents should never invent email addresses.
 
 ## Apollo plan requirements
 
-- **Email reveal** requires a paid Apollo plan with enrichment credits. Deal Desk uses `people/match` first, then `mixed_people/api_search` + `people/bulk_match` as a fallback.
+- **Email reveal** requires a paid Apollo plan with enrichment credits. DealDesk uses `people/match` first, then `mixed_people/api_search` + `people/bulk_match` as a fallback.
 - **Free-tier keys** may pass search validation but cannot reveal emails. The Email Accounts page shows **Search only — upgrade for email reveal** when this happens.
 
 ## Error codes

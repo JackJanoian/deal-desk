@@ -34,7 +34,7 @@ export function HireRoles() {
 
   if (!selectedCompanyId) {
     return (
-      <EmptyState icon={Briefcase} message="Select a fund to see Deal Desk roles." />
+      <EmptyState icon={Briefcase} message="Select a fund to see DealDesk roles." />
     );
   }
 
@@ -47,7 +47,7 @@ export function HireRoles() {
   return (
     <div className="space-y-4">
       <header>
-        <h1 className="text-lg font-semibold">Hire a Deal Desk Role</h1>
+        <h1 className="text-lg font-semibold">Hire a DealDesk Role</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Pre-built PE agent configurations. Each role ships with a focused
           system prompt, recommended cadence, and monthly budget.
@@ -105,7 +105,7 @@ export function HireRoles() {
                 size="sm"
                 variant="outline"
                 onClick={() =>
-                  // DEAL DESK: v0.3 — use the simpler Deal Desk QuickHire form
+                  // DEAL DESK: v0.3 — use the simpler DealDesk QuickHire form
                   navigate(`/deal-desk/hire/${encodeURIComponent(tpl.slug)}`)
                 }
               >

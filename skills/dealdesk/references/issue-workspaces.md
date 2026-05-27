@@ -18,7 +18,7 @@ Read `currentExecutionWorkspace`:
 - `status` / `closedAt` — whether the workspace is usable
 - `runtimeServices[]` — current services, including `serviceName`, `status`, `healthStatus`, `url`, `port`, and `runtimeServiceId`
 
-If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so Deal Desk preserves workspace continuity.
+If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so DealDesk preserves workspace continuity.
 
 ## Control Services
 
@@ -71,7 +71,7 @@ For QA/browser checks, use the service whose `status` is `running` and whose `he
 
 ## MCP Tools
 
-When the Deal Desk MCP tools are available, prefer these issue-scoped tools:
+When the DealDesk MCP tools are available, prefer these issue-scoped tools:
 
 - `dealdeskGetIssueWorkspaceRuntime` — reads `currentExecutionWorkspace` and service URLs for an issue.
 - `dealdeskControlIssueWorkspaceServices` — starts, stops, or restarts the current issue workspace services.

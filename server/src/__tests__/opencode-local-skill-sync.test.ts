@@ -27,7 +27,7 @@ describe("opencode local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("installs converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+  it("installs converted DealDesk skills that keep DealDesk-compatible keys", async () => {
     const home = await makeTempDir("dealdesk-opencode-skill-sync-");
     const runtimeSkills = await makeTempDir("dealdesk-opencode-skill-src-");
     cleanupDirs.add(home);
@@ -66,7 +66,7 @@ describe("opencode local skill sync", () => {
     expect((await fs.lstat(path.join(home, ".claude", "skills", "dealdesk"))).isSymbolicLink()).toBe(true);
   });
 
-  it("does not keep converted Deal Desk skills installed when the desired set is emptied", async () => {
+  it("does not keep converted DealDesk skills installed when the desired set is emptied", async () => {
     const home = await makeTempDir("dealdesk-opencode-skill-prune-");
     const runtimeSkills = await makeTempDir("dealdesk-opencode-skill-prune-src-");
     cleanupDirs.add(home);

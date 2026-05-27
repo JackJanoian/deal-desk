@@ -50,7 +50,7 @@ describe("claude local skill sync", () => {
     expect(snapshot.entries.find((entry) => entry.key === dealdeskKey)).toBeUndefined();
   });
 
-  it("keeps explicit converted Deal Desk skill selections without mutating a persistent home", async () => {
+  it("keeps explicit converted DealDesk skill selections without mutating a persistent home", async () => {
     const skillDir = await makeTempDir("dealdesk-claude-converted-skill-");
     cleanupDirs.add(skillDir);
 
@@ -70,7 +70,7 @@ describe("claude local skill sync", () => {
     expect(snapshot.entries.find((entry) => entry.key === dealdeskKey)?.state).toBe("configured");
   });
 
-  it("normalizes legacy flat refs for converted Deal Desk skills", async () => {
+  it("normalizes legacy flat refs for converted DealDesk skills", async () => {
     const skillDir = await makeTempDir("dealdesk-claude-legacy-skill-");
     cleanupDirs.add(skillDir);
 

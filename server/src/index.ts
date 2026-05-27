@@ -465,9 +465,9 @@ export async function startServer(): Promise<StartedServer> {
   // server/src/deal-desk/seeds/role-templates.ts propagate on next boot.
   try {
     await seedDealDeskRoleTemplates(db as any);
-    logger.info("Seeded Deal Desk role templates");
+    logger.info("Seeded DealDesk role templates");
   } catch (err) {
-    logger.error({ err }, "Failed to seed Deal Desk role templates");
+    logger.error({ err }, "Failed to seed DealDesk role templates");
     throw err;
   }
 

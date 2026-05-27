@@ -30,7 +30,7 @@ describe("codex local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports converted Deal Desk skills that keep DealDesk-compatible keys", async () => {
+  it("reports converted DealDesk skills that keep DealDesk-compatible keys", async () => {
     const codexHome = await makeTempDir("dealdesk-codex-skill-sync-");
     const skillDir = await makeTempDir("dealdesk-codex-skill-src-");
     cleanupDirs.add(codexHome);
@@ -114,7 +114,7 @@ describe("codex local skill sync", () => {
     expect(after.entries.find((entry) => entry.key === createAgentKey)).toBeUndefined();
   });
 
-  it("normalizes legacy flat refs for converted Deal Desk skills", async () => {
+  it("normalizes legacy flat refs for converted DealDesk skills", async () => {
     const codexHome = await makeTempDir("dealdesk-codex-legacy-skill-sync-");
     const skillDir = await makeTempDir("dealdesk-codex-legacy-skill-src-");
     cleanupDirs.add(codexHome);

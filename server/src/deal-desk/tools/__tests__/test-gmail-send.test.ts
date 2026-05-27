@@ -102,7 +102,7 @@ describe("POST /test-gmail-send", () => {
     app.post("/c/:companyId/test-gmail-send", testGmailSendHandler(deps as never));
     await request(app).post("/c/co-1/test-gmail-send").send({ to: "bob@example.com" });
     const call = (deps.sendGmail as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(call.subject).toBe("Deal Desk smoke test");
+    expect(call.subject).toBe("DealDesk smoke test");
     expect(call.body).toContain("smoke test");
   });
 });

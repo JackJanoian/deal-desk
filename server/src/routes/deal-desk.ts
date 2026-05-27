@@ -351,7 +351,7 @@ export function dealDeskRoutes(db: Db) {
 
   // ── Role templates (Phase 8) ──────────────────────────────────────────────
   // Returns the pre-built PE agent role templates seeded at server startup.
-  // Consumed by the UI "Hire a Deal Desk Role" flow to pre-fill the new-agent
+  // Consumed by the UI "Hire a DealDesk Role" flow to pre-fill the new-agent
   // form (name, description, system prompt, recommended budget).
   router.get(
     "/:companyId/deal-desk/role-templates",

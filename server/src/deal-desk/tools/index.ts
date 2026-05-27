@@ -103,7 +103,7 @@ export {
 export { outreachApproveHandler, outreachRejectHandler } from "./outreach-approve.js";
 
 /**
- * Mount all Deal Desk tool endpoints onto a parent router.
+ * Mount all DealDesk tool endpoints onto a parent router.
  *
  * The parent router is expected to be scoped to a DealDesk company — that is,
  * `req.params.companyId` must be available on each request. Phase 6 will
@@ -306,7 +306,7 @@ export function registerDealDeskTools(
 }
 
 /**
- * Build a self-contained Deal Desk tools router. Convenience wrapper for
+ * Build a self-contained DealDesk tools router. Convenience wrapper for
  * callers that want a single router to mount (Phase 6 may use this directly).
  */
 export function dealDeskToolsRouter(db: Db): Router {

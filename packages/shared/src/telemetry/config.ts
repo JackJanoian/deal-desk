@@ -23,7 +23,7 @@ export function resolveTelemetryConfig(fileConfig?: { enabled?: boolean }): Tele
 
   // Telemetry is opt-in: it stays off unless the user explicitly turns it on,
   // either in their config file (telemetry.enabled: true) or via the
-  // DEALDESK_TELEMETRY_ENABLED=1 environment variable. This keeps Deal Desk
+  // DEALDESK_TELEMETRY_ENABLED=1 environment variable. This keeps DealDesk
   // local-first by default — no usage data leaves the machine unless asked.
   const explicitlyEnabled =
     fileConfig?.enabled === true || process.env.DEALDESK_TELEMETRY_ENABLED === "1";

@@ -213,7 +213,7 @@ describeEmbeddedPostgres(
   },
 );
 
-describeEmbeddedPostgres("Deal Desk target routes", () => {
+describeEmbeddedPostgres("DealDesk target routes", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>

@@ -166,7 +166,7 @@ export default function ApolloSetupSection({ companyId }: { companyId: string })
             )}
             {enrichmentEnabled && planLimited && (
               <p className="text-sm text-muted-foreground">
-                Free-tier path active: Deal Desk searches Apollo, then uses your monthly
+                Free-tier path active: DealDesk searches Apollo, then uses your monthly
                 enrichment credits to reveal emails (search + bulk match).
               </p>
             )}

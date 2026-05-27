@@ -4,8 +4,8 @@ import {
   DEAL_DESK_SKILL_KEYS,
 } from "./QuickHire";
 
-describe("Deal Desk QuickHire", () => {
-  it("attaches the converted Deal Desk skills to new agents", () => {
+describe("DealDesk QuickHire", () => {
+  it("attaches the converted DealDesk skills to new agents", () => {
     const payload = buildDealDeskQuickHirePayload({
       name: " Atlanta HVAC Sourcer ",
       title: "",

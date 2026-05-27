@@ -81,13 +81,12 @@ export function AuthPage() {
             <span className="rounded-md border border-primary/25 bg-primary/10 p-1 text-primary">
               <Sparkles className="h-3.5 w-3.5" />
             </span>
-            {/* DEAL DESK: wordmark "DealDesk" → "Deal Desk" */}
-            <span className="text-sm font-medium">Deal Desk</span>
+            <span className="text-sm font-medium">DealDesk</span>
           </div>
 
           {/* DEAL DESK: auth headings rebranded */}
           <h1 className="text-xl font-semibold">
-            {mode === "sign_in" ? "Sign in to Deal Desk" : "Create your Deal Desk account"}
+            {mode === "sign_in" ? "Sign in to DealDesk" : "Create your DealDesk account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "sign_in"
