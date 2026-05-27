@@ -22,6 +22,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
+      },
+      "./cost-backfill": {
+        "types": "./dist/services/cost-backfill.d.ts",
+        "import": "./dist/services/cost-backfill.js"
       }
     },
     "main": "./dist/index.js",
