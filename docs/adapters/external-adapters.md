@@ -9,7 +9,7 @@ DealDesk supports external adapter plugins that can be installed from npm packag
 
 | | Built-in | External |
 |---|---|---|
-| Source location | Inside `dealdesk-fork/packages/adapters/` | Separate npm package or local directory |
+| Source location | Inside `dealdesk/packages/adapters/` | Separate npm package or local directory |
 | Registration | Hardcoded in three registries | Loaded at startup via plugin system |
 | UI parser | Static import at build time | Dynamically loaded from API (see [UI Parser](/adapters/adapter-ui-parser)) |
 | Distribution | Ships with DealDesk | Published to npm or linked via `file:` |

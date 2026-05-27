@@ -6,14 +6,14 @@ summary: Guide to building a custom adapter
 Build a custom adapter to connect DealDesk to any agent runtime.
 
 <Tip>
-If you're using Claude Code, the `.agents/skills/create-agent-adapter` skill can guide you through the full adapter creation process interactively. Just ask Claude to create a new adapter and it will walk you through each step.
+If you're using Claude Code, just ask Claude to create a new adapter and it will walk you through each step interactively.
 </Tip>
 
 ## Two Paths
 
 | | Built-in | External Plugin |
 |---|---|---|
-| Source | Inside `dealdesk-fork` | Separate npm package |
+| Source | Inside `dealdesk` | Separate npm package |
 | Distribution | Ships with DealDesk | Independent npm publish |
 | UI parser | Static import | Dynamic load from API |
 | Registration | Edit 3 registries | Auto-loaded at startup |
