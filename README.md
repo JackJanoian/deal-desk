@@ -22,7 +22,7 @@ Open-source orchestration for teams of AI analysts working a thesis.
 
 **If your associate is an _employee_, DealDesk is the _deal team_.**
 
-DealDesk is a Node.js server and React UI that orchestrates a team of AI analysts to source acquisition targets. Bring your own agents, define an investment thesis, and track sourced targets, intermediary coverage, and outreach from one dashboard.
+Inspired by Paperclip, DealDesk is a Node.js server and React UI that orchestrates a team of AI analysts to source acquisition targets. Bring your own agents, define an investment thesis, and track sourced targets, intermediary coverage, and outreach from one dashboard.
 
 It looks like a deal pipeline. Under the hood: investment theses, target tracking, intermediary maps, contact enrichment, outreach drafting, governance, and analyst coordination.
 
