@@ -1,4 +1,5 @@
 # DealDesk
+<img width="1472" height="1088" alt="image" src="https://github.com/user-attachments/assets/91bd4377-ad76-4943-b7d5-977317b32211" />
 
 > The human control plane for AI deal sourcing.
 
