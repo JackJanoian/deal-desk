@@ -46,13 +46,11 @@ It looks like a deal pipeline. Under the hood: investment theses, target trackin
 
 ## DealDesk is right for you if
 
-- ✅ You run a **private equity, search fund, or family office** doing thesis-driven sourcing
+- ✅ You run a **private equity firm, search fund, or family office** doing thesis-driven sourcing
 - ✅ You want to **coordinate many AI analysts** (Claude, Codex, Cursor, custom) toward a sector thesis
-- ✅ You're juggling **20 Claude tabs** for company research and lose track of which target is which
 - ✅ You want analysts running **autonomously 24/7** screening targets, but still want partner review before outreach
 - ✅ You want to **monitor costs per analyst** and enforce monthly budgets
 - ✅ You want a process that **feels like a deal pipeline**, not a folder of scripts
-- ✅ You want to **monitor your pipeline from your phone**
 
 <br/>
 
