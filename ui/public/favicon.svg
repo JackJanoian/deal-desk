@@ -1,10 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
   <style>
-    path, rect { stroke: #18181b; }
+    .fg { fill: #18181b; }
+    .accent { fill: rgba(255,255,255,0.92); }
     @media (prefers-color-scheme: dark) {
-      path, rect { stroke: #e4e4e7; }
+      .fg { fill: #e4e4e7; }
+      .accent { fill: rgba(24,24,27,0.92); }
     }
   </style>
-  <rect stroke-width="2" x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-  <path stroke-width="2" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  <!-- handle (notched shape on top of the body) -->
+  <path class="fg" d="M8 6 V4 a2 2 0 0 1 2 -2 h4 a2 2 0 0 1 2 2 v2 h-2 V4 h-4 v2 z"/>
+  <!-- body -->
+  <rect class="fg" x="2" y="7" width="20" height="14" rx="2"/>
+  <!-- horizontal divider across the lid -->
+  <rect class="accent" x="2" y="13" width="20" height="1.25"/>
+  <!-- center clasp -->
+  <rect class="accent" x="10.5" y="11.5" width="3" height="3.5" rx="0.5"/>
 </svg>
