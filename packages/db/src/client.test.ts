@@ -141,6 +141,48 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
   );
 
   it(
+    "replays migration 0085 safely when its enum types already exist",
+    async () => {
+      const connectionString = await createTempDatabase();
+
+      await applyPendingMigrations(connectionString);
+
+      const sql = postgres(connectionString, { max: 1, onnotice: () => {} });
+      try {
+        const rapidFantasticFourHash = await migrationHash(
+          "0085_rapid_fantastic_four.sql",
+        );
+
+        await sql.unsafe(
+          `DELETE FROM "drizzle"."__drizzle_migrations" WHERE hash = '${rapidFantasticFourHash}'`,
+        );
+
+        // The dd_email_status enum from 0085 still exists; replaying the
+        // migration must not fail with "type already exists" (42710).
+        const types = await sql.unsafe<{ typname: string }[]>(
+          `SELECT typname FROM pg_type WHERE typname = 'dd_email_status'`,
+        );
+        expect(types).toHaveLength(1);
+      } finally {
+        await sql.end();
+      }
+
+      const pendingState = await inspectMigrations(connectionString);
+      expect(pendingState).toMatchObject({
+        status: "needsMigrations",
+        pendingMigrations: ["0085_rapid_fantastic_four.sql"],
+        reason: "pending-migrations",
+      });
+
+      await applyPendingMigrations(connectionString);
+
+      const finalState = await inspectMigrations(connectionString);
+      expect(finalState.status).toBe("upToDate");
+    },
+    20_000,
+  );
+
+  it(
     "enforces a unique board_api_keys.key_hash after migration 0044",
     async () => {
       const connectionString = await createTempDatabase();

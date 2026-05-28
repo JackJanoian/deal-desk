@@ -373,32 +373,130 @@ async function constraintExists(
   return rows[0]?.exists ?? false;
 }
 
+async function typeExists(
+  sql: ReturnType<typeof postgres>,
+  typeName: string,
+): Promise<boolean> {
+  const rows = await sql<{ exists: boolean }[]>`
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_type t
+      JOIN pg_namespace n ON n.oid = t.typnamespace
+      WHERE n.nspname = 'public'
+        AND t.typname = ${typeName}
+    ) AS exists
+  `;
+  return rows[0]?.exists ?? false;
+}
+
+function stripLeadingSqlComments(input: string): string {
+  let i = 0;
+  const s = input;
+  while (i < s.length) {
+    // Skip whitespace.
+    if (/\s/.test(s[i])) {
+      i++;
+      continue;
+    }
+    // `-- ...` line comment: skip to end of line.
+    if (s[i] === "-" && s[i + 1] === "-") {
+      const nl = s.indexOf("\n", i + 2);
+      if (nl === -1) return "";
+      i = nl + 1;
+      continue;
+    }
+    // `/* ... */` block comment: skip past closing.
+    if (s[i] === "/" && s[i + 1] === "*") {
+      const end = s.indexOf("*/", i + 2);
+      if (end === -1) return "";
+      i = end + 2;
+      continue;
+    }
+    break;
+  }
+  return s.slice(i);
+}
+
 async function migrationStatementAlreadyApplied(
   sql: ReturnType<typeof postgres>,
   statement: string,
+  laterMigrationContents: string[] = [],
 ): Promise<boolean> {
-  const normalized = statement.replace(/\s+/g, " ").trim();
+  // Strip leading SQL comments before matching: a chunk produced by splitting
+  // on --> statement-breakpoint may carry a documentary `-- ...` block in front
+  // of the actual DDL (drizzle-kit does not break around top-of-file comments),
+  // so the raw "starts with CREATE TYPE" check would miss real statements.
+  const stripped = stripLeadingSqlComments(statement);
+  const normalized = stripped.replace(/\s+/g, " ").trim();
+
+  // A chunk that's nothing but comments is a no-op; treat as applied.
+  if (normalized.length === 0) {
+    return true;
+  }
+
+  // Helper: when an existence check returns false, treat the statement as
+  // applied if a later migration explicitly drops the same object.
+  const droppedLater = (
+    kind: "TABLE" | "TYPE" | "INDEX" | "CONSTRAINT" | "COLUMN",
+    name: string,
+  ) =>
+    objectDroppedByLaterMigration(
+      laterMigrationContents,
+      kind,
+      // schema may or may not be quoted/qualified in the DROP; match `"name"`
+      // optionally preceded by `"schema".`.
+      `(?:"[^"]+"\\.)?"${name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}"`,
+    );
 
   const createTableMatch = normalized.match(/^CREATE TABLE(?: IF NOT EXISTS)? "([^"]+)"/i);
   if (createTableMatch) {
-    return tableExists(sql, createTableMatch[1]);
+    const name = createTableMatch[1];
+    if (await tableExists(sql, name)) return true;
+    return droppedLater("TABLE", name);
   }
 
   const addColumnMatch = normalized.match(
     /^ALTER TABLE "([^"]+)" ADD COLUMN(?: IF NOT EXISTS)? "([^"]+)"/i,
   );
   if (addColumnMatch) {
-    return columnExists(sql, addColumnMatch[1], addColumnMatch[2]);
+    const [, table, column] = addColumnMatch;
+    if (await columnExists(sql, table, column)) return true;
+    // Column may be missing because the column itself was dropped, OR because
+    // its owning table was dropped by a later migration (cascade).
+    return droppedLater("COLUMN", column) || droppedLater("TABLE", table);
   }
 
-  const createIndexMatch = normalized.match(/^CREATE (?:UNIQUE )?INDEX(?: IF NOT EXISTS)? "([^"]+)"/i);
+  const createIndexMatch = normalized.match(
+    /^CREATE (?:UNIQUE )?INDEX(?: IF NOT EXISTS)? "([^"]+)"(?:\s+ON\s+(?:"[^"]+"\.)?"([^"]+)")?/i,
+  );
   if (createIndexMatch) {
-    return indexExists(sql, createIndexMatch[1]);
+    const [, name, table] = createIndexMatch;
+    if (await indexExists(sql, name)) return true;
+    if (droppedLater("INDEX", name)) return true;
+    // CASCADE: dropping a table also drops its indexes; no explicit DROP INDEX exists.
+    if (table && droppedLater("TABLE", table)) return true;
+    return false;
   }
 
   const addConstraintMatch = normalized.match(/^ALTER TABLE "([^"]+)" ADD CONSTRAINT "([^"]+)"/i);
   if (addConstraintMatch) {
-    return constraintExists(sql, addConstraintMatch[2]);
+    const [, table, name] = addConstraintMatch;
+    if (await constraintExists(sql, name)) return true;
+    if (droppedLater("CONSTRAINT", name)) return true;
+    // CASCADE: dropping a table also drops its constraints.
+    if (droppedLater("TABLE", table)) return true;
+    return false;
+  }
+
+  // CREATE TYPE ... AS ENUM has no IF NOT EXISTS form, so a re-run against a DB
+  // that already has the enum fails with "type already exists" (42710). Treat it
+  // as already applied when the type is present. Handles optional schema prefix:
+  // CREATE TYPE "public"."dd_email_status" AS ENUM(...) and CREATE TYPE "x" AS ENUM(...).
+  const createTypeMatch = normalized.match(/^CREATE TYPE (?:"[^"]+"\.)?"([^"]+)"/i);
+  if (createTypeMatch) {
+    const name = createTypeMatch[1];
+    if (await typeExists(sql, name)) return true;
+    return droppedLater("TYPE", name);
   }
 
   // If we cannot reason about a statement safely, require manual migration.
@@ -408,16 +506,56 @@ async function migrationStatementAlreadyApplied(
 async function migrationContentAlreadyApplied(
   sql: ReturnType<typeof postgres>,
   migrationContent: string,
+  laterMigrationContents: string[] = [],
 ): Promise<boolean> {
   const statements = splitMigrationStatements(migrationContent);
   if (statements.length === 0) return false;
 
   for (const statement of statements) {
-    const applied = await migrationStatementAlreadyApplied(sql, statement);
+    const applied = await migrationStatementAlreadyApplied(
+      sql,
+      statement,
+      laterMigrationContents,
+    );
     if (!applied) return false;
   }
 
   return true;
+}
+
+/**
+ * When a CREATE/ADD existence check returns false, the object may still be
+ * "transitively applied" because a LATER migration explicitly dropped it. This
+ * distinguishes "intentionally torn down by a subsequent migration" (skip) from
+ * "manually removed / never applied" (re-run). We scan only later migrations'
+ * raw SQL for a DROP of the matching object.
+ */
+function objectDroppedByLaterMigration(
+  laterMigrationContents: string[],
+  kind: "TABLE" | "TYPE" | "INDEX" | "CONSTRAINT" | "COLUMN",
+  qualifiedNameRegexFragment: string,
+): boolean {
+  // Match `DROP <kind> [IF EXISTS] [schema.]"name"` for TABLE/TYPE/INDEX,
+  // `ALTER TABLE ... DROP CONSTRAINT [IF EXISTS] "name"` for CONSTRAINT,
+  // `ALTER TABLE ... DROP COLUMN [IF EXISTS] "name"` for COLUMN.
+  let pattern: RegExp;
+  if (kind === "CONSTRAINT") {
+    pattern = new RegExp(
+      `ALTER\\s+TABLE\\s+[^;]*?DROP\\s+CONSTRAINT(?:\\s+IF\\s+EXISTS)?\\s+${qualifiedNameRegexFragment}`,
+      "i",
+    );
+  } else if (kind === "COLUMN") {
+    pattern = new RegExp(
+      `ALTER\\s+TABLE\\s+[^;]*?DROP\\s+COLUMN(?:\\s+IF\\s+EXISTS)?\\s+${qualifiedNameRegexFragment}`,
+      "i",
+    );
+  } else {
+    pattern = new RegExp(
+      `DROP\\s+${kind}(?:\\s+IF\\s+EXISTS)?\\s+${qualifiedNameRegexFragment}`,
+      "i",
+    );
+  }
+  return laterMigrationContents.some((content) => pattern.test(content));
 }
 
 async function loadAppliedMigrations(
@@ -505,9 +643,28 @@ export async function reconcilePendingMigrationHistory(
     const columnNames = await getMigrationTableColumnNames(sql, migrationTableSchema);
     const qualifiedTable = `${quoteIdentifier(migrationTableSchema)}.${quoteIdentifier(DRIZZLE_MIGRATIONS_TABLE)}`;
 
+    // Pre-load content for every later journal entry. When a statement-by-statement
+    // detection fails because an object was dropped by a LATER migration, we use
+    // these to discriminate "user-/test-dropped, must re-run" from "later migration
+    // intentionally dropped, safe to skip" by looking for a matching DROP.
+    const orderedFiles = journalEntries.map((entry) => entry.fileName);
+    const laterContentsByMigration = new Map<string, string[]>();
+    for (let i = 0; i < orderedFiles.length; i++) {
+      const later: string[] = [];
+      for (let j = i + 1; j < orderedFiles.length; j++) {
+        later.push(await readMigrationFileContent(orderedFiles[j]));
+      }
+      laterContentsByMigration.set(orderedFiles[i], later);
+    }
+
     for (const migrationFile of state.pendingMigrations) {
       const migrationContent = await readMigrationFileContent(migrationFile);
-      const alreadyApplied = await migrationContentAlreadyApplied(sql, migrationContent);
+      const laterContents = laterContentsByMigration.get(migrationFile) ?? [];
+      const alreadyApplied = await migrationContentAlreadyApplied(
+        sql,
+        migrationContent,
+        laterContents,
+      );
       if (!alreadyApplied) break;
 
       const hash = createHash("sha256").update(migrationContent).digest("hex");
