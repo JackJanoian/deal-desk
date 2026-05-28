@@ -322,10 +322,6 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Scheduled heartbeats and budgets
 - ⚪ CRM sync (Affinity, DealCloud, HubSpot)
 - ⚪ LinkedIn Sales Navigator integration
-- ⚪ Data-room intake & memo drafting
-- ⚪ IC packet generation
-- ⚪ Portfolio-company add-on sourcing
-- ⚪ Mobile pipeline review
 
 See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 
