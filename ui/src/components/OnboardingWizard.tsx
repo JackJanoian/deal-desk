@@ -330,6 +330,11 @@ export function OnboardingWizard() {
 
   function handleClose() {
     reset();
+    // Also dismiss route-triggered onboarding (e.g. after sign-out lands on a
+    // route where resolveRouteOnboardingOptions would re-open the wizard).
+    // Without this, closeOnboarding() only flips onboardingOpen=false but
+    // effectiveOnboardingOpen stays true because routeOnboardingOptions !== null.
+    setRouteDismissed(true);
     closeOnboarding();
   }
 
