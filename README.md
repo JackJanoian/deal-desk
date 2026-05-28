@@ -18,6 +18,8 @@
 
 # DealDesk is the app private equity firms use to manage AI analysts for deal sourcing.
 <img width="1015" height="563" alt="Screenshot 2026-05-28 at 4 06 26 PM" src="https://github.com/user-attachments/assets/9c9c63fe-97e4-4dd7-b192-a5f87f19ee71" />
+<img width="1228" height="768" alt="Screenshot 2026-05-26 at 4 14 55 PM" src="https://github.com/user-attachments/assets/0f7945f0-d4dd-4cad-adff-cfdc3afa75a5" />
+
 
 Open-source orchestration for teams of AI analysts working a thesis.
 
