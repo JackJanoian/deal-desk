@@ -103,19 +103,6 @@ One deployment, many funds or strategies. Complete data isolation across vehicle
 
 <br/>
 
-## Problems DealDesk solves
-
-| Without DealDesk                                                                                                                       | With DealDesk                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| ❌ You have 20 Claude tabs open researching companies and can't track which target belongs to which thesis. On reboot you lose everything. | ✅ Targets are ticket-based, scoped to a thesis. Conversations are threaded. Sessions persist across reboots.                              |
-| ❌ You manually paste your thesis into every prompt to remind the bot what you're actually screening for.                              | ✅ Thesis context flows from the target up through the strategy — your analyst always knows the screen criteria and why.                  |
-| ❌ Folders of prompts and CSVs are disorganized — you're re-inventing CRM, ticketing, and analyst coordination from scratch.            | ✅ DealDesk gives you a pipeline, intermediary map, contact roster, and governance out of the box — so you run a deal team, not a pile of scripts. |
-| ❌ One runaway research loop burns $400 of tokens overnight before you notice.                                                          | ✅ Cost tracking surfaces token budgets per analyst and throttles them when they're out. Partners prioritize with budgets.                 |
-| ❌ Recurring sourcing work (weekly intermediary outreach, market scans, list refreshes) is forgotten or done inconsistently.            | ✅ Heartbeats handle recurring sourcing on a schedule. Partners supervise the queue.                                                       |
-| ❌ You have a thesis idea, you have to spin up a research project, keep a tab open, and babysit it.                                    | ✅ Define the thesis in DealDesk. Your sourcing analyst works it until the pipeline fills. Partners review the targets.                    |
-
-<br/>
-
 ## Why DealDesk is special
 
 DealDesk handles the hard orchestration details correctly.
