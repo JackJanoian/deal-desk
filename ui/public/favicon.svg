@@ -1,18 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <style>
-    .fg { fill: #18181b; }
-    .accent { fill: rgba(255,255,255,0.92); }
-    @media (prefers-color-scheme: dark) {
-      .fg { fill: #e4e4e7; }
-      .accent { fill: rgba(24,24,27,0.92); }
-    }
-  </style>
-  <!-- handle (notched shape on top of the body) -->
-  <path class="fg" d="M8 6 V4 a2 2 0 0 1 2 -2 h4 a2 2 0 0 1 2 2 v2 h-2 V4 h-4 v2 z"/>
-  <!-- body -->
-  <rect class="fg" x="2" y="7" width="20" height="14" rx="2"/>
-  <!-- horizontal divider across the lid -->
-  <rect class="accent" x="2" y="13" width="20" height="1.25"/>
-  <!-- center clasp -->
-  <rect class="accent" x="10.5" y="11.5" width="3" height="3.5" rx="0.5"/>
+  <!-- Dark rounded square background, matching apple-touch-icon -->
+  <rect width="24" height="24" rx="4" fill="#18181b"/>
+  <!-- Handle (stroked U-shape on top of the body) -->
+  <path fill="none" stroke="#e4e4e7" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+        d="M9 7 V5 a1.5 1.5 0 0 1 1.5 -1.5 h3 a1.5 1.5 0 0 1 1.5 1.5 V7"/>
+  <!-- Body -->
+  <rect x="3.5" y="7" width="17" height="13" rx="1.75" fill="#e4e4e7"/>
+  <!-- Lid divider -->
+  <rect x="3.5" y="12.5" width="17" height="0.75" fill="#18181b"/>
+  <!-- Center clasp -->
+  <rect x="10.75" y="11.25" width="2.5" height="3" rx="0.4" fill="#18181b"/>
 </svg>
